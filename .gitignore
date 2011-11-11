@@ -1,0 +1,9 @@
+/tmp
+/modules
+/lib
+/test-result
+/out
+/logs
+.idea
+/server.pid
+/*.iml
