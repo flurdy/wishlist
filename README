@@ -1,0 +1,14 @@
+Website: wishlist.sourceforge.net
+Project page: sourceforge.net/projects/wishlist
+Source: github.com/flurdy/wishlist
+Wiki: sf.net/apps/mediawiki/wishlist/
+License: AGPL v3
+
+Summary: 
+A place to store and share wish lists. 
+* Multiple cross referenced lists
+* private / public / shielded from recipient(s)
+* wish item reservation
+* wish item collaboration
+* integrate with gift registry 
+* integrate with shopping plans
