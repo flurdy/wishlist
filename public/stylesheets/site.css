@@ -1,0 +1,160 @@
+/* 
+    Document   : site
+    Created on : Sep 16, 2009, 9:08:21 AM
+    Author     : ivar
+    Description:
+*/
+/* borders */
+/* ship borders */
+#tug > .compartment > iframe, #tug > .compartment img ,
+#net > .compartment > iframe, #net > .compartment img ,
+#ama > .compartment > iframe, #ama > .compartment img,
+#lighthouse  > .compartment, #buoy  > .compartment,
+#hull {
+	border: 0.2em outset silver;
+}
+
+/* rounding & shadows */
+#tug > .compartment > iframe, #tug > .compartment img ,
+#net > .compartment > iframe, #net > .compartment img ,
+#ama > .compartment > iframe, #ama > .compartment img ,
+#hull {
+	border-radius: 20px;
+	-webkit-border-radius: 20px;
+	-moz-border-radius: 20px;
+}
+
+ #lighthouse  > .compartment {
+	border-top-width: 0.1em;
+	border-bottom-right-radius: 20px;
+	border-bottom-left-radius:  20px;
+	-moz-border-radius-bottomleft: 20px;
+	-moz-border-radius-bottomright: 20px;
+	-webkit-border-bottom-left-radius: 20px;
+	-webkit-border-bottom-right-radius: 20px;
+}
+
+#tug > .compartment > iframe, #tug > .compartment img ,
+#net > .compartment > iframe, #net > .compartment img ,
+#ama > .compartment > iframe, #ama > .compartment img ,
+#lighthouse  > .compartment, #buoy  > .compartment,
+#hull {
+	box-shadow: 10px 10px 15px -5px #333333;
+	-webkit-box-shadow: 10px 10px 15px -5px #333333;
+	-moz-box-shadow: 10px 10px 15px -5px #333333;
+}
+
+/* internal */
+#stern { border-top: 1px solid silver; }
+#bow { border-bottom: 1px solid silver;  }
+#port, #hatch { border-right: 1px solid silver;  }
+#starboard, #deck { border-left: 1px solid silver;  }
+
+
+/* colours */
+/*
+ 225599
+ 0053cf
+ 335577
+*/
+body {  background-color: #444444;  color: white; }
+#hull { background-color: #ffffff;  }
+#bow {   }
+#tug > .compartment > iframe, #tug > .compartment img ,
+#net > .compartment > iframe, #net > .compartment img ,
+#ama > .compartment > iframe, #ama > .compartment img,
+#lighthouse  > .compartment, #buoy  > .compartment {
+	background-color: #ffffff;
+}
+
+
+/* dimensions   */
+.structure {  }
+.compartment { padding: 0.2em 1em; }
+body {  }
+#ocean { margin: 0.2em 0.1em 0.1em 1em; }
+#ballast { min-width: 35em; max-width: 60em; padding: 0.5em 2em 2em 2em; min-height: 24em;  }
+
+#port {  width: 1em; min-width: 1em; }
+#starboard {  width: 4em; min-width: 4em;   }
+#hatch { width: 4em; min-width: 4em;   }
+#deck { width: 4em; min-width: 4em;  }
+
+#port.compartment ,
+#starboard.compartment ,
+#hatch.compartment ,
+#deck.compartment  {  padding: 0.2em 0.2em; }
+#innerhull { padding: 0; margin: 0; }
+#prow.compartment  {  
+	padding: 0 2em;
+	vertical-align: top;
+	height: 0;
+}
+#bridge.compartment  {  padding: 0 0; }
+#cargo.compartment  {  padding: 0.2em 0; }
+
+#ama { padding: 0.3em 0 0 1em;  }
+#tug > .compartment { margin: 0 0 0.5em 0; text-align: center; }
+#net > .compartment { margin: 0.5em 0 0 0; text-align: center; }
+#ama > .compartment { min-height: 24em; text-align: center;  }
+#tug > .compartment > iframe, #tug > .compartment img ,
+#net > .compartment > iframe, #net > .compartment img {
+	margin: 0; padding: 0.2em; }
+#ama > .compartment > iframe, #ama > .compartment img {
+	margin: 0; padding: 0.2em; }
+
+
+
+/* structure */
+root { }
+html { }
+body {  }
+#ocean { font-family: Arial, sans-serif, serif;  }
+#fleet {  }
+#regatta {  }
+#ship {  }
+#vaka {  }
+#hull {  }
+#keel {  }
+#innerhull { vertical-align: top; }
+#bulkhead {  }
+#ballast {  }
+
+/* compartments */
+#prow { }
+#bow { }
+#lookout {   }
+#port {   }
+#starboard {    }
+#jib {  }
+#hatch {    }
+#deck {   }
+#cockpit {  }
+#aft {  }
+#stern {   }
+#anchor { }
+
+#cargo { }
+
+/* flotilla */
+#lighthouse {  }
+#buoy {  }
+#tug {  }
+#net {  }
+#ama {  }
+
+#lighthouse > .compartment { min-width: 10em; width: 20em; margin: 0 auto;}
+#lighthouse > .compartment2 { min-width: 15em; }
+#buoy > .compartment {  }
+#tug > .compartment {  }
+#net > .compartment {  }
+#ama > .compartment {  }
+
+
+#tug > .compartment > iframe, #tug > .compartment img,
+#net > .compartment > iframe, #net > .compartment img,
+#ama > .compartment > iframe, #ama > .compartment img { padding: 0.5em; }
+
+
+#starboard, #tug, #net, #ama, #hatch, #deck, #port,
+#foremast, #lighthouse, #buoy { display: none; }

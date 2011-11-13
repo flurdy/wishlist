@@ -1,0 +1,46 @@
+/* 
+    Document   : grid
+    Created on : Sep 16, 2009, 9:08:21 AM
+    Author     : ivar
+    Description:
+*/
+
+/* ****  flurdy's nautical layout  ******* */
+
+root {  }
+html { height: 100%; }
+body { width: 98%; height: 98%; padding: 0; margin: 0; }
+#ocean { display: table; width: 100%; height: 100%; margin: 0 auto; }
+#fleet { display: table-cell; vertical-align: middle; }
+#regatta { display: table; margin: auto; }
+#ship { display: table-cell; vertical-align: top; }
+#vaka { display: table-row; }
+#hull { display: table-cell; }
+#keel { display: table; }
+#innerhull { }
+#bulkhead { display: table; }
+#ballast { }
+
+
+#prow { }
+#figurehead { }
+#bow { }
+#lookout { }
+#port { display: table-cell; }
+#starboard { display: table-cell; }
+#jib { }
+#foremast { }
+#hatch { display: table-cell; }
+#deck { display: table-cell; }
+#bridge { }
+#aft { }
+#stern { }
+#anchor { }
+
+#cargo { }
+
+#tug { display: table-row; }
+#lighthouse { display: table-row; }
+#ama { display: table-cell; }
+#net { display: table-row; }
+#buoy { display: table-row; }

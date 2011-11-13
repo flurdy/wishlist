@@ -1,0 +1,104 @@
+
+#bow, #cargo { color: black; }
+
+#bow {
+    text-align: center;
+	margin: 0 0 0 0;
+	padding: 0.2em 1em 0.5em 1.5em;
+	height: 1em;
+	font-size: 2.5em;
+	font-weight: bold;
+}
+#bow img { float: right; height: 1em; padding: 0.2em;}
+
+#stern {
+    text-align: center;
+	margin: 0 0 0 0;
+	padding: 0.2em 0.2em;
+	font-size: 0.4em;
+	color: gray;
+}
+#stern img#flurdyLink { padding: 0.3em 1em; width: 5em; float: left; }
+#stern #nodesigner { padding: 0.6em; }
+
+#cargo a { color: black; }
+#cargo a:visited { color: black; }
+#cargo a:visited:hover { color: black; }
+#cargo a:hover { color: #aaffaa; }
+#cargo a:active { color: #ffaaaa; }
+
+#aft { text-align: right; }
+
+ul.horizontal {
+	margin: 0;
+}
+ul.horizontal li {
+	display: inline;
+	padding-right: 20px;
+	list-style: none;
+}
+
+#lookout ul.horizontal { text-align: left; padding: 0 2em 0 0; }
+#lookout ul.horizontal li { font-size: 1.1em; font-weight: bold; padding: 0 1em; }
+#lookout ul.horizontal li a,
+#lookout ul.horizontal li a:visited { text-decoration: none; color: black; }
+#lookout ul.horizontal li a:hover { text-decoration: underline; color: black; }
+#lookout ul.horizontal li a:active { text-decoration: underline; color: #aa0000; }
+
+#aft ul.horizontal { }
+#aft ul.horizontal li { font-size: 0.8em; font-weight: bold; }
+#aft ul.horizontal li a { text-decoration: none; color: black; }
+#aft ul.horizontal li a:hover,
+#aft ul.horizontal li a:active { text-decoration: underline; color: blue; }
+
+
+ul.vertical { padding: 0.1em; }
+ul.vertical li { list-style: none; white-space: nowrap; }
+ul.vertical li a { }
+
+#hatch { vertical-align: top; }
+#hatch ul.vertical { vertical-align: top; }
+#hatch ul.vertical li { font-size: 0.8em; font-weight: bold; padding: 0.2em 0.2em; }
+#hatch ul.vertical li button { width: 100%; }
+
+
+#jib { text-align: center; }
+#jib h2 { font-size:1.4em; margin:0.05em 0.2em; }
+
+#foremast { text-align: center; }
+#foremast > img { width: 36em; height: 3em; }
+
+#tug > .compartment > iframe, #tug > .compartment img,
+#net > .compartment > iframe, #net > .compartment img { width: 36em; height: 3em; }
+#ama > .compartment > iframe, #ama > .compartment img { width: 6em; height: 27em; }
+
+#lighthouse > .compartment { height: 0.5em; }
+
+
+#port {  }
+.rotatemenu { margin: 1em 0 0 1em; padding: 0; }
+.rotatemenu li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	width: 1em;
+	height: 4em;
+	font-size: 1.3em;
+	font-weight: bold;
+	left: 1em;
+	position: relative;
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+	-o-transform: rotate(-90deg);
+}
+.rotatemenu li a { text-decoration: none; color: black; }
+.rotatemenu li a:hover { text-decoration: underline; }
+
+#prow { 
+	font-size: 0.6em;
+	text-align: right;
+}
+#prow a { text-decoration:  none; color: black; }
+#prow a:hover { text-decoration:  underline; color: blue; }
+
