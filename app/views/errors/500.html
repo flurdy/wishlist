@@ -1,21 +1,23 @@
-<!DOCTYPE html>
+#{set title:'500 error'/}
 
-<html>
-    <head>
-        <title>Application error</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=${_response_encoding}"/>	
-    </head>
-    <body>
-        #{if play.mode.name() == 'DEV'}
-            #{500 exception /}
+#{if play.mode.name() == 'DEV'}
+   <html><body> #{500 exception /} </body></html>
+#{/if}
+#{else}
+#{extends 'nautical-grid.html' /}
+
+        <h2>Doh! An error occured!</h2>
+        <p>
+            What did you do?!!
+        </p>
+        <p>
+            Ok, probably something we did,
+            or that bloke over there did it. Lets blame him.
+        </p>
+        #{if exception instanceof play.exceptions.PlayException}
+            <p>
+                This exception has been logged with id <strong>${exception.id}</strong>.
+            </p>
         #{/if}
-        #{else}
-            <h1>Oops, an error occured</h1>
-            #{if exception instanceof play.exceptions.PlayException}
-                <p>
-                    This exception has been logged with id <strong>${exception.id}</strong>.
-                </p>
-            #{/if}
-        #{/else}
-    </body>
-</html>
+
+#{/else}

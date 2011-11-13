@@ -4,6 +4,16 @@
 
 # Home page
 GET     /                                       Application.index
+GET     /index.html                             Application.index
+GET     /about.html                             Application.about
+GET     /contact/                               Application.contact
+
+
+
+GET     /{username}/wishlists/?                    WishController.listWishlists
+GET     /{username}/wishlists/{listId}/?           WishController.showWishlist
+
+
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
