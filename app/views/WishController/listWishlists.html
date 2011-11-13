@@ -1,11 +1,13 @@
 #{extends 'nautical-grid.html' /}
-#{set title:'Home' /}
+#{set title:'Wishlist' /}
 
+<h3>Recipient: ${recipient.fullname} (${recipient.username})</h3>
 
-
-<h3>Wish list</h3>
+<h3>Wishlists</h3>
 <div>
     <ul>
-        <li><a href="@{WishController.showWishlist('testuser','123')}">testuser</a></li>
+    #{list wishlists, as:'wishlist'}
+        <li><a href="@{WishController.showWishlist(wishlist.recipient.username,wishlist.id)}">${wishlist.title}</a> for ${wishlist.recipient.fullname}</li>
+    #{/list}
     </ul>
 </div>

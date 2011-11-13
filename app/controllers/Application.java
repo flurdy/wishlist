@@ -10,7 +10,9 @@ import models.*;
 public class Application extends Controller {
 
     public static void index() {
-        render();
+        List<User> users = User.findAll();
+        List<Wishlist> wishlists= Wishlist.findAll();
+        render(users,wishlists);
     }
 
     public static void about() {

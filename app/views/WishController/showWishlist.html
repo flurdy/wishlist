@@ -3,19 +3,15 @@
 
 <h2>Wishlist</h2>
 
+<h3>Recipient: ${recipient.fullname} (${recipient.username})</h3>
 
-<ul>
-#{list 'wishes', item:'wish'}
-
+<h3>Wishes</h3>
+<ol>
+#{list wishlist.wishes, as:'wish'}
     <li>
         <div>
-
-        </div>
-        <div>
-
+            ${wish.title}
         </div>
     </li>
-
-
 #{/list}
-</ul>
+</ol>
