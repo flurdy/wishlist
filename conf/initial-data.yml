@@ -19,10 +19,14 @@ Wishlist(list2):
 
 Wish(wish1):
     title: Teddy bear
+    description: >
+        Must be cuddly
     wishlist: list1
 
 Wish(wish2):
     title: Socks
+    description: >
+        Normal black socks
     wishlist: list2
 
 Wish(wish3):
@@ -31,5 +35,12 @@ Wish(wish3):
 
 Wish(wish4):
     title: Tennis racket
+    description: >
+        The silver one
+        Blah blah blahaha Blah blah blahaha Blah blah blahaha Blah blah blahaha
+        Blah blah blahaha Blah blah blahaha Blah blah blahaha Blah blah blahaha
+        Blah blah blahaha Blah blah blahaha Blah blah blahaha Blah blah blahaha
+        Blah blah blahaha Blah blah blahaha Blah blah blahaha Blah blah blahaha
+        Blah blah blahaha Blah blah blahaha Blah blah blahaha Blah blah blahaha
     wishlist: list2
 

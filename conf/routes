@@ -12,6 +12,7 @@ GET     /contact/                               Application.contact
 
 GET     /{username}/wishlists/?                    WishController.listWishlists
 GET     /{username}/wishlists/{listId}/?           WishController.showWishlist
+GET     /{username}/wishlists/{listId}/wishes/{wishid}/?           WishController.showWish
 
 
 

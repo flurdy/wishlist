@@ -18,7 +18,7 @@
 	font-size: 0.4em;
 	color: gray;
 }
-#stern img#flurdyLink { padding: 0.3em 1em; width: 5em; float: left; }
+#stern img#flurdyLink { padding: 0.3em 2em; height: 2em; width: 5em; float: left; }
 #stern #nodesigner { padding: 0.6em; }
 
 #cargo a { color: black; }

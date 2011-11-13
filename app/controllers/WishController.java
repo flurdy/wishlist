@@ -1,6 +1,7 @@
 package controllers;
 
 import models.User;
+import models.Wish;
 import models.Wishlist;
 import play.mvc.Controller;
 
@@ -20,6 +21,15 @@ public class WishController extends Controller {
         final User recipient = User.find("byUsername",username).first();
         final Wishlist wishlist= Wishlist.findById(listId);
         render(recipient,wishlist);
+    }
+
+
+
+    public static void showWish(String username, Long listId, Long wishId){
+        final User recipient = User.find("byUsername",username).first();
+        final Wishlist wishlist= Wishlist.findById(listId);
+        final Wish wish= Wish.findById(wishId);
+        render(recipient,wishlist,wish);
     }
 
 
