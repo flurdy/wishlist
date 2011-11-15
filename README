@@ -1,7 +1,7 @@
 Website: wishlist.sourceforge.net
 Project: sourceforge.net/projects/wishlist
 Wiki: sf.net/apps/mediawiki/wishlist/
-Source: github.com/flurdy/wishlist
+Source: wishlist.hg.sourceforge.net/hgweb/wishlist/ | github.com/flurdy/wishlist
 Tasks: pivotaltracker.com/projects/101944 
 Bugs: sf.net/apps/trac/wishlist/
 License: AGPL v3
