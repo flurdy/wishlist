@@ -2,12 +2,14 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+*     /admin           module:crud
+*     /     module:secure
+
 # Home page
 GET     /                                       Application.index
 GET     /index.html                             Application.index
 GET     /about.html                             Application.about
 GET     /contact/                               Application.contact
-
 
 
 GET     /{username}/wishlists/?                    WishController.listWishlists

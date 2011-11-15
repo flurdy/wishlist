@@ -1,10 +1,13 @@
 User(user1):
     username: testuser
     fullname: Test User
+    password: 1234
+    admin: true
 
 User(user2):
     username: seconduser
     fullname: Second User
+    password: 1234
 
 
 Wishlist(list1):

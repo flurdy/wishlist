@@ -22,4 +22,8 @@ public class Wishlist extends Model {
      @OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL)
     public List<Wish> wishes;
 
+    @Override
+    public String toString() {
+        return title + " by " + recipient.username;
+    }
 }
