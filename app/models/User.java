@@ -28,9 +28,9 @@ public class User extends Model {
     @Required
     public String password;
 
-    public boolean admin;
+    public boolean isAdmin;
 
-    public boolean superUser;
+    public boolean isSuperUser;
 
     public static User connect(String username, String password){
         return find("byUsernameAndPassword",username,password).first();

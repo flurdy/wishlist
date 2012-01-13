@@ -2,7 +2,8 @@ User(user1):
     username: testuser
     fullname: Test User
     password: 1234
-    admin: true
+    isAdmin: true
+    isSuperUser: true
 
 User(user2):
     username: seconduser

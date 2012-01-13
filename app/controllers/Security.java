@@ -10,9 +10,9 @@ public class Security extends Secure.Security {
 
     static boolean check(String profile){
         if("admin".equalsIgnoreCase(profile)){
-            return User.find("byUsername",connected()).first().isAdmin();
-        } else if("super".equalsIgnoreCase(profile)){
-            return User.find("byUsername",connected()).first().isSuper();
+            return User.find("byUsername",connected()).<User>first().isAdmin;
+        } else if("superUser".equalsIgnoreCase(profile)){
+            return User.find("byUsername",connected()).<User>first().isSuperUser;
         }
         return false;
     }
