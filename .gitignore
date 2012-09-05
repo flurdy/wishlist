@@ -4,6 +4,11 @@
 /test-result
 /out
 /logs
-.idea
+/.idea*
 /server.pid
 /*.iml
+/project/project
+/project/target
+/target
+.history
+/dist
