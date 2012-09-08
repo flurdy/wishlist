@@ -13,6 +13,10 @@ object Application extends Controller {
 
   def register = TODO
 
+  def redirectToRegisterForm = Action {
+  	Ok(views.html.application.register())
+  }
+
   def showRegisterForm = Action {
   	Ok(views.html.application.register())
   }

@@ -1,4 +1,5 @@
-@()
+
+@import helper._ 
 
 @nautical("login") {
 	<div id="login-page">
@@ -6,8 +7,8 @@
 		<h2>Log in</h2>
 
 		<div class="well">	
-			<form class="form-horizontal">
-				<div class="control-group" id="username-row">
+			@form(action = routes.Application.login(), 'class -> "form-horizontal") {
+					<div class="control-group" id="username-row">
     				<label class="control-label" for="inputUsername">Username or<br/> email address</label>
 					<div class="controls"> 
 						<input type="text" class="input-xlarge" id="inputUsername" placeholder="Your email address or username"/>
@@ -24,7 +25,7 @@
 						<button type="submit" class="btn btn-primary input-small">log in</button>
 					</div>
 				</div>
-			</form>
+			}
 		</div>
 
 	
