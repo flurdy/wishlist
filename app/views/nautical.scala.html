@@ -4,15 +4,13 @@
 
 <html>
     <head>
-        <title>wishlist: @title</title>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/grid.css")"
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/site.css")"
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/cargo.css")">
-        <link rel="shortcut icon" href="@routes.Assets.at("images/favicon.ico")">
+        <title>Wishlist @title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/grid.css")"/>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/site.css")"/>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/cargo.css")"/>
+        <link rel="shortcut icon" href="@routes.Assets.at("images/favicon.ico")"/>
         <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
     </head>
-    <body>
-
     <body>
         <div id="ocean" class="structure">
             <div id="fleet" class="structure">
@@ -20,7 +18,15 @@
                     <div id="ship" class="structure">
                         <div id="hull" class="structure">
                             <div id="vaka" class="structure">
-
+                                <div id="bow" class="compartment">
+                                    <img src="@routes.Assets.at("images/wish.gif")"/>
+                                    <h2>Wishlist</h2>
+                                </div>
+                                <div id="lookout" class="compartment">
+                                    <ul class="horizontal">
+                                        <li><a href="#">Home</a></li>
+                                    </ul>
+                                </div>
                                  <div id="keel" class="structure">
                                     <div id="innerhull" class="structure">
                                         <div id="bulkhead" class="structure">
@@ -34,8 +40,17 @@
                                         </div>
                                     </div>
                                 </div>
-
-        
+                                <div id="aft" class="compartment">
+                                    <ul class="horizontal">
+                                        <li><a href="#">About</a></li>
+                                        <li><a href="http://wishlist.sourceforge.net">Project</a></li>
+                                        <li><a href="#">Contact</a></li>
+                                    </ul>
+                                </div>
+                                <div id="stern" class="compartment">
+                                    <a href="http://flurdy.com" title="By flurdy: open source hobby projects"><img id="flurdyLink"
+                                        src="@routes.Assets.at("images/flurdy_warped_dual_small.png")"/></a>
+                                </div>
                             </div>
                         </div>
                     </div>

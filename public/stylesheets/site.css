@@ -19,9 +19,9 @@
 #net > .compartment > iframe, #net > .compartment img ,
 #ama > .compartment > iframe, #ama > .compartment img ,
 #hull {
-	border-radius: 20px;
-	-webkit-border-radius: 20px;
-	-moz-border-radius: 20px;
+	border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
 }
 
  #lighthouse  > .compartment {
@@ -45,8 +45,8 @@
 }
 
 /* internal */
-#stern { border-top: 1px solid silver; }
-#bow { border-bottom: 1px solid silver;  }
+#aft { border-top: 1px solid silver; }
+#lookout { border-bottom: 1px solid silver;  }
 #port, #hatch { border-right: 1px solid silver;  }
 #starboard, #deck { border-left: 1px solid silver;  }
 

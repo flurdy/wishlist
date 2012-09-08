@@ -4,12 +4,13 @@
 #bow {
     text-align: center;
 	margin: 0 0 0 0;
-	padding: 0.2em 1em 0.5em 1.5em;
+	padding: 0.1em 0.2em 0 0.2em;
 	height: 1em;
 	font-size: 2.5em;
 	font-weight: bold;
 }
 #bow img { float: right; height: 1em; padding: 0.2em;}
+#bow h2 { font-size: 1em; font-weight: bold; margin: 0 0.5em; padding: 0 0.5em; }
 
 #stern {
     text-align: center;
@@ -18,7 +19,7 @@
 	font-size: 0.4em;
 	color: gray;
 }
-#stern img#flurdyLink { padding: 0.3em 2em; height: 2em; width: 5em; float: left; }
+#stern img#flurdyLink { padding: 0.3em 1em; height: 1.5em; width: 4em; float: left; }
 #stern #nodesigner { padding: 0.6em; }
 
 #cargo a { color: black; }
