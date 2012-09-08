@@ -1,28 +1,16 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
-
-*     /admin           module:crud
-*     /     module:secure
-
-# Home page
-GET     /                                       Application.index
-GET     /index.html                             Application.index
-GET     /about.html                             Application.about
-GET     /contact/                               Application.contact
-
-
-GET     /{username}/wishlists/?                    WishController.listWishlists
-GET     /{username}/wishlists/{listId}/?           WishController.showWishlist
-GET     /{username}/wishlists/{listId}/wishes/{wishid}/?           WishController.showWish
 
 
 
-# Ignore favicon requests
-GET     /favicon.ico                            404
+# GET     /{username}/wishlists/?                    WishController.listWishlists
+# GET     /{username}/wishlists/{listId}/?           WishController.showWishlist
+# GET     /{username}/wishlists/{listId}/wishes/{wishid}/?           WishController.showWish
 
-# Map static resources from the /app/public folder to the /public path
-GET     /public/                                staticDir:public
 
-# Catch all
-*       /{controller}/{action}                  {controller}.{action}
+
+GET		/									controllers.Application.index
+
+
+
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+
