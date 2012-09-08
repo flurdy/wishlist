@@ -1,5 +1,6 @@
-package models;
+package models
 
+/*
 import play.db.jpa.Model;
 
 import javax.persistence.CascadeType;
@@ -27,3 +28,4 @@ public class Wishlist extends Model {
         return title + " by " + recipient.username;
     }
 }
+*/

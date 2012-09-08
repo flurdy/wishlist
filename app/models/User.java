@@ -1,5 +1,6 @@
-package models;
+package models
 
+/*
 import play.data.validation.Email;
 import play.data.validation.MinSize;
 import play.data.validation.Password;
@@ -41,3 +42,4 @@ public class User extends Model {
         return username;
     }
 }
+*/

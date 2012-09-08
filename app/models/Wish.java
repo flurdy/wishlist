@@ -1,5 +1,15 @@
-package models;
+package models
 
+
+class Wish {
+
+}
+
+object Wish {
+    
+}
+
+/*
 import play.data.validation.MaxSize;
 import play.db.jpa.Model;
 
@@ -24,3 +34,4 @@ public class Wish extends Model{
         return title;
     }
 }
+*/
