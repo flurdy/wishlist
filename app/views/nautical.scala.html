@@ -26,7 +26,7 @@
                                 </div>
                                 <div id="lookout" class="compartment">
                                     <ul class="horizontal">
-                                        <li><a href="#">Home</a></li>
+                                        <li><a href="@routes.Application.index">Home</a></li>
                                     </ul>
                                 </div>
                                  <div id="keel" class="structure">
@@ -44,9 +44,9 @@
                                 </div>
                                 <div id="aft" class="compartment">
                                     <ul class="horizontal">
-                                        <li><a href="#">About</a></li>
+                                        <li><a href="@routes.Application.about">About</a></li>
                                         <li><a href="http://wishlist.sourceforge.net">Project</a></li>
-                                        <li><a href="#">Contact</a></li>
+                                        <li><a href="@routes.Application.contact">Contact</a></li>
                                     </ul>
                                 </div>
                                 <div id="stern" class="compartment">
@@ -61,58 +61,3 @@
         </div>
     </body>
 </html>
-
-
-@***
-    </head>
-    <body>
-        <div id="ocean" class="structure">
-            <div id="fleet" class="structure">
-                <div id="regatta" class="structure">
-                    <div id="ship" class="structure">
-                        <div id="hull" class="structure">
-                            <div id="vaka" class="structure">
-                                <div id="bow" class="compartment">
-                                    <img src="@{'/public/images/wish.gif'}" />
-                                    #{ifnot request.domain=='localhost2'}
-                                        wishlist.sf.net
-                                    #{/ifnot}
-                                </div>
-                                <div id="lookout" class="compartment">
-                                    <ul class="horizontal">
-                                        <li><a href="@{Application.index}">Home</a></li>
-                                    </ul>
-                                </div>
-                                <div id="keel" class="structure">
-                                    <div id="innerhull" class="structure">
-                                        <div id="bulkhead" class="structure">
-                                            <div id="ballast" class="structure">
-                                                <div id="cargo" class="compartment">
-
-        #{doLayout /}
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="aft" class="compartment">
-                                    <ul class="horizontal">
-                                        <li><a href="@{Application.about}">About</a></li>
-                                        <li><a href="http://wishlist.sourceforge.net">Project</a></li>
-                                        <li><a href="@{Application.contact}">Contact</a></li>
-                                    </ul>
-                                </div>
-                                <div id="stern" class="compartment">
-                                    <a href="http://flurdy.com" title="By flurdy: open source hobby projects"><img id="flurdyLink"
-                                        src="@{'/public/images/flurdy_warped_dual_small.png'}"/></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-</html>
-**@

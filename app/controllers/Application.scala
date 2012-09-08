@@ -6,11 +6,14 @@ import play.api.mvc._
 object Application extends Controller {
   
   def index = Action {
-        // List<User> users = User.findAll();
-        // List<Wishlist> wishlists= Wishlist.findAll();
     Ok(views.html.index())
   }
 
+  def search = TODO
+
+  def register = TODO
+
+  def login = TODO
     
    def about = TODO
    
