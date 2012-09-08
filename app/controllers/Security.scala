@@ -1,5 +1,5 @@
-package controllers;
-
+package controllers
+/*
 import models.User;
 
 public class Security extends Secure.Security {
@@ -17,3 +17,4 @@ public class Security extends Secure.Security {
         return false;
     }
 }
+*/

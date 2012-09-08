@@ -1,4 +1,6 @@
-package controllers;
+package controllers
+
+/*
 
 import models.User;
 import models.Wish;
@@ -34,3 +36,4 @@ public class WishController extends Controller {
 
 
 }
+*/
