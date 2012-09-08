@@ -9,11 +9,11 @@
 
 GET		/									controllers.Application.index
 
-GET		/login							controllers.Application.showLoginForm
+GET		/login/							controllers.Application.showLoginForm
 POST		/login/							controllers.Application.login
 GET		/login.html						controllers.Application.showLoginForm
 POST		/register/						controllers.Application.register
-GET		/register						controllers.Application.showRegisterForm
+GET		/register/						controllers.Application.showRegisterForm
 GET		/register.html					controllers.Application.showRegisterForm
 POST		/register.html					controllers.Application.redirectToRegisterForm
 

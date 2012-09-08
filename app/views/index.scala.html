@@ -21,7 +21,7 @@
 
 		<div class="well" id="search-box">	
 			@form(action = routes.Application.search(), 'class -> "form-search", 'method -> "get"){
-				<input type="text" class="input-xlarge span4 search-query" placeholder="Partial title of wishlist or recipient"/>
+				<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient"/>
 				<button type="submit" class="btn btn-primary input-small">search</button> 
 			}
 		</div>
@@ -29,7 +29,7 @@
 
 		<div class="well" id="register-box">	
 			@form(action = routes.Application.redirectToRegisterForm(), 'class -> "form-inline"){
-				<input type="text" class="input-xlarge span4" placeholder="Your email address" name="email"/>
+				<input type="text" class="input-xlarge span4" placeholder="Your email address or desired username" name="email"/>
 				<button type="submit" class="btn btn-info input-small">register</button> 
 			}
 		</div>

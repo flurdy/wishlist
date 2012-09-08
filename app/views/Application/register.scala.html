@@ -1,4 +1,4 @@
-@()
+@(registerForm:Form[(String,Option[String],String,String,String)])(implicit flash:Flash)
 
 @import helper._
 
@@ -7,36 +7,60 @@
 	    
 		<h2>Register</h2>
 
+
+	    @flash.get("message").map { message =>
+	    <p class="alert alert-info">
+	        @message
+	    </p>
+	    }
+
+	    @flash.get("warningMessage").map { message =>
+	    <p class="alert alert-warning">
+	        @message
+	    </p>
+	    }
+
+	    @flash.get("errorMessage").map { message =>
+	    <p class="alert alert-error">
+	        @message
+	    </p>
+	    }
+	    @for(error <- registerForm.errors){
+	    <p class="alert alert-error">
+	        @error.message: @error.key
+	    </p>
+	    }
+
 		<div class="well">	
 			@form(action = routes.Application.register(), 'class -> "form-horizontal") {
 				<div class="control-group">
     				<label class="control-label" for="inputFullName">Your name</label>
 					<div class="controls"> 
-						<input type="text" class="input-large" id="inputFullName" placeholder="Your name"/>
+						<input type="text" class="input-large" id="inputFullName" name="fullname" placeholder="Your name" value="@registerForm("fullname").value"/>
 					</div>
 				</div>
 				<div class="control-group">
     				<label class="control-label" for="inputUsername">Username</label>
 					<div class="controls"> 
-						<input type="text" class="input-large" id="inputUsername" placeholder="Your desired username"/>
+						<input type="text" class="input-large" id="inputUsername" name="username" placeholder="Your desired username"value="@registerForm("username").value"/>
 					</div>
 				</div>
 				<div class="control-group">
     				<label class="control-label" for="inputEmail">Email address</label>
 					<div class="controls"> 
-						<input type="text" class="input-large" id="inputEmail" placeholder="Your email address"/>
+						<input type="text" class="input-large" id="inputEmail" name="email" placeholder="Your email address"value="@registerForm("email").value"/>
 					</div>
 				</div>
 				<div class="control-group">
    				<label class="control-label" for="inputPassword">Password</label>
 					<div class="controls"> 
-						<input type="password" class="input-large" id="inputPassword" placeholder="Your password"/>
+						<input type="password" class="input-large" id="inputPassword" name="password" placeholder="Your password"/>
 					</div>
 				</div>
 				<div class="control-group">
    				<label class="control-label" for="inputPasswordConfirm">Confirm password</label>
 					<div class="controls"> 
-						<input type="password" class="input-large" id="inputPasswordConfirm"  placeholder="Your password again"/>
+						<input type="password" class="input-large" id="inputPasswordConfirm" name="confirm" placeholder="Your password again"/>
 					</div>
 				</div>
 				<div class="control-group">
