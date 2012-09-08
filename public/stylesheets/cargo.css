@@ -4,7 +4,7 @@
 #bow {
     text-align: center;
 	margin: 0 0 0 0;
-	padding: 0.1em 0.2em 0 0.2em;
+	padding: 0.2em 0.2em 0 0.2em;
 	height: 1em;
 	font-size: 2.5em;
 	font-weight: bold;
@@ -22,11 +22,13 @@
 #stern img#flurdyLink { padding: 0.3em 1em; height: 1.5em; width: 4em; float: left; }
 #stern #nodesigner { padding: 0.6em; }
 
+/*
 #cargo a { color: black; }
 #cargo a:visited { color: black; }
 #cargo a:visited:hover { color: black; }
 #cargo a:hover { color: #aaffaa; }
 #cargo a:active { color: #ffaaaa; }
+*/
 
 #aft { text-align: right; }
 
@@ -57,6 +59,7 @@ ul.vertical { padding: 0.1em; }
 ul.vertical li { list-style: none; white-space: nowrap; }
 ul.vertical li a { }
 
+/*
 #hatch { vertical-align: top; }
 #hatch ul.vertical { vertical-align: top; }
 #hatch ul.vertical li { font-size: 0.8em; font-weight: bold; padding: 0.2em 0.2em; }
@@ -102,20 +105,22 @@ ul.vertical li a { }
 }
 #prow a { text-decoration:  none; color: black; }
 #prow a:hover { text-decoration:  underline; color: blue; }
-
+*/
 
 #cargo .well-header {  font-size: 1.2em; font-weight: bold; }
 #cargo a { text-decoration: underline; }
 
 
 #cargo .well { padding-bottom: 0; }
-#cargo .form-horizontal .controls { margin-left: 0; }
+#cargo #index-page .form-horizontal .controls { margin-left: 0; }
 .form-horizontal .control-group { margin-bottom: 0; }
 
-#cargo #login-box button { float: right; }
 #cargo .btn { float: right; }
+#cargo #register-page lafbel { width: 10em; }
 
+#cargo h2 { margin: 0.3em 0.5em; }
 
+#cargo #login-page #username-row .controls { padding-top: 0.7em; }
 
 
 

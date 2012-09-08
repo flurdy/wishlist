@@ -13,8 +13,16 @@ object Application extends Controller {
 
   def register = TODO
 
+  def showRegisterForm = Action {
+  	Ok(views.html.application.register())
+  }
+
   def login = TODO
     
+  def showLoginForm = Action {
+  	Ok(views.html.application.login())
+  }
+
    def about = TODO
    
    def contact = TODO
