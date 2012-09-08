@@ -1,28 +1,52 @@
+@(title: String)(content: Html)
+
 <!DOCTYPE html>
+
 <html>
     <head>
-        <title>#{get 'title' /}</title>
-        <meta charset="${_response_encoding}">
-        <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/grid.css'}">
-        <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/site.css'}">
-        <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/cargo.css'}">
-        #{get 'moreStyles' /}
-        <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.ico'}">
-        <script src="@{'/public/javascripts/jquery-1.6.2.min.js'}" type="text/javascript" charset="${_response_encoding}"></script>
-        #{get 'moreScripts' /}
-   *{** #{ifnot request.domain=='localhost'}
-        <script type="text/javascript">
-          var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', 'UA-']);
-          _gaq.push(['_trackPageview']);
+        <title>wishlist: @title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/grid.css")"
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/site.css")"
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/cargo.css")">
+        <link rel="shortcut icon" href="@routes.Assets.at("images/favicon.ico")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+    </head>
+    <body>
 
-          (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-          })();
-        </script>
-    #{/ifnot} **}*
+    <body>
+        <div id="ocean" class="structure">
+            <div id="fleet" class="structure">
+                <div id="regatta" class="structure">
+                    <div id="ship" class="structure">
+                        <div id="hull" class="structure">
+                            <div id="vaka" class="structure">
+
+                                 <div id="keel" class="structure">
+                                    <div id="innerhull" class="structure">
+                                        <div id="bulkhead" class="structure">
+                                            <div id="ballast" class="structure">
+                                                <div id="cargo" class="compartment">
+
+        @content
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+
+@***
     </head>
     <body>
         <div id="ocean" class="structure">
@@ -74,3 +98,4 @@
         </div>
     </body>
 </html>
+**@
