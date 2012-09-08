@@ -103,3 +103,19 @@ ul.vertical li a { }
 #prow a { text-decoration:  none; color: black; }
 #prow a:hover { text-decoration:  underline; color: blue; }
 
+
+#cargo .well-header {  font-size: 1.2em; font-weight: bold; }
+#cargo a { text-decoration: underline; }
+
+
+#cargo .well { padding-bottom: 0; }
+#cargo .form-horizontal .controls { margin-left: 0; }
+.form-horizontal .control-group { margin-bottom: 0; }
+
+#cargo #login-box button { float: right; }
+#cargo .btn { float: right; }
+
+
+
+
+

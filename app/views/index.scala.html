@@ -1,9 +1,68 @@
 @()
 
 @nautical("") {
-    
-	<p>
-		Lorem dipsum
-	</p>
+	<div id="index-page">
+	    
+	   <div class="well">
+			<p>
+				<strong>Wishlist</strong> is the place for people keep their wishlist online, <br/>
+				to easily share their wishes with others, <br/>
+				and for others to quickly find potential gifts for the recipient.  
+			</p>
+			<p>
+				Read more <a href="http://wishlist.sourceforge.net">about the wishlist project</a>
+			</p>
+		</div>
+
+
+		<div class="well" id="search-box">	
+		<!--	
+			<p class="">
+				Search for wishlists or recipient
+			</p>
+		-->
+			<div>
+				<form class="form-search">
+					<input type="text" class="input-xlarge span4 search-query" placeholder="Partial title of wishlist or recipient"/>
+					<button type="submit" class="btn btn-primary input-small">search</button> 
+				</form>
+			</div>
+		</div>
+		
+
+		<div class="well" id="register-box">	
+			<div>
+				<form class="form-inline">
+					<input type="text" class="input-xlarge span4" placeholder="Your email address"/>
+					<button type="submit" class="btn btn-info input-small">register</button> 
+				</form>
+			</div>
+		</div>
+
+
+
+		<div class="well" id="login-box">	
+			<formlc ass="form-horizontal">
+				<div class="control-group">
+					<div class="controls">
+						<button type="submit" class="btn btn-info input-small">Login</button>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls"> 
+						<input type="text" class="input-xlarge span4" placeholder="Your email address or username">
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls"> 
+						<input type="password" class="input-xlarge span4" placeholder="Your password">
+					</div>
+				</div>
+			</form>
+		</div>
+	
+	</div>
+
+
     
 }
