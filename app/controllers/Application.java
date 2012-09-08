@@ -1,26 +1,19 @@
-package controllers;
+package controllers
 
-import play.*;
-import play.mvc.*;
+import play.api._
+import play.api.mvc._
 
-import java.util.*;
+object Application extends Controller {
+  
+  def index = Action {
+        // List<User> users = User.findAll();
+        // List<Wishlist> wishlists= Wishlist.findAll();
+    Ok(views.html.index("Your new application is ready."))
+  }
 
-import models.*;
-
-public class Application extends Controller {
-
-    public static void index() {
-        List<User> users = User.findAll();
-        List<Wishlist> wishlists= Wishlist.findAll();
-        render(users,wishlists);
-    }
-
-    public static void about() {
-        render();
-    }
-
-    public static void contact() {
-        render();
-    }
-
+    
+   def about = TODO
+   
+   def contact = TODO
+  
 }
