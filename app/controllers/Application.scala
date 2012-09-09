@@ -6,7 +6,7 @@ import play.api.data._
 import play.api.data.Forms._
 import models._
 
-object Application extends Controller {
+object Application extends Controller with Secured{
 
 
 	val ValidEmailAddress = """^[0-9a-zA-Z]([+-_\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9}$""".r
@@ -47,12 +47,12 @@ object Application extends Controller {
     	})
 	)	
 
-  def index = Action { implicit request =>
-    Ok(views.html.index())
-  }
+	def index = Action { implicit request =>
+		Ok(views.html.index())
+	}
 
-  def register = Action { implicit request =>
-  	registerForm.bindFromRequest.fold(
+  	def register = Action { implicit request =>
+  		registerForm.bindFromRequest.fold(
         errors => {
           Logger.warn("Registration failed: " + errors)
           BadRequest(views.html.application.register(errors))
@@ -72,7 +72,7 @@ object Application extends Controller {
   }
 
   def redirectToRegisterForm = Action { implicit request =>
-  	simpleRegisterForm.bindFromRequest.fold(
+  		simpleRegisterForm.bindFromRequest.fold(
         errors => {
           BadRequest(views.html.application.register(registerForm))
         },
@@ -88,9 +88,9 @@ object Application extends Controller {
       )
   }
 
-  def showRegisterForm = Action { implicit request =>
-  	Ok(views.html.application.register(registerForm))
-  }
+	def showRegisterForm = Action { implicit request =>
+		Ok(views.html.application.register(registerForm))
+	}
 
 	def showLoginForm = Action { implicit request =>
 		Ok(views.html.application.login(loginForm))
@@ -104,11 +104,14 @@ object Application extends Controller {
 			},
 			loggedInForm => {
 				Logger.debug("Logging in: " + loggedInForm._1)
-				Redirect(routes.Application.index()).flashing("message"->"You have logged in")
+				Redirect(routes.Application.index()).withSession(
+					"username" -> loggedInForm._1).flashing("message"->"You have logged in")
 			}
 		)		
 	}
     
+   def showResetPassword = TODO 
+
    def about = TODO
    
    def contact = TODO
@@ -116,3 +119,40 @@ object Application extends Controller {
 	def search = TODO
   
 }
+
+
+
+trait Secured {
+
+  	def username(request: RequestHeader) = request.session.get(Security.username)
+
+  	def isAuthenticated(f: => String => Request[AnyContent] => Result) = {
+    	Security.Authenticated(username, onUnauthenticated) { username =>
+      	  Action(request => f(username)(request))
+   	}
+  	}
+	
+	private def onUnauthenticated(request: RequestHeader) = {
+		Results.Redirect(routes.Application.showLoginForm)      
+  	}
+
+	implicit def currentParticipant(implicit session: Session): Option[Dreamer] = {
+		session.get(Security.username) match { 
+			case None => None
+			case Some(sessionUsername) => Dreamer.findByUsername( sessionUsername )
+		}
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+

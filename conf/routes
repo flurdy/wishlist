@@ -16,6 +16,7 @@ POST		/register/						controllers.Application.register
 GET		/register/						controllers.Application.showRegisterForm
 GET		/register.html					controllers.Application.showRegisterForm
 POST		/register.html					controllers.Application.redirectToRegisterForm
+GET		/password.html							controllers.Application.showResetPassword
 
 GET		/about.html						controllers.Application.about
 GET		/contact.html					controllers.Application.contact

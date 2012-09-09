@@ -1,4 +1,4 @@
-@()(implicit flash:Flash)
+@()(implicit flash:Flash, currentDreamer: Option[Dreamer])
 
 @import helper._
 
@@ -13,6 +13,7 @@
 	    </p>
 	    }
 	    
+	@if( ! currentDreamer ){
 	   <div class="well">
 			<p>
 				<strong>Wishlist</strong> is the place for people keep their wishlist online, <br/>
@@ -25,7 +26,7 @@
 				Read more <a href="http://wishlist.sourceforge.net">about the wishlist project</a>
 			</p>
 		</div>
-
+	}
 
 		<div class="well" id="search-box">	
 			@form(action = routes.Application.search(), 'class -> "form-search", 'method -> "get"){
@@ -35,6 +36,7 @@
 		</div>
 		
 
+	@if( ! currentDreamer ){
 		<div class="well" id="register-box">	
 			@form(action = routes.Application.redirectToRegisterForm(), 'class -> "form-inline"){
 				<input type="text" class="input-xlarge span4" placeholder="Your email address or desired username" name="email"/>
@@ -43,13 +45,12 @@
 		</div>
 
 
-
 		<div class="well" id="login-box">
 			@form(action = routes.Application.login(), 'class -> "form-horizontal"){	
 				<button type="submit" class="btn btn-info input-small">log in</button>
 				<div class="control-group">
 					<div class="controls"> 
-						<input type="text" class="input-xlarge span4" placeholder="Your email address or username" name="username" />
+						<input type="text" class="input-xlarge span4" placeholder="Your email address" name="username" />
 					</div>
 				</div>
 				<div class="control-group">
@@ -59,6 +60,7 @@
 				</div>
 			}
 		</div>
+	}
 	
 	</div>
 

@@ -115,13 +115,15 @@ ul.vertical li a { }
 #cargo #index-page .form-horizontal .controls { margin-left: 0; }
 .form-horizontal .control-group { margin-bottom: 0; }
 
-#cargo #login-box button { float: right; }
-#cargo .btn { float: right; }
+/* #cargo #login-box button { float: right; } */
+#cargo .btn { float: right; margin: 0 0.7em; }
+#cargo a.btn { text-decoration: none; }
 #cargo #register-page lafbel { width: 10em; }
 
 #cargo h2 { margin: 0.3em 0.5em; }
 
-#cargo #login-page #username-row .controls { padding-top: 0.7em; }
+/* #cargo #login-page #username-row .controls { padding-top: 0.7em; } */
+#cargo #login-page #buttons-row { margin-left: 0.7em; }
 
 
 

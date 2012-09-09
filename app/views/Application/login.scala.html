@@ -25,6 +25,7 @@
 	        @message
 	    </p>
 	    }
+
 	    @for(error <- loginForm.errors){
 	    <p class="alert alert-error">
 	        @error.message: @error.key
@@ -35,7 +36,7 @@
 			@form(action = routes.Application.login(), 'class -> "form-horizontal") {
 						<input type="hidden" name="source" value="@loginForm("source").value"/>	
 					<div class="control-group" id="username-row">
-    				<label class="control-label" for="inputUsername">Username or<br/> email address</label>
+    				<label class="control-label" for="inputUsername">Username</label>
 					<div class="controls"> 
 						<input type="text" class="input-xlarge" id="inputUsername" name="username" placeholder="Your username" value="@loginForm("username").value"/>
 					</div>
@@ -47,8 +48,12 @@
 					</div>
 				</div>
 				<div class="control-group">
-					<div class="controls">
+					<div class="controls" id="buttons-row">
 						<button type="submit" class="btn btn-primary input-small">log in</button>
+						<a href="@routes.Application.showRegisterForm" class="btn btn-inverse">register</a>
+					   @for(error <- loginForm.errors){
+					   	<a href="@routes.Application.showResetPassword" class="btn btn-warning">reset password</a>
+					   }
 					</div>
 				</div>
 			}
