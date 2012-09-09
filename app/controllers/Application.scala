@@ -4,6 +4,7 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+import models._
 
 object Application extends Controller {
 
@@ -25,17 +26,19 @@ object Application extends Controller {
       case (username, fullname, email, password, confirmPassword) => {
         password.trim == confirmPassword.trim
      }
- //   }) verifying("Username is already taken", fields => fields match {
- //    case (username, fullname, email, password, confirmPassword) => {
- //       !Participant.findByUsername(username.trim).isDefined
- //     }
+    }) verifying("Username is already taken", fields => fields match {
+     case (username, fullname, email, password, confirmPassword) => {
+        !Dreamer.findByUsername(username.trim).isDefined
+     }
     }) verifying("Email address is not valid", fields => fields match {
-      case (username, fullname, email, password, confirmPassword) => ValidEmailAddress.findFirstIn(email.trim).isDefined
+      case (username, fullname, email, password, confirmPassword) => {
+      	ValidEmailAddress.findFirstIn(email.trim).isDefined
+      }
     })
   )
 
 
-  def index = Action {
+  def index = Action { implicit request =>
     Ok(views.html.index())
   }
 
@@ -48,10 +51,13 @@ object Application extends Controller {
    	   registeredForm => {
 	      	Logger.info("New registration: " + registeredForm._1)
 
-	      	// TODO: Create user object
-	      	// Send email confirmation
+	      	val dreamer = Dreamer(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4))
+	      		
+	      	dreamer.save	
+	      	
+	      	// TODO: Send email confirmation
 
-         	Redirect(routes.Application.index())
+         	Redirect(routes.Application.index()).flashing("message"-> "Welcome, you have successfully registered")
       	}
       )
   }

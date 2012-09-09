@@ -1,9 +1,17 @@
-@()
+@()(implicit flash:Flash)
 
 @import helper._
 
 @nautical("") {
 	<div id="index-page">
+
+
+
+	    @flash.get("message").map { message =>
+	    <p class="alert alert-info">
+	        @message
+	    </p>
+	    }
 	    
 	   <div class="well">
 			<p>
