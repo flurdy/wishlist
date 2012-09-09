@@ -37,6 +37,15 @@ object Application extends Controller {
     })
   )
 
+	val loginForm = Form(
+	   tuple(
+	      "username" -> nonEmptyText(maxLength = 99),
+	      "password" -> nonEmptyText(maxLength = 99),
+      	"source" -> optional(text)
+	    ) verifying("Log in failed. Username does not exist or password is invalid", fields => fields match {
+	      case (username, password, source) => Dreamer.authenticate(username, password).isDefined
+    	})
+	)	
 
   def index = Action { implicit request =>
     Ok(views.html.index())
@@ -83,11 +92,22 @@ object Application extends Controller {
   	Ok(views.html.application.register(registerForm))
   }
 
-	def showLoginForm = Action {
-		Ok(views.html.application.login())
+	def showLoginForm = Action { implicit request =>
+		Ok(views.html.application.login(loginForm))
 	}
 
-  def login = TODO
+	def login = Action { implicit request =>
+		loginForm.bindFromRequest.fold(
+			errors => {
+				Logger.info("Log in failed:"+ errors)
+				BadRequest(views.html.application.login(errors))
+			},
+			loggedInForm => {
+				Logger.debug("Logging in: " + loggedInForm._1)
+				Redirect(routes.Application.index()).flashing("message"->"You have logged in")
+			}
+		)		
+	}
     
    def about = TODO
    

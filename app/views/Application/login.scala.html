@@ -1,3 +1,4 @@
+@(loginForm:Form[(String,String,Option[String])])(implicit flash:Flash)
 
 @import helper._ 
 
@@ -6,18 +7,43 @@
 	    
 		<h2>Log in</h2>
 
+
+	    @flash.get("message").map { message =>
+	    <p class="alert alert-info">
+	        @message
+	    </p>
+	    }
+
+	    @flash.get("warningMessage").map { message =>
+	    <p class="alert alert-warning">
+	        @message
+	    </p>
+	    }
+
+	    @flash.get("errorMessage").map { message =>
+	    <p class="alert alert-error">
+	        @message
+	    </p>
+	    }
+	    @for(error <- loginForm.errors){
+	    <p class="alert alert-error">
+	        @error.message: @error.key
+	    </p>
+	    }
+
 		<div class="well">	
 			@form(action = routes.Application.login(), 'class -> "form-horizontal") {
+						<input type="hidden" name="source" value="@loginForm("source").value"/>	
 					<div class="control-group" id="username-row">
     				<label class="control-label" for="inputUsername">Username or<br/> email address</label>
 					<div class="controls"> 
-						<input type="text" class="input-xlarge" id="inputUsername" placeholder="Your email address or username"/>
+						<input type="text" class="input-xlarge" id="inputUsername" name="username" placeholder="Your username" value="@loginForm("username").value"/>
 					</div>
 				</div>
 				<div class="control-group">
    				<label class="control-label" for="inputPassword">Password</label>
 					<div class="controls"> 
-						<input type="password" class="input-xlarge" id="inputPassword" placeholder="Your password"/>
+						<input type="password" class="input-xlarge" id="inputPassword" name="password" placeholder="Your password"/>
 					</div>
 				</div>
 				<div class="control-group">
