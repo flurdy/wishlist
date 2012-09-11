@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title:String)(breadcrumb:Html)(cargo:Html)
 
 <!DOCTYPE html>
 
@@ -31,11 +31,14 @@
                                 </div>
                                  <div id="keel" class="structure">
                                     <div id="innerhull" class="structure">
+                                        <div id="jib" class="compartment">
+                                            @breadcrumb
+                                        </div>
                                         <div id="bulkhead" class="structure">
                                             <div id="ballast" class="structure">
                                                 <div id="cargo" class="compartment">
 
-        @content
+        @cargo
 
                                                 </div>
                                             </div>
