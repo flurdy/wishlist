@@ -1,0 +1,18 @@
+@()(implicit flash:Flash, currentDreamer: Option[Dreamer])
+
+@import helper._
+
+@nautical("about") {
+	<li><a href="@routes.Application.about">about</a></li>
+	
+}{
+	<div id="about-page">
+
+		<h2>About</h2>
+
+		<p>
+		    For more information look through <a href="http://wishlist.sourceforge.net">the project website</a>
+		</p>
+
+	</div>
+}
