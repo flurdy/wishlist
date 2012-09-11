@@ -4,6 +4,7 @@
 
 
 CREATE SEQUENCE dreamer_seq START WITH 1000;
+CREATE SEQUENCE wishlist_seq START WITH 1000;
 
 
 CREATE TABLE dreamer (
@@ -14,9 +15,18 @@ CREATE TABLE dreamer (
     password              VARCHAR(100) NOT NULL
 );
 
+CREATE TABLE wishlist (
+	wishlistid 		SERIAL PRIMARY KEY,
+	title				VARCHAR(100) NOT NULL,
+	recipientid		BIGINT NOT NULL,
+	organiserid		BIGINT NOT NULL
+);
+
 
 # --- !Downs
 
 DROP TABLE IF EXISTS dreamer;
+DROP TABLE IF EXISTS wishlist;
 
 DROP SEQUENCE IF EXISTS dreamer_seq;
+DROP SEQUENCE IF EXISTS wishlist_seq;
