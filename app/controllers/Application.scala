@@ -115,8 +115,12 @@ object Application extends Controller with Secured{
    def about = TODO
    
    def contact = TODO
+   
+   def search = TODO
 
-	def search = TODO
+   def logout = Action {
+      Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")
+   }
   
 }
 
