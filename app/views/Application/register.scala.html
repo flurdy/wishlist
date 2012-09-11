@@ -1,9 +1,9 @@
-@(registerForm:Form[(String,Option[String],String,String,String)])(implicit flash:Flash)
+@(registerForm:Form[(String,Option[String],String,String,String)])(implicit flash:Flash, currentDreamer:Option[Dreamer])
 
 @import helper._
 
 @nautical("register") {
-	
+	<li><a href="@routes.Application.showRegisterForm">register</a></li>
 } {
 	<div id="register-page">
 	    

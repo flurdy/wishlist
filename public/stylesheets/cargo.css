@@ -59,6 +59,11 @@ ul.vertical { padding: 0.1em; }
 ul.vertical li { list-style: none; white-space: nowrap; }
 ul.vertical li a { }
 
+#jib ul.horizontal li { padding: 0 0.1em;}
+#jib #logout-box { float: right}
+
+#jib { color: black; }
+
 /*
 #hatch { vertical-align: top; }
 #hatch ul.vertical { vertical-align: top; }

@@ -1,9 +1,9 @@
-@(loginForm:Form[(String,String,Option[String])])(implicit flash:Flash)
+@(loginForm:Form[(String,String,Option[String])])(implicit flash:Flash, currentDreamer:Option[Dreamer])
 
 @import helper._ 
 
 @nautical("login") {
-	<li><a href=""></a>
+	<li><a href="@routes.Application.showLoginForm">login</a></li>
 }{
 	<div id="login-page">
 	    

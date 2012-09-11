@@ -1,4 +1,4 @@
-@(title:String)(breadcrumb:Html)(cargo:Html)
+@(title:String)(breadcrumb:Html)(cargo:Html)(implicit currentDreamer:Option[Dreamer])
 
 <!DOCTYPE html>
 
@@ -32,7 +32,16 @@
                                  <div id="keel" class="structure">
                                     <div id="innerhull" class="structure">
                                         <div id="jib" class="compartment">
-                                            @breadcrumb
+                                            <ul class="horizontal">
+                                                <li><a href="@routes.Application.index">/</a></li>
+                                                @breadcrumb
+                                            </ul>     
+                                            <div id="logout-box">
+                                                @currentDreamer.map{ dreamer =>
+                                                    @dreamer.username
+                                                    <a href="@routes.Application.logout">log out</a>
+                                                }
+                                            </div>   
                                         </div>
                                         <div id="bulkhead" class="structure">
                                             <div id="ballast" class="structure">
