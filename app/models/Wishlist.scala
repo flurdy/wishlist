@@ -1,4 +1,5 @@
 package models
+
 import play.api.Play.current
 import play.api.db.DB
 import anorm._
@@ -53,26 +54,3 @@ object Wishlist {
 
 }
 
-
-/*
-import play.db.jpa.Model;
-@Entity
-public class Wishlist extends Model {
-
-    public String title;
-
-    @ManyToOne
-    public User organiser;
-
-    @ManyToOne
-    public User recipient;
-
-     @OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL)
-    public List<Wish> wishes;
-
-    @Override
-    public String toString() {
-        return title + " by " + recipient.username;
-    }
-}
-*/
