@@ -48,7 +48,7 @@ object Application extends Controller with Secured{
 	)	
 
 	def index = Action { implicit request =>
-		Ok(views.html.index())
+		Ok(views.html.application.index())
 	}
 
   	def register = Action { implicit request =>
