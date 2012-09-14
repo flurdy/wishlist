@@ -48,7 +48,10 @@ object Application extends Controller with Secured{
 	)	
 
 	def index = Action { implicit request =>
-		Ok(views.html.application.index())
+    currentParticipant match {
+      case Some(dreamer) => Ok(views.html.application.indexdreamer())
+      case None => Ok(views.html.application.indexanon())
+    }
 	}
 
   	def register = Action { implicit request =>
