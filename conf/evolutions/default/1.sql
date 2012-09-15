@@ -19,6 +19,7 @@ CREATE TABLE dreamer (
 CREATE TABLE wishlist (
 	wishlistid 		SERIAL PRIMARY KEY,
 	title				VARCHAR(100) NOT NULL,
+	description		VARCHAR(2000),
 	recipientid		BIGINT NOT NULL,
 	organiserid		BIGINT NOT NULL
 );

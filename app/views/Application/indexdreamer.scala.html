@@ -1,4 +1,4 @@
-@()(implicit flash:Flash, currentDreamer: Option[Dreamer])
+@(createWishlistForm:Form[String])(implicit flash:Flash, currentDreamer: Option[Dreamer])
 
 @import helper._
 
@@ -15,6 +15,12 @@
 	        @message
 	    </p>
 	    }
+
+	    @for(error <- createWishlistForm.errors){
+	    <p class="alert alert-error">
+	        @error.message: @error.key
+	    </p>
+	    }
 	    
 
 		<div class="well" id="search-box">	
@@ -25,6 +31,14 @@
 		</div>
 		
 
+		<div class="well" >
+
+			@form(action = routes.WishController.create(currentDreamer.get.username), 'class -> "form-horizontal"){
+				<input type="text" class="input-xlarge" placeholder="Title of new wishlist" name="title" value="@createWishlistForm("title").value"/>
+				<button type="submit" class="btn btn-info input-small">create</button> 	
+			}
+
+		</div>
 
 
 	

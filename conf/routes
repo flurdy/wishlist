@@ -26,6 +26,17 @@ GET		/contact.html					controllers.Application.contact
 GET		/search						controllers.Application.index
 GET		/search/						controllers.Application.search
 
+GET		/:username/wishlist 		controllers.WishController.listWishlists(username)
+GET		/:username/wishlist/ 		controllers.WishController.listWishlists(username)
+POST		/:username/wishlist 		controllers.WishController.create(username)
+GET		/:username/wishlist/:wishlistId/ 		controllers.WishController.showWishlist(username,wishlistId:Long)
+GET		/:username/wishlist/:wishlistId/edit.html 		controllers.WishController.showEditWishlist(username,wishlistId:Long)
+PUT		/:username/wishlist/:wishlistId/ 		controllers.WishController.updateWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/edit/ 		controllers.WishController.updateWishlist(username,wishlistId:Long)
+DELETE		/:username/wishlist/:wishlistId/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/delete/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
+GET		/:username/wishlist/:wishlistId/delete.html 		controllers.WishController.showConfirmDeleteWishlist(username,wishlistId:Long)
+	
 
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 

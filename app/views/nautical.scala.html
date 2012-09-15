@@ -22,7 +22,7 @@
                             <div id="vaka" class="structure">
                                 <div id="bow" class="compartment">
                                     <img src="@routes.Assets.at("images/wish.gif")"/>
-                                    <h2>Wishlist</h2>
+                                    <h2>Wish</h2>
                                 </div>
                                 <div id="lookout" class="compartment">
                                     <ul class="horizontal">
@@ -31,17 +31,17 @@
                                 </div>
                                  <div id="keel" class="structure">
                                     <div id="innerhull" class="structure">
-                                        <div id="jib" class="compartment">
-                                            <ul class="horizontal">
-                                                <li><a href="@routes.Application.index">/</a></li>
-                                                @breadcrumb
-                                            </ul>     
+                                        <div id="jib" class="compartment">  
                                             <div id="logout-box">
                                                 @currentDreamer.map{ dreamer =>
                                                     @dreamer.username
                                                     <a href="@routes.Application.logout">log out</a>
                                                 }
-                                            </div>   
+                                            </div>  
+                                            <ul class="horizontal">
+                                                <li><a href="@routes.Application.index">/</a></li>
+                                                @breadcrumb
+                                            </ul>    
                                         </div>
                                         <div id="bulkhead" class="structure">
                                             <div id="ballast" class="structure">

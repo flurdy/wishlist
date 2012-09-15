@@ -1,0 +1,74 @@
+@(wishlist:Wishlist,editWishlistForm:Form[(String,Option[String])])(implicit flash:Flash, currentDreamer: Option[Dreamer])
+
+@import helper._
+
+@nautical("") {
+	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
+}{
+	
+	<div>
+
+
+
+	    @flash.get("message").map { message =>
+	    <p class="alert alert-info">
+	        @message
+	    </p>
+	    }
+
+	    @for(error <- editWishlistForm.errors){
+	    <p class="alert alert-error">
+	        @error.message: @error.key
+	    </p>
+	    }
+	    
+		
+
+		<div class="well" >
+
+			@form(action = routes.WishController.updateWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
+
+				<div class="control-group">
+    				<label class="control-label" for="inputTitle">Title</label>
+					<div class="controls"> 
+						<input type="text" class="input-xlarge" id="inputTitle" name="title" placeholder="Title of wishlist" value="@editWishlistForm("title").value"/>
+					</div>
+				</div>
+
+				<div class="control-group">
+    				<label class="control-label" for="inputDescription">Description</label>
+					<div class="controls"> 
+						<textarea class="input-xlarge" id="inputDescription" name="description" placeholder="">@editWishlistForm("description").value</textarea>
+					</div>
+				</div>
+
+
+				<div class="control-group">
+					<div class="controls" id="buttons-row">
+						<button type="submit" class="btn btn-success input-small">update</button>
+    <a class="btn" href="@routes.Application.index()">Cancel</a>
+
+					</div>
+				</div>
+			}
+
+		</div>
+
+		<div class="well" >
+
+			@form(action = routes.WishController.showConfirmDeleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
+				<legend>Delete wishlist</legend>
+				<div class="control-group">
+					<div class="controls" id="buttons-row">
+						<button type="submit" class="btn btn-danger input-small">delete</button>
+					</div>
+				</div>
+			}
+
+		</div>
+
+
+	
+	</div>
+
+}

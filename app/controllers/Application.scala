@@ -49,7 +49,7 @@ object Application extends Controller with Secured{
 
 	def index = Action { implicit request =>
     currentParticipant match {
-      case Some(dreamer) => Ok(views.html.application.indexdreamer())
+      case Some(dreamer) => Ok(views.html.application.indexdreamer(WishController.simpleCreateWishlistForm))
       case None => Ok(views.html.application.indexanon())
     }
 	}
@@ -153,6 +153,13 @@ trait Secured {
 			case Some(sessionUsername) => Dreamer.findByUsername( sessionUsername )
 		}
 	}
+
+  def withCurrentDreamer(f: Dreamer => Request[AnyContent] => Result) = isAuthenticated {
+    username => implicit request =>
+      Dreamer.findByUsername(username).map {
+        dreamer => f(dreamer)(request)
+      }.getOrElse(onUnauthenticated(request))
+  }
 
 
 }

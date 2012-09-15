@@ -9,10 +9,13 @@ import play.Logger
 case class Wishlist(
     wishlistId:Option[Long],
     title:String,
+    description:Option[String],
     recipient:Dreamer,
     organiser:Dreamer
 ) {
 
+
+    def save = Wishlist.save(this)
 
 
 }
@@ -23,9 +26,10 @@ object Wishlist {
   val simple = {
     get[Long]("wishlistid") ~
       get[String]("title") ~
+      get[Option[String]]("description") ~
       get[Long]("recipientid") ~
       get[Long]("organiserid")  map {
-      case wishlistid~title~recipientid~organiserid=> Wishlist( Some(wishlistid), title, Dreamer.findById(recipientid).get, Dreamer.findById(organiserid).get)
+      case wishlistid~title~description~recipientid~organiserid=> Wishlist( Some(wishlistid), title, description, Dreamer.findById(recipientid).get, Dreamer.findById(organiserid).get)
     }
   }
 
@@ -37,13 +41,14 @@ object Wishlist {
             SQL(
                 """
                     insert into wishlist
-                    (wishlistid,title,recipientid,organiserid) 
+                    (wishlistid,title,description,recipientid,organiserid) 
                     values 
-                    ({wishlistid},{title},{recipientid},{organiserid})
+                    ({wishlistid},{title},{description},{recipientid},{organiserid})
                 """
             ).on(
                 'wishlistid -> nextId,
                 'title -> wishlist.title,
+                'description -> wishlist.description,
                 'recipientid -> wishlist.recipient.dreamerId,
                 'organiserid -> wishlist.organiser.dreamerId
             ).executeInsert()
@@ -51,6 +56,18 @@ object Wishlist {
         }
     }
 
+    def findById(wishlistId:Long) : Option[Wishlist]= {
+        DB.withConnection { implicit connection =>
+          SQL(
+            """
+              SELECT * FROM wishlist
+                WHERE wishlistid = {wishlistid}
+            """
+          ).on(
+            'wishlistid -> wishlistId
+          ).as(Wishlist.simple.singleOpt)
+        }
+    }
 
 }
 

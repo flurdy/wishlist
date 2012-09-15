@@ -36,8 +36,8 @@
 
 		<div class="well">	
 			@form(action = routes.Application.login(), 'class -> "form-horizontal") {
-						<input type="hidden" name="source" value="@loginForm("source").value"/>	
-					<div class="control-group" id="username-row">
+				<input type="hidden" name="source" value="@loginForm("source").value"/>	
+				<div class="control-group" id="username-row">
     				<label class="control-label" for="inputUsername">Username</label>
 					<div class="controls"> 
 						<input type="text" class="input-xlarge" id="inputUsername" name="username" placeholder="Your username" value="@loginForm("username").value"/>
