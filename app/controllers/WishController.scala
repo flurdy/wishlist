@@ -65,19 +65,26 @@ object WishController extends Controller with Secured {
         )
     }
 
-
-    def listWishlists(username:String) = TODO
-    def showWishlist(username:String,wishlistId:Long) = TODO
-    def showConfirmDeleteWishlist(username:String,wishlistId:Long) = TODO
-
     def deleteWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
         Logger.info("Deleting wishlist: " + wishlistId)
 
         Wishlist.findById(wishlistId).get.delete
 
-        Redirect(routes.Application.index())
+        Redirect(routes.Application.index()).flashing("messageWarning" -> "Wishlist deleted")
     }
 
+
+    def showWishlist(username:String,wishlistId:Long) =  withCurrentDreamer { currentDreamer => implicit request =>
+        val wishlist = Wishlist.findById(wishlistId).get
+        Ok(views.html.wishlist.showwishlist(wishlist))
+    }
+
+    def showConfirmDeleteWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+        val wishlist = Wishlist.findById(wishlistId).get
+        Ok(views.html.wishlist.deletewishlist(wishlist))
+    }
+
+    def listWishlists(username:String) = TODO
 }
 
 

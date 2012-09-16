@@ -1,0 +1,46 @@
+@(wishlist:Wishlist)(implicit flash:Flash, currentDreamer: Option[Dreamer])
+
+@import helper._
+
+@nautical(" delete: " + wishlist.title) {
+	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
+}{
+	
+	<div>
+
+
+
+	    @flash.get("message").map { message =>
+	    <p class="alert alert-info">
+	        @message
+	    </p>
+	    }
+	    
+		<h2>Delete wishlist</h2>
+
+		<div class="well" >
+
+			<h3>@wishlist.title</h3>
+			<p>Please confirm you want to delete this wishlist</p>
+		</div>
+
+
+		<div class="well" >
+			   
+			@form(action = routes.WishController.deleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
+
+				<div class="control-group">
+					<div class="controls" id="buttons-row">
+						<button type="submit" class="btn btn-danger input-small">delete wishlist</button>
+    <a class="btn" href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">Cancel</a>
+
+					</div>
+				</div>
+			}
+		</div>
+
+
+	
+	</div>
+
+}

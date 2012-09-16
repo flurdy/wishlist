@@ -16,6 +16,12 @@
 	    </p>
 	    }
 
+	    @flash.get("messageWarning").map { message =>
+	    <p class="alert alert-warning">
+	        @message
+	    </p>
+	    }
+
 	    @for(error <- createWishlistForm.errors){
 	    <p class="alert alert-error">
 	        @error.message: @error.key
