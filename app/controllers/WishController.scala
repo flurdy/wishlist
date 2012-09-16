@@ -33,9 +33,9 @@ object WishController extends Controller with Secured {
            titleForm => {
                 Logger.info("New wishlist: " + titleForm)
 
-                val wishlist = new Wishlist(None, titleForm.trim, None, currentDreamer, currentDreamer).save
+                val wishlist = new Wishlist(None, titleForm.trim, None, currentDreamer, currentDreamer).persist
 
-                Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get))
+                Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist created")
             }
         )
     }
@@ -46,12 +46,37 @@ object WishController extends Controller with Secured {
         Ok(views.html.wishlist.editwishlist(wishlist, editForm))
     }
 
-    def updateWishlist(username:String,wishlistId:Long) = TODO
+    def updateWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+        val wishlist = Wishlist.findById(wishlistId).get
+        editWishlistForm.bindFromRequest.fold(
+            errors => {
+              Logger.warn("Update failed: " + errors)
+              BadRequest(views.html.wishlist.editwishlist(wishlist,errors))
+            }, 
+            editForm => {
+                Logger.info("Updating wishlist: " + editForm)
+
+                val updatedWishlist = wishlist.copy(title=editForm._1,description=editForm._2)
+
+                updatedWishlist.update
+
+                Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist updated")
+            }
+        )
+    }
+
 
     def listWishlists(username:String) = TODO
     def showWishlist(username:String,wishlistId:Long) = TODO
     def showConfirmDeleteWishlist(username:String,wishlistId:Long) = TODO
-    def deleteWishlist(username:String,wishlistId:Long) = TODO
+
+    def deleteWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+        Logger.info("Deleting wishlist: " + wishlistId)
+
+        Wishlist.findById(wishlistId).get.delete
+
+        Redirect(routes.Application.index())
+    }
 
 }
 

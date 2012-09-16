@@ -15,9 +15,11 @@ case class Wishlist(
 ) {
 
 
-    def save = Wishlist.save(this)
+    def persist = Wishlist.persist(this)
 
+    def delete = Wishlist.delete(this)
 
+    def update = Wishlist.update(this)
 }
 
 object Wishlist {
@@ -34,7 +36,7 @@ object Wishlist {
   }
 
 
-    def save(wishlist:Wishlist) = {
+    def persist(wishlist:Wishlist) = {
         Logger.debug("Inserting wishlist: "+wishlist.title)
         DB.withConnection { implicit connection =>
             val nextId = SQL("SELECT NEXTVAL('wishlist_seq')").as(scalar[Long].single)
@@ -69,5 +71,39 @@ object Wishlist {
         }
     }
 
+
+    def delete(wishlist:Wishlist) {
+        Logger.debug("Deleting wishlist: "+wishlist.title)
+        DB.withConnection { implicit connection =>
+            SQL(
+                """
+                    delete from wishlist
+                    where wishlistid = {wishlistid}
+                """
+            ).on(
+                'wishlistid -> wishlist.wishlistId
+            ).execute()
+        }
+    }
+
+
+    def update(wishlist:Wishlist) = {
+        Logger.debug("Updating wishlist: "+wishlist.title)
+        DB.withConnection { implicit connection =>
+            val nextId = SQL("SELECT NEXTVAL('wishlist_seq')").as(scalar[Long].single)
+            SQL(
+                """
+                    update wishlist
+                    set title = {title}, description = {description}
+                    where wishlistid = {wishlistid}
+                """
+            ).on(
+                'wishlistid -> wishlist.wishlistId,
+                'title -> wishlist.title,
+                'description -> wishlist.description
+            ).executeInsert()
+            wishlist
+        }
+    }
 }
 
