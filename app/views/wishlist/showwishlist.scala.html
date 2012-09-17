@@ -2,11 +2,11 @@
 
 @import helper._
 
-@nautical(": " + wishlist.title) {
+@nautical(wishlist.title) {
 	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
 	
-	<div>
+	<div id="view-wishlist-page">
 
 
 
@@ -19,11 +19,25 @@
 		
 
 		<div class="well" >
-			@wishlist.title
+		
+			<h3>@wishlist.title</h3>
+		
+			<p>A wishlist for <em>@wishlist.recipient.username</em></p>
+
+			<p>@wishlist.description</p>
+
+
 		</div>
+
+
+
+
 		<div class="well" >
-			    <a class="btn btn-warning" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
-			    <br/><br/>
+			<div class="control-group">
+				<div class="buttons">
+					<a class="btn btn-warning" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
+				</div>
+			</div>
 		</div>
 
 

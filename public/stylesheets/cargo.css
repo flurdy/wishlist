@@ -116,9 +116,9 @@ ul.vertical li a { }
 #cargo a { text-decoration: underline; }
 
 
-#cargo .well { padding-bottom: 0; }
+#cargo .well form { margin-bottom: 0; }
 #cargo #index-page .form-horizontal .controls { margin-left: 0; }
-.form-horizontal .control-group { margin-bottom: 0; }
+#cargo .form-horizontal .control-group:last-child { margin-bottom: 0em; }
 
 /* #cargo #login-box button { float: right; } */
 #cargo .btn { float: right; margin: 0 0.7em; }
@@ -130,5 +130,8 @@ ul.vertical li a { }
 /* #cargo #login-page #username-row .controls { padding-top: 0.7em; } */
 #cargo #login-page #buttons-row { margin-left: 0.7em; }
 
+#cargo #view-wishlist-page .control-group { margin-bottom: 30px; }
+
+#cargo #list-wishlists-page #wishlist-list { max-height: 20em; overflow: scroll; }
 
 

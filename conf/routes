@@ -23,8 +23,7 @@ GET		/about.html						controllers.Application.about
 GET		/contact.html					controllers.Application.contact
 
 
-GET		/search						controllers.Application.index
-GET		/search/						controllers.Application.search
+GET		/search						controllers.WishController.search
 
 GET		/:username/wishlist 		controllers.WishController.listWishlists(username)
 GET		/:username/wishlist/ 		controllers.WishController.listWishlists(username)

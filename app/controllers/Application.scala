@@ -122,8 +122,6 @@ object Application extends Controller with Secured{
    def contact = Action { implicit request =>
     Ok(views.html.application.contact())
   }
-   
-   def search = TODO
 
    def logout = Action {
       Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")

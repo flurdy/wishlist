@@ -105,5 +105,18 @@ object Wishlist {
             wishlist
         }
     }
+
+    def findAll : Seq[Wishlist] = {
+        DB.withConnection { implicit connection =>
+            SQL(
+                """
+                  SELECT * FROM wishlist
+                  ORDER BY title DESC
+                """
+            ).as(Wishlist.simple *)
+        }
+    }
+
+
 }
 

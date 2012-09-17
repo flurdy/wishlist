@@ -1,0 +1,48 @@
+@(wishlists:Seq[Wishlist],searchForm:Form[(Option[String])])(implicit flash:Flash, currentDreamer: Option[Dreamer])
+
+@import helper._
+
+@nautical("search") {
+	<li>search</li>
+}{
+	
+	<div id="list-wishlists-page">
+
+		<h4>@wishlists.size wishlists found:</h4>
+
+		<div class="well" id="wishlist-list">
+
+			<table class="table table-striped table-hover">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Recipient</th>
+					</tr>
+				</thead>
+				<tbody>
+				@for(wishlist <- wishlists){
+					<tr>
+						<td>
+							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
+						</td>
+						<td>
+							@wishlist.recipient.username
+						</td>
+					</tr>
+				}
+				</tbody>
+			</table>
+		</div>
+
+
+
+		<div class="well" id="search-box">	
+			@form(action = routes.WishController.search(), 'class -> "form-search", 'method -> "get"){
+				<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient" name="term" value="@searchForm("term").value"/>
+				<button type="submit" class="btn btn-primary input-small">search</button> 
+			}
+		</div>
+	
+	</div>
+
+}

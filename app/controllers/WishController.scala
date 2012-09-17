@@ -23,6 +23,10 @@ object WishController extends Controller with Secured {
         )
     )
 
+    val searchForm = Form {
+        "term" -> optional(text(maxLength = 99))
+    }   
+
 
     def create(username:String) = withCurrentDreamer { currentDreamer => implicit request =>
         simpleCreateWishlistForm.bindFromRequest.fold(
@@ -85,6 +89,19 @@ object WishController extends Controller with Secured {
     }
 
     def listWishlists(username:String) = TODO
+
+    def search = Action { implicit request =>
+        searchForm.bindFromRequest.fold(
+            errors => {
+              Logger.warn("Update failed: " + errors)
+              BadRequest
+            }, 
+            term => {
+                val wishlists : Seq[Wishlist] = Wishlist.findAll
+                Ok(views.html.wishlist.listwishlists(wishlists,searchForm.fill(term)))
+            }
+        )   
+   }
 }
 
 

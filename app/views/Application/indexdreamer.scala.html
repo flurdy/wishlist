@@ -30,8 +30,8 @@
 	    
 
 		<div class="well" id="search-box">	
-			@form(action = routes.Application.search(), 'class -> "form-search", 'method -> "get"){
-				<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient"/>
+			@form(action = routes.WishController.search(), 'class -> "form-search", 'method -> "get"){
+				<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient" name="term"/>
 				<button type="submit" class="btn btn-primary input-small">search</button> 
 			}
 		</div>

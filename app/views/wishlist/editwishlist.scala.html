@@ -38,7 +38,7 @@
 				<div class="control-group">
     				<label class="control-label" for="inputDescription">Description</label>
 					<div class="controls"> 
-						<textarea class="input-xlarge" id="inputDescription" name="description" placeholder="">@editWishlistForm("description").value</textarea>
+						<textarea class="input-xlarge" id="inputDescription" name=" description" placeholder="Describe wishlist" rows="6">@editWishlistForm("description").value</textarea>
 					</div>
 				</div>
 
@@ -46,7 +46,7 @@
 				<div class="control-group">
 					<div class="controls" id="buttons-row">
 						<button type="submit" class="btn btn-success input-small">update</button>
-    <a class="btn" href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">Cancel</a>
+    <a class="btn btn-inverse input-small" href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">view</a>
 
 					</div>
 				</div>
@@ -57,10 +57,9 @@
 		<div class="well" >
 
 			@form(action = routes.WishController.showConfirmDeleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
-				<legend>Delete wishlist</legend>
 				<div class="control-group">
 					<div class="controls" id="buttons-row">
-						<button type="submit" class="btn btn-danger input-small">delete</button>
+						<button type="submit" class="btn btn-danger input-medium">delete wishlist</button>
 					</div>
 				</div>
 			}
