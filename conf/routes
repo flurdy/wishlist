@@ -30,11 +30,15 @@ GET		/:username/wishlist/ 		controllers.WishController.listWishlists(username)
 POST		/:username/wishlist 		controllers.WishController.create(username)
 GET		/:username/wishlist/:wishlistId/ 		controllers.WishController.showWishlist(username,wishlistId:Long)
 GET		/:username/wishlist/:wishlistId/edit.html 		controllers.WishController.showEditWishlist(username,wishlistId:Long)
-POST		/:username/wishlist/:wishlistId/edit/ 		controllers.WishController.updateWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/edit 		controllers.WishController.updateWishlist(username,wishlistId:Long)
 PUT		/:username/wishlist/:wishlistId/ 		controllers.WishController.updateWishlist(username,wishlistId:Long)
 GET		/:username/wishlist/:wishlistId/delete.html 		controllers.WishController.showConfirmDeleteWishlist(username,wishlistId:Long)
-POST		/:username/wishlist/:wishlistId/delete/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
-DELETE		/:username/wishlist/:wishlistId/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/delete 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
+DELETE	/:username/wishlist/:wishlistId/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
+
+POST		/:username/wishlist/:wishlistId/wish/ 		controllers.WishController.addWishToWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/wish/delete 		controllers.WishController.deleteWishFromWishlist(username,wishlistId:Long,wishId:Long)
+DELETE	/:username/wishlist/:wishlistId/wish/ 		controllers.WishController.deleteWishFromWishlist(username,wishlistId:Long,wishId:Long)
 	
 
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

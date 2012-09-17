@@ -15,7 +15,7 @@ case class Wishlist(
 ) {
 
 
-    def persist = Wishlist.persist(this)
+    def save = Wishlist.save(this)
 
     def delete = Wishlist.delete(this)
 
@@ -36,7 +36,7 @@ object Wishlist {
   }
 
 
-    def persist(wishlist:Wishlist) = {
+    def save(wishlist:Wishlist) = {
         Logger.debug("Inserting wishlist: "+wishlist.title)
         DB.withConnection { implicit connection =>
             val nextId = SQL("SELECT NEXTVAL('wishlist_seq')").as(scalar[Long].single)
@@ -57,6 +57,7 @@ object Wishlist {
             wishlist.copy(wishlistId = Some(nextId))
         }
     }
+
 
     def findById(wishlistId:Long) : Option[Wishlist]= {
         DB.withConnection { implicit connection =>
@@ -132,6 +133,22 @@ object Wishlist {
             ).as(Wishlist.simple *)
         }
     }
+
+
+    def findWishesForWishlist(wishlist:Wishlist) : Seq[Wish] = {
+        DB.withConnection { implicit connection =>
+            SQL(
+                """
+                  SELECT * FROM wish
+                  where wishlistid = {wishlistid}
+                  ORDER BY title DESC
+                """
+            ).on(
+                'wishlistid -> wishlist.wishlistId
+            ).as(Wish.simple *)
+        }
+    }
+
 
 
 }

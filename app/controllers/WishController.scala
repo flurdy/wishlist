@@ -27,6 +27,10 @@ object WishController extends Controller with Secured {
         "term" -> optional(text(maxLength = 99))
     }   
 
+    val simpleAddWishForm = Form {
+        "title" -> text(maxLength = 180,minLength = 2 )
+    }   
+
 
     def create(username:String) = withCurrentDreamer { currentDreamer => implicit request =>
         simpleCreateWishlistForm.bindFromRequest.fold(
@@ -37,7 +41,7 @@ object WishController extends Controller with Secured {
            titleForm => {
                 Logger.info("New wishlist: " + titleForm)
 
-                val wishlist = new Wishlist(None, titleForm.trim, None, currentDreamer, currentDreamer).persist
+                val wishlist = new Wishlist(None, titleForm.trim, None, currentDreamer, currentDreamer).save
 
                 Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist created")
             }
@@ -47,15 +51,17 @@ object WishController extends Controller with Secured {
     def showEditWishlist(username:String,wishlistId:Long) =  withCurrentDreamer { currentDreamer => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
-        Ok(views.html.wishlist.editwishlist(wishlist, editForm))
+        val wishes = Wishlist.findWishesForWishlist(wishlist)
+        Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm, simpleAddWishForm))
     }
 
     def updateWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
+        val wishes = Wishlist.findWishesForWishlist(wishlist)
         editWishlistForm.bindFromRequest.fold(
             errors => {
               Logger.warn("Update failed: " + errors)
-              BadRequest(views.html.wishlist.editwishlist(wishlist,errors))
+              BadRequest(views.html.wishlist.editwishlist(wishlist,wishes,errors,simpleAddWishForm))
             }, 
             editForm => {
                 Logger.info("Updating wishlist: " + editForm)
@@ -105,6 +111,38 @@ object WishController extends Controller with Secured {
             }
         )   
    }
+
+    def addWishToWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+        simpleAddWishForm.bindFromRequest.fold(
+            errors => {
+                Logger.warn("Add failed: " + errors)
+                BadRequest
+            }, 
+            title => {
+                val wishlist = Wishlist.findById(wishlistId).get
+
+                val wish = Wish(None,title,None,Some(wishlist))
+
+                wish.save
+
+                Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added")
+            }
+        )   
+   }
+
+   def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+
+        val wishlist = Wishlist.findById(wishlistId).get
+
+        val wish = Wish.findById(wishId).get
+
+        wish.delete       
+
+        Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish deleted")
+   }
+
+
+
 }
 
 

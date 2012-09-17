@@ -1,4 +1,4 @@
-@(wishlist:Wishlist,editWishlistForm:Form[(String,Option[String])])(implicit flash:Flash, currentDreamer: Option[Dreamer])
+@(wishlist:Wishlist,wishes:Seq[Wish],editWishlistForm:Form[(String,Option[String])],addWishForm:Form[String])(implicit flash:Flash, currentDreamer: Option[Dreamer])
 
 @import helper._
 
@@ -22,6 +22,8 @@
 	    </p>
 	    }
 	    
+
+
 		
 
 		<div class="well" >
@@ -53,6 +55,57 @@
 			}
 
 		</div>
+
+
+		@if(wishes.size>0){
+
+		<div class="well" id="wishlist-wishes">
+
+			<h4>Wishes</h4>
+
+			<table class="table table-striped">
+			<!--
+				<thead>
+					<tr>
+						<th></th>
+					</tr>
+				</thead>
+			-->
+				<tbody>
+					@for(wish <- wishes){
+						<tr>
+							<td>@wish.title</td>
+							<td>
+								@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
+									<button type="submit" class="btn btn-danger btn-mini">delete wish</button>
+								}<!--
+								@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
+									<button type="submit" class="btn btn-warning btn-mini">edit wish</button>
+								}-->
+							</td>
+						</tr>
+						@if(wish.description.isDefined){
+							<tr>
+								<td>@wish.description</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+		}
+
+		
+
+		<div class="well" >
+			@form(action = routes.WishController.addWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
+				<input type="text" class="input-large" name="title" placeholder="New wish title" value="@addWishForm("title").value"/>
+				<button class="btn btn-success input-medium" type="submit">add wish</button>
+			}
+		</div>
+
+
+		
 
 		<div class="well" >
 
