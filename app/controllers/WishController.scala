@@ -55,6 +55,7 @@ object WishController extends Controller with Secured {
         Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm, simpleAddWishForm))
     }
 
+
     def updateWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         val wishes = Wishlist.findWishesForWishlist(wishlist)
@@ -75,6 +76,8 @@ object WishController extends Controller with Secured {
         )
     }
 
+
+
     def deleteWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
         Logger.info("Deleting wishlist: " + wishlistId)
 
@@ -86,15 +89,16 @@ object WishController extends Controller with Secured {
 
     def showWishlist(username:String,wishlistId:Long) =  withCurrentDreamer { currentDreamer => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
-        Ok(views.html.wishlist.showwishlist(wishlist))
+        val wishes = Wishlist.findWishesForWishlist(wishlist)
+        Ok(views.html.wishlist.showwishlist(wishlist,wishes))
     }
+
 
     def showConfirmDeleteWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         Ok(views.html.wishlist.deletewishlist(wishlist))
     }
 
-    def listWishlists(username:String) = TODO
 
     def search = Action { implicit request =>
         searchForm.bindFromRequest.fold(
@@ -111,6 +115,7 @@ object WishController extends Controller with Secured {
             }
         )   
    }
+
 
     def addWishToWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
         simpleAddWishForm.bindFromRequest.fold(
@@ -130,16 +135,22 @@ object WishController extends Controller with Secured {
         )   
    }
 
+
    def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
 
         val wishlist = Wishlist.findById(wishlistId).get
 
         val wish = Wish.findById(wishId).get
+        
+        // TODO: validate wish is part of wishlist
 
         wish.delete       
 
         Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish deleted")
    }
+
+
+    def listWishlists(username:String) = TODO
 
 
 

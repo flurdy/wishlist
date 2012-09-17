@@ -1,4 +1,4 @@
-@(wishlist:Wishlist)(implicit flash:Flash, currentDreamer: Option[Dreamer])
+@(wishlist:Wishlist,wishes:Seq[Wish])(implicit flash:Flash, currentDreamer: Option[Dreamer])
 
 @import helper._
 
@@ -29,6 +29,37 @@
 
 		</div>
 
+
+
+		@if(wishes.size>0){
+
+		<div class="well" id="wishlist-wishes">
+
+			<h4>Wishes</h4>
+
+			<table class="table table-striped">
+			<!--
+				<thead>
+					<tr>
+						<th></th>
+					</tr>
+				</thead>
+			-->
+				<tbody>
+					@for(wish <- wishes){
+						<tr>
+							<td>@wish.title</td>
+						</tr>
+						@if(wish.description.isDefined){
+							<tr>
+								<td>@wish.description</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+		}
 
 
 
