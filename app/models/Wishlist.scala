@@ -117,6 +117,22 @@ object Wishlist {
         }
     }
 
+    def searchForWishlistsContaining(searchTerm:String) : Seq[Wishlist] = {
+        Logger.debug("Search term is " + searchTerm)
+        val searchLikeTerm = "%" + searchTerm + "%"
+        DB.withConnection { implicit connection =>
+            SQL(
+                """
+                  SELECT * FROM wishlist
+                  where title like {term}
+                  ORDER BY title DESC
+                """
+            ).on(
+                'term -> searchLikeTerm
+            ).as(Wishlist.simple *)
+        }
+    }
+
 
 }
 

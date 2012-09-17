@@ -97,7 +97,10 @@ object WishController extends Controller with Secured {
               BadRequest
             }, 
             term => {
-                val wishlists : Seq[Wishlist] = Wishlist.findAll
+                val wishlists = term match {
+                    case None => Wishlist.findAll
+                    case Some(searchTerm) => Wishlist.searchForWishlistsContaining(searchTerm)
+                }
                 Ok(views.html.wishlist.listwishlists(wishlists,searchForm.fill(term)))
             }
         )   
