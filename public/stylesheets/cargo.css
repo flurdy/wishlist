@@ -10,7 +10,7 @@
 	font-size: 2.5em;
 	font-weight: bold;
 }
-#bow img { float: right; height: 1em; padding: 0.2em;}
+#bow img { float: right; height: 0.8em; padding: 0.1em 0.2em 0.3em 0; }
 #bow h2 { font-size: 1em; font-weight: bold; margin: 0 0.5em; padding: 0 0.5em; }
 
 #stern {
