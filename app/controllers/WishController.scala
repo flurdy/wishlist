@@ -11,14 +11,9 @@ import models._
 object WishController extends Controller with Secured {
 
 
-    val simpleCreateWishlistForm = Form {
-        "title" -> text(maxLength = 180,minLength = 2 )
-    }   
-
-
     val editWishlistForm = Form(
         tuple(
-          "title" -> nonEmptyText(maxLength = 180),
+          "title" -> nonEmptyText(maxLength = 180,minLength = 2 ),
           "description" -> optional(text(maxLength = 2000))
         )
     )
@@ -33,15 +28,15 @@ object WishController extends Controller with Secured {
 
 
     def create(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
-        simpleCreateWishlistForm.bindFromRequest.fold(
+        editWishlistForm.bindFromRequest.fold(
             errors => {
               Logger.warn("Create failed: " + errors)
-              BadRequest(views.html.indexrecipient(errors))
+              BadRequest(views.html.wishlist.createwishlist(errors))
             },
            titleForm => {
-                Logger.info("New wishlist: " + titleForm)
+                Logger.info("New wishlist: " + titleForm._1)
 
-                val wishlist = new Wishlist(None, titleForm.trim, None, currentRecipient).save
+                val wishlist = new Wishlist(None, titleForm._1.trim, None, currentRecipient).save
 
                 Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist created")
             }
@@ -111,7 +106,7 @@ object WishController extends Controller with Secured {
                     case None => Wishlist.findAll
                     case Some(searchTerm) => Wishlist.searchForWishlistsContaining(searchTerm)
                 }
-                Ok(views.html.wishlist.listwishlists(wishlists,searchForm.fill(term)))
+                Ok(views.html.wishlist.listwishlists(wishlists,searchForm.fill(term),editWishlistForm))
             }
         )   
    }
@@ -148,9 +143,6 @@ object WishController extends Controller with Secured {
 
         Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish deleted")
    }
-
-
-    def listWishlists(username:String) = TODO
 
 
 

@@ -49,7 +49,7 @@ object Application extends Controller with Secured{
 
 	def index = Action { implicit request =>
     currentParticipant match {
-      case Some(recipient) => Ok(views.html.indexrecipient(WishController.simpleCreateWishlistForm))
+      case Some(recipient) => Ok(views.html.indexrecipient(WishController.editWishlistForm))
       case None => Ok(views.html.indexanon())
     }
 	}
