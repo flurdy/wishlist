@@ -36,7 +36,7 @@ object WishController extends Controller with Secured {
         simpleCreateWishlistForm.bindFromRequest.fold(
             errors => {
               Logger.warn("Create failed: " + errors)
-              BadRequest(views.html.application.indexdreamer(errors))
+              BadRequest(views.html.indexdreamer(errors))
             },
            titleForm => {
                 Logger.info("New wishlist: " + titleForm)

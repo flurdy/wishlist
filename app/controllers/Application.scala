@@ -49,8 +49,8 @@ object Application extends Controller with Secured{
 
 	def index = Action { implicit request =>
     currentParticipant match {
-      case Some(dreamer) => Ok(views.html.application.indexdreamer(WishController.simpleCreateWishlistForm))
-      case None => Ok(views.html.application.indexanon())
+      case Some(dreamer) => Ok(views.html.indexdreamer(WishController.simpleCreateWishlistForm))
+      case None => Ok(views.html.indexanon())
     }
 	}
 
@@ -58,7 +58,7 @@ object Application extends Controller with Secured{
   		registerForm.bindFromRequest.fold(
         errors => {
           Logger.warn("Registration failed: " + errors)
-          BadRequest(views.html.application.register(errors))
+          BadRequest(views.html.register(errors))
         },
    	   registeredForm => {
 	      	Logger.info("New registration: " + registeredForm._1)
@@ -77,13 +77,13 @@ object Application extends Controller with Secured{
   def redirectToRegisterForm = Action { implicit request =>
   		simpleRegisterForm.bindFromRequest.fold(
         errors => {
-          BadRequest(views.html.application.register(registerForm))
+          BadRequest(views.html.register(registerForm))
         },
    	   emailInForm => {
    	   	emailInForm match {
-   	   		case None => Ok(views.html.application.register(registerForm))
+   	   		case None => Ok(views.html.register(registerForm))
    	   		case Some(email) => {   	   	
-		         	Ok(views.html.application.register(	
+		         	Ok(views.html.register(	
 		         			registerForm.fill( email, None, email, "", "") ) )		
    	   		}
    	   	}
@@ -92,18 +92,18 @@ object Application extends Controller with Secured{
   }
 
 	def showRegisterForm = Action { implicit request =>
-		Ok(views.html.application.register(registerForm))
+		Ok(views.html.register(registerForm))
 	}
 
 	def showLoginForm = Action { implicit request =>
-		Ok(views.html.application.login(loginForm))
+		Ok(views.html.login(loginForm))
 	}
 
 	def login = Action { implicit request =>
 		loginForm.bindFromRequest.fold(
 			errors => {
 				Logger.info("Log in failed:"+ errors)
-				BadRequest(views.html.application.login(errors))
+				BadRequest(views.html.login(errors))
 			},
 			loggedInForm => {
 				Logger.debug("Logging in: " + loggedInForm._1)
@@ -116,11 +116,11 @@ object Application extends Controller with Secured{
    def showResetPassword = TODO 
 
    def about = Action { implicit request =>
-    Ok(views.html.application.about())
+    Ok(views.html.about())
   }
    
    def contact = Action { implicit request =>
-    Ok(views.html.application.contact())
+    Ok(views.html.contact())
   }
 
    def logout = Action {
