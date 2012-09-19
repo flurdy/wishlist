@@ -1,4 +1,4 @@
-@(title:String)(breadcrumb:Html)(cargo:Html)(implicit currentDreamer:Option[Dreamer])
+@(title:String)(breadcrumb:Html)(cargo:Html)(implicit currentRecipient:Option[Recipient])
 
 <!DOCTYPE html>
 
@@ -34,8 +34,8 @@
                                     <div id="innerhull" class="structure">
                                         <div id="jib" class="compartment">  
                                             <div id="logout-box">
-                                                @currentDreamer.map{ dreamer =>
-                                                    @dreamer.username
+                                                @currentRecipient.map{ recipient =>
+                                                    @recipient.username
                                                     <a href="@routes.Application.logout">log out</a>
                                                 }
                                             </div>  

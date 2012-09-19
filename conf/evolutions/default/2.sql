@@ -3,8 +3,8 @@
 # --- !Ups
 
 
-insert into dreamer (dreamerid,username,fullname,email,password) 
-	values ((select NEXTVAL('dreamer_seq')),'testuser','Test user','test@example.com','$2a$10$.LMFHFigeUeZwg3VZgZr3ekcKF6xFjjcnfPPxlTwJ0MAsdPGxXf8y');
+insert into recipient (recipientid,username,fullname,email,password) 
+	values ((select NEXTVAL('recipient_seq')),'testuser','Test user','test@example.com','$2a$10$.LMFHFigeUeZwg3VZgZr3ekcKF6xFjjcnfPPxlTwJ0MAsdPGxXf8y');
 
 
 insert into wishlist (wishlistid,title,description,recipientid)
@@ -16,7 +16,7 @@ insert into wishlist (wishlistid,title,description,recipientid)
 
 # --- !Downs
 
-delete from dreamer where username = 'testuser';
+delete from recipient where username = 'testuser';
 
 delete from wishlist where title = 'Christmas list for Ivar';
 delete from wishlist where title = 'Main list for Xerces';

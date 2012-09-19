@@ -10,7 +10,7 @@ case class Wishlist(
     wishlistId:Option[Long],
     title:String,
     description:Option[String],
-    recipient:Dreamer
+    recipient:Recipient
 ) {
 
 
@@ -29,7 +29,7 @@ object Wishlist {
       get[String]("title") ~
       get[Option[String]]("description") ~
       get[Long]("recipientid")  map {
-      case wishlistid~title~description~recipientid=> Wishlist( Some(wishlistid), title, description, Dreamer.findById(recipientid).get)
+      case wishlistid~title~description~recipientid=> Wishlist( Some(wishlistid), title, description, Recipient.findById(recipientid).get)
     }
   }
 
@@ -49,7 +49,7 @@ object Wishlist {
                 'wishlistid -> nextId,
                 'title -> wishlist.title,
                 'description -> wishlist.description,
-                'recipientid -> wishlist.recipient.dreamerId
+                'recipientid -> wishlist.recipient.recipientId
             ).executeInsert()
             wishlist.copy(wishlistId = Some(nextId))
         }

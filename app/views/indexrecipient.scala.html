@@ -1,4 +1,4 @@
-@(createWishlistForm:Form[String])(implicit flash:Flash, currentDreamer: Option[Dreamer])
+@(createWishlistForm:Form[String])(implicit flash:Flash, currentRecipient: Option[Recipient])
 
 @import helper._
 
@@ -41,7 +41,7 @@
 
 		<div class="well" >
 
-			@form(action = routes.WishController.create(currentDreamer.get.username), 'class -> "form-horizontal"){
+			@form(action = routes.WishController.create(currentRecipient.get.username), 'class -> "form-horizontal"){
 				<input type="text" class="input-xlarge" placeholder="Title of new wishlist" name="title" value="@createWishlistForm("title").value"/>
 				<button type="submit" class="btn btn-info input-small">create</button> 	
 			}

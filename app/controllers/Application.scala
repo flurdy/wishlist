@@ -28,7 +28,7 @@ object Application extends Controller with Secured{
      }
     }) verifying("Username is already taken", fields => fields match {
      case (username, fullname, email, password, confirmPassword) => {
-        !Dreamer.findByUsername(username.trim).isDefined
+        !Recipient.findByUsername(username.trim).isDefined
      }
     }) verifying("Email address is not valid", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
@@ -43,13 +43,13 @@ object Application extends Controller with Secured{
 	      "password" -> nonEmptyText(maxLength = 99),
       	"source" -> optional(text)
 	    ) verifying("Log in failed. Username does not exist or password is invalid", fields => fields match {
-	      case (username, password, source) => Dreamer.authenticate(username, password).isDefined
-    	})
+	      case (username, password, source) => Recipient.authenticate(username, password).isDefined
+    	}) 
 	)	
 
 	def index = Action { implicit request =>
     currentParticipant match {
-      case Some(dreamer) => Ok(views.html.indexdreamer(WishController.simpleCreateWishlistForm))
+      case Some(recipient) => Ok(views.html.indexrecipient(WishController.simpleCreateWishlistForm))
       case None => Ok(views.html.indexanon())
     }
 	}
@@ -63,13 +63,14 @@ object Application extends Controller with Secured{
    	   registeredForm => {
 	      	Logger.info("New registration: " + registeredForm._1)
 
-	      	val dreamer = Dreamer(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4))
+	      	val recipient = Recipient(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4))
 	      		
-	      	dreamer.save	
+	      	recipient.save	
 	      	
 	      	// TODO: Send email confirmation
 
-         	Redirect(routes.Application.index()).flashing("message"-> "Welcome, you have successfully registered")
+         	Redirect(routes.Application.index()).withSession(
+          "username" -> registeredForm._1).flashing("message"-> "Welcome, you have successfully registered")
       	}
       )
   }
@@ -145,17 +146,17 @@ trait Secured {
 		Results.Redirect(routes.Application.showLoginForm)      
   	}
 
-	implicit def currentParticipant(implicit session: Session): Option[Dreamer] = {
+	implicit def currentParticipant(implicit session: Session): Option[Recipient] = {
 		session.get(Security.username) match { 
 			case None => None
-			case Some(sessionUsername) => Dreamer.findByUsername( sessionUsername )
+			case Some(sessionUsername) => Recipient.findByUsername( sessionUsername )
 		}
 	}
 
-  def withCurrentDreamer(f: Dreamer => Request[AnyContent] => Result) = isAuthenticated {
+  def withCurrentRecipient(f: Recipient => Request[AnyContent] => Result) = isAuthenticated {
     username => implicit request =>
-      Dreamer.findByUsername(username).map {
-        dreamer => f(dreamer)(request)
+      Recipient.findByUsername(username).map {
+        recipient => f(recipient)(request)
       }.getOrElse(onUnauthenticated(request))
   }
 

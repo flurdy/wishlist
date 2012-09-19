@@ -66,26 +66,7 @@ ul.vertical li a { }
 #jib { color: black; }
 
 /*
-#hatch { vertical-align: top; }
-#hatch ul.vertical { vertical-align: top; }
-#hatch ul.vertical li { font-size: 0.8em; font-weight: bold; padding: 0.2em 0.2em; }
-#hatch ul.vertical li button { width: 100%; }
 
-
-#jib { text-align: center; }
-#jib h2 { font-size:1.4em; margin:0.05em 0.2em; }
-
-#foremast { text-align: center; }
-#foremast > img { width: 36em; height: 3em; }
-
-#tug > .compartment > iframe, #tug > .compartment img,
-#net > .compartment > iframe, #net > .compartment img { width: 36em; height: 3em; }
-#ama > .compartment > iframe, #ama > .compartment img { width: 6em; height: 27em; }
-
-#lighthouse > .compartment { height: 0.5em; }
-
-
-#port {  }
 .rotatemenu { margin: 1em 0 0 1em; padding: 0; }
 .rotatemenu li {
 	list-style: none;
@@ -105,12 +86,6 @@ ul.vertical li a { }
 .rotatemenu li a { text-decoration: none; color: black; }
 .rotatemenu li a:hover { text-decoration: underline; }
 
-#prow { 
-	font-size: 0.6em;
-	text-align: right;
-}
-#prow a { text-decoration:  none; color: black; }
-#prow a:hover { text-decoration:  underline; color: blue; }
 */
 
 #cargo .well-header {  font-size: 1.2em; font-weight: bold; }
@@ -133,6 +108,6 @@ ul.vertical li a { }
 
 #cargo #view-wishlist-page .control-group { margin-bottom: 30px; }
 
-#cargo #list-wishlists-page #wishlist-list { max-height: 20em; overflow: scroll; }
+#cargo #list-wishlists-page #wishlist-list { max-height: 20em; overflow: auto; }
 
 

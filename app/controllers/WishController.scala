@@ -32,23 +32,23 @@ object WishController extends Controller with Secured {
     }   
 
 
-    def create(username:String) = withCurrentDreamer { currentDreamer => implicit request =>
+    def create(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
         simpleCreateWishlistForm.bindFromRequest.fold(
             errors => {
               Logger.warn("Create failed: " + errors)
-              BadRequest(views.html.indexdreamer(errors))
+              BadRequest(views.html.indexrecipient(errors))
             },
            titleForm => {
                 Logger.info("New wishlist: " + titleForm)
 
-                val wishlist = new Wishlist(None, titleForm.trim, None, currentDreamer).save
+                val wishlist = new Wishlist(None, titleForm.trim, None, currentRecipient).save
 
                 Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist created")
             }
         )
     }
 
-    def showEditWishlist(username:String,wishlistId:Long) =  withCurrentDreamer { currentDreamer => implicit request =>
+    def showEditWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
         val wishes = Wishlist.findWishesForWishlist(wishlist)
@@ -56,7 +56,7 @@ object WishController extends Controller with Secured {
     }
 
 
-    def updateWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+    def updateWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         val wishes = Wishlist.findWishesForWishlist(wishlist)
         editWishlistForm.bindFromRequest.fold(
@@ -78,7 +78,7 @@ object WishController extends Controller with Secured {
 
 
 
-    def deleteWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+    def deleteWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
         Logger.info("Deleting wishlist: " + wishlistId)
 
         Wishlist.findById(wishlistId).get.delete
@@ -87,14 +87,14 @@ object WishController extends Controller with Secured {
     }
 
 
-    def showWishlist(username:String,wishlistId:Long) =  withCurrentDreamer { currentDreamer => implicit request =>
+    def showWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         val wishes = Wishlist.findWishesForWishlist(wishlist)
         Ok(views.html.wishlist.showwishlist(wishlist,wishes))
     }
 
 
-    def showConfirmDeleteWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+    def showConfirmDeleteWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         Ok(views.html.wishlist.deletewishlist(wishlist))
     }
@@ -117,7 +117,7 @@ object WishController extends Controller with Secured {
    }
 
 
-    def addWishToWishlist(username:String,wishlistId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+    def addWishToWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
         simpleAddWishForm.bindFromRequest.fold(
             errors => {
                 Logger.warn("Add failed: " + errors)
@@ -136,7 +136,7 @@ object WishController extends Controller with Secured {
    }
 
 
-   def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = withCurrentDreamer { currentDreamer => implicit request =>
+   def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
 
         val wishlist = Wishlist.findById(wishlistId).get
 
