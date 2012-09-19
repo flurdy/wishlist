@@ -1,4 +1,4 @@
-@(wishlist:Wishlist,wishes:Seq[Wish])(implicit flash:Flash, currentRecipient: Option[Recipient])
+@(wishlist:Wishlist,wishes:Seq[Wish],addWishForm:Form[String])(implicit flash:Flash, currentRecipient: Option[Recipient])
 
 @import helper._
 
@@ -12,6 +12,13 @@
 
 	    @flash.get("message").map { message =>
 	    <p class="alert alert-info">
+	    	 <button type="button" class="close" data-dismiss="alert">×</button>
+	        @message
+	    </p>
+	    }
+
+	    @flash.get("messageWarning").map { message =>
+	    <p class="alert alert-warning">
 	    	 <button type="button" class="close" data-dismiss="alert">×</button>
 	        @message
 	    </p>
@@ -36,8 +43,30 @@
 
 		<div class="well" id="wishlist-wishes">
 
+
+
+
 			<h4>Wishes</h4>
 
+				@for(wish <- wishes){
+					<div class="modal hide fade" id="wishModal-@wish.wishId" tabindex="-1" role="dialog" aria-labelledby="myModalLabel-@wish.wishId" aria-hidden="true">
+					  <div class="modal-header">
+					    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					    <h3 id="myModalLabel-@wish.wishId">@wish.title</h3>
+					  </div>
+					  <div class="modal-body">
+					    <p>@wish.description</p>
+					  </div>
+					  <div class="modal-footer">
+					    @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
+					    	@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
+									<button type="submit" class="btn btn-danger btn-small">delete wish</button>
+								}
+					 		}
+					    <button class="btn btn-small" data-dismiss="modal" aria-hidden="true">close</button>
+					  </div>
+					</div>
+				}
 			<table class="table table-striped">
 			<!--
 				<thead>
@@ -48,14 +77,10 @@
 			-->
 				<tbody>
 					@for(wish <- wishes){
+
 						<tr>
-							<td>@wish.title</td>
+							<td><a href="#wishModal-@wish.wishId" role="button" class="" data-toggle="modal">@wish.title</a></td>
 						</tr>
-						@if(wish.description.isDefined){
-							<tr>
-								<td>@wish.description</td>
-							</tr>
-						}
 					}
 				</tbody>
 			</table>
@@ -63,11 +88,21 @@
 		}
 
 
+	@if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
+		<div class="well" >
+			@form(action = routes.WishController.addWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
+				<input type="text" class="input-large" name="title" placeholder="New wish title" value="@addWishForm("title").value"/>
+				<button class="btn btn-success input-medium" type="submit">add wish</button>
+			}
+		</div>
+	}
+
+
 
 		<div class="well" >
 			<div class="control-group">
 				<div class="buttons">
-					<a class="btn btn-warning" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
+					<a class="btn btn-warning input-medium" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
 				</div>
 			</div>
 		</div>

@@ -47,7 +47,7 @@ object WishController extends Controller with Secured {
         val wishlist = Wishlist.findById(wishlistId).get
         val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
         val wishes = Wishlist.findWishesForWishlist(wishlist)
-        Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm, simpleAddWishForm))
+        Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
     }
 
 
@@ -57,7 +57,7 @@ object WishController extends Controller with Secured {
         editWishlistForm.bindFromRequest.fold(
             errors => {
               Logger.warn("Update failed: " + errors)
-              BadRequest(views.html.wishlist.editwishlist(wishlist,wishes,errors,simpleAddWishForm))
+              BadRequest(views.html.wishlist.editwishlist(wishlist,wishes,errors))
             }, 
             editForm => {
                 Logger.info("Updating wishlist: " + editForm)
@@ -85,7 +85,7 @@ object WishController extends Controller with Secured {
     def showWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
         val wishlist = Wishlist.findById(wishlistId).get
         val wishes = Wishlist.findWishesForWishlist(wishlist)
-        Ok(views.html.wishlist.showwishlist(wishlist,wishes))
+        Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
     }
 
 
@@ -125,7 +125,7 @@ object WishController extends Controller with Secured {
 
                 wish.save
 
-                Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added")
+                Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added")
             }
         )   
    }
@@ -141,7 +141,7 @@ object WishController extends Controller with Secured {
 
         wish.delete       
 
-        Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish deleted")
+        Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageWarning" -> "Wish deleted")
    }
 
 
