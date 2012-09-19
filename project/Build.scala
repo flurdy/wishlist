@@ -5,7 +5,7 @@ import PlayProject._
 object ApplicationBuild extends Build {
 
     val appName         = "wishlist"
-    val appVersion      = "6.0-SNAPSHOT"
+    val appVersion      = "7.0-SNAPSHOT"
 
     val appDependencies = Seq(
       "postgresql" % "postgresql" % "9.1-901-1.jdbc4",

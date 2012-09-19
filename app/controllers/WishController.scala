@@ -41,7 +41,7 @@ object WishController extends Controller with Secured {
            titleForm => {
                 Logger.info("New wishlist: " + titleForm)
 
-                val wishlist = new Wishlist(None, titleForm.trim, None, currentDreamer, currentDreamer).save
+                val wishlist = new Wishlist(None, titleForm.trim, None, currentDreamer).save
 
                 Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist created")
             }
@@ -155,42 +155,3 @@ object WishController extends Controller with Secured {
 
 
 }
-
-
-/*
-
-import models.User;
-import models.Wish;
-import models.Wishlist;
-import play.mvc.Controller;
-
-import java.util.List;
-
-public class WishController extends Controller {
-
-
-    public static void listWishlists(String username){
-        final User recipient = User.find("byUsername",username).first();
-        final List<Wishlist> wishlists= Wishlist.find("byRecipient",recipient).fetch();
-        render(recipient,wishlists);
-    }
-
-
-    public static void showWishlist(String username, Long listId){
-        final User recipient = User.find("byUsername",username).first();
-        final Wishlist wishlist= Wishlist.findById(listId);
-        render(recipient,wishlist);
-    }
-
-
-
-    public static void showWish(String username, Long listId, Long wishId){
-        final User recipient = User.find("byUsername",username).first();
-        final Wishlist wishlist= Wishlist.findById(listId);
-        final Wish wish= Wish.findById(wishId);
-        render(recipient,wishlist,wish);
-    }
-
-
-}
-*/

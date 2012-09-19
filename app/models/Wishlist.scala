@@ -10,8 +10,7 @@ case class Wishlist(
     wishlistId:Option[Long],
     title:String,
     description:Option[String],
-    recipient:Dreamer,
-    organiser:Dreamer
+    recipient:Dreamer
 ) {
 
 
@@ -29,9 +28,8 @@ object Wishlist {
     get[Long]("wishlistid") ~
       get[String]("title") ~
       get[Option[String]]("description") ~
-      get[Long]("recipientid") ~
-      get[Long]("organiserid")  map {
-      case wishlistid~title~description~recipientid~organiserid=> Wishlist( Some(wishlistid), title, description, Dreamer.findById(recipientid).get, Dreamer.findById(organiserid).get)
+      get[Long]("recipientid")  map {
+      case wishlistid~title~description~recipientid=> Wishlist( Some(wishlistid), title, description, Dreamer.findById(recipientid).get)
     }
   }
 
@@ -43,16 +41,15 @@ object Wishlist {
             SQL(
                 """
                     insert into wishlist
-                    (wishlistid,title,description,recipientid,organiserid) 
+                    (wishlistid,title,description,recipientid) 
                     values 
-                    ({wishlistid},{title},{description},{recipientid},{organiserid})
+                    ({wishlistid},{title},{description},{recipientid})
                 """
             ).on(
                 'wishlistid -> nextId,
                 'title -> wishlist.title,
                 'description -> wishlist.description,
-                'recipientid -> wishlist.recipient.dreamerId,
-                'organiserid -> wishlist.organiser.dreamerId
+                'recipientid -> wishlist.recipient.dreamerId
             ).executeInsert()
             wishlist.copy(wishlistId = Some(nextId))
         }
