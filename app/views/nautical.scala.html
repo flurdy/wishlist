@@ -34,12 +34,18 @@
                                     <div id="innerhull" class="structure">
                                         <div id="jib" class="compartment">  
                                             <div id="logout-box">
+                                                <ul class="breadcrumb">
                                                 @currentRecipient.map{ recipient =>
                                                     @recipient.username
-                                                    <a href="@routes.Application.logout">log out</a>
+                                                    <li><a href="@routes.Application.logout">log out</a></li>
+                                                }.getOrElse{
+                                                    <li><a href="@routes.Application.showLoginForm">log in</a>
+                                                   <span class="divider">/</span></li> 
+                                                    <li><a href="@routes.Application.showRegisterForm">register</a></li>
                                                 }
+                                                </ul>
                                             </div>  
-                                            <ul class="breadcrumb">
+                                            <ul class="breadcrumb" id="breadcrumb">
                                                 <li><a href="@routes.Application.index">home </a><span class="divider">/</span></li>
                                                 @breadcrumb
                                             </ul>    

@@ -60,10 +60,10 @@
 					  <div class="modal-footer">
 					    @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
 					    	@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
+					    			<button class="btn btn-small" data-dismiss="modal" aria-hidden="true">close</button>
 									<button type="submit" class="btn btn-danger btn-small">delete wish</button>
 								}
 					 		}
-					    <button class="btn btn-small" data-dismiss="modal" aria-hidden="true">close</button>
 					  </div>
 					</div>
 				}
