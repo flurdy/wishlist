@@ -2,26 +2,40 @@
 
 @import helper._
 
-@nautical("edit recipient " + recipient.username) {
+@nautical("delete recipient " + recipient.username) {
 	<li><a href="@routes.RecipientController.showProfile(recipient.username)">recipient</a></li>
 }{
 
 	
 	<div id="list-wishlists-page">
 
-		<h4>Edit recipient: @recipient.username</h4>
+		<h3>Delete recipient</h3>
 
-        @if(currentRecipient.isDefined && recipient == currentRecipient.get){
 
         <div class="well" >
-            <div class="control-group">
-                <div class="buttons">
-                    <a class="btn btn-danger input-medium" href="@routes.RecipientController.showDeleteRecipient(recipient.username)">delete recipient</a>
-                </div>
+
+            <div>
+
+                <h5>Username: @recipient.username</h5>
+                <h5>Full name: @recipient.fullname</h5>
+                <p>Please confirm you want to delete this recipient</p>
+
             </div>
         </div>
+        <div class="well" >
 
-         }
+            <div class="control-group">
+                <div class="buttons">
+                    @form(action = routes.RecipientController.deleteRecipient(recipient.username), 'class -> "form-horizontal"){
+                        <button type="submit" class="btn btn-danger input-medium">delete recipient</button>
+                    }
+                    <a class="btn input-small" href="@routes.RecipientController.showProfile(recipient.username)">Cancel</a>
+                </div>
+            </div>
+
+
+        </div>
+
 
 
 

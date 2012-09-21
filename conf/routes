@@ -39,7 +39,13 @@ POST		/:username/wishlist/:wishlistId/wish/delete 		controllers.WishController.d
 DELETE	/:username/wishlist/:wishlistId/wish/ 		controllers.WishController.deleteWishFromWishlist(username,wishlistId:Long,wishId:Long)
 	
 
-GET		/:username/ 		controllers.RecipientController.showProfile(username)
+GET		/recipient/:username/ 		        controllers.RecipientController.showProfile(username)
+GET		/recipient/:username/edit.html 		controllers.RecipientController.showEditRecipient(username)
+POST		/recipient/:username/update 	controllers.RecipientController.updateRecipient(username)
+PUT		/recipient/:username/ 	            controllers.RecipientController.updateRecipient(username)
+GET		/recipient/:username/delete.html 	controllers.RecipientController.showDeleteRecipient(username)
+POST		/recipient/:username/delete 	controllers.RecipientController.deleteRecipient(username)
+DELETE		/recipient/:username/           controllers.RecipientController.deleteRecipient(username)
 
 
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

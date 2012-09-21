@@ -16,7 +16,9 @@ case class Recipient (
     password: Option[String]
 ){
 
-    def save = Recipient.save(this)
+  def save = Recipient.save(this)
+
+  def delete = Recipient.delete(this)
 
 }
 
@@ -123,6 +125,21 @@ object Recipient {
             case None => None
         }
     }
+
+
+  def delete(recipient:Recipient) {
+    Logger.debug("Deleting recipient: "+ recipient.username)
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+                    delete from recipient
+                    where recipientid = {recipientid}
+        """
+      ).on(
+        'recipientid -> recipient.recipientId
+      ).execute()
+    }
+  }
 
 
 }
