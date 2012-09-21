@@ -39,6 +39,9 @@ POST		/:username/wishlist/:wishlistId/wish/delete 		controllers.WishController.d
 DELETE	/:username/wishlist/:wishlistId/wish/ 		controllers.WishController.deleteWishFromWishlist(username,wishlistId:Long,wishId:Long)
 	
 
+GET		/:username/ 		controllers.RecipientController.showProfile(username)
+
+
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 

@@ -148,5 +148,21 @@ object Wishlist {
 
 
 
+    def findWishlistsByUsername(username:String) : Seq[Wishlist] = {
+        val recipient = Recipient.findByUsername(username).get
+        DB.withConnection { implicit connection =>
+            SQL(
+                """
+                  SELECT * FROM wishlist
+                  where recipientid = {recipientid}
+                  ORDER BY title DESC
+                """
+            ).on(
+                'recipientid -> recipient.recipientId.get
+            ).as(Wishlist.simple *)
+        }
+    }
+
+
 }
 
