@@ -1,0 +1,46 @@
+@(recipient:Recipient,wishlists:Seq[Wishlist])(implicit flash:Flash, currentRecipient: Option[Recipient])
+
+@import helper._
+
+@nautical("recipient " + recipient.username) {
+	<li><a href="@routes.RecipientController.showProfile(recipient.username)">recipient</a></li>
+}{
+
+	
+	<div id="list-wishlists-page">
+
+		<h4>Recipient: @recipient.username</h4>
+
+		<div class="well" id="wishlist-list">
+
+            <h4>Wislists</h4>
+			<table class="table table-striped table-hover">
+				<tbody>
+				@for(wishlist <- wishlists){
+					<tr>
+						<td>
+							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
+						</td>
+					</tr>
+				}
+				</tbody>
+			</table>
+		</div>
+
+        @if(currentRecipient.isDefined && recipient == currentRecipient.get){
+
+        <div class="well" >
+            <div class="control-group">
+                <div class="buttons">
+                    <a class="btn btn-warning input-medium" href="@routes.RecipientController.showEditRecipient(recipient.username)">edit recipient</a>
+                </div>
+            </div>
+        </div>
+
+         }
+
+
+
+    </div>
+
+}
