@@ -1,0 +1,22 @@
+@()(implicit flash:Flash, currentRecipient: Option[Recipient])
+
+@import helper._
+
+@nautical("404 error") {
+}{
+
+        <div class="">
+    <h3>Huh? <small>(404)</small></h3>
+
+    <h4>We can't find it!</h4>
+
+    <br/>
+    <br/>
+
+    <p>
+         <a href="@routes.Application.index()">Return to the home page</a>
+    </p>
+
+        </div>
+
+}

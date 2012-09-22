@@ -47,58 +47,78 @@ object RecipientController extends Controller with Secured {
   )
 
 	def showProfile(username:String) = Action {  implicit request =>
-    val recipient = Recipient.findByUsername(username).get
-    val wishlists = Wishlist.findWishlistsByUsername(username)
-    Ok(views.html.recipient.profile(recipient,wishlists))
+    Recipient.findByUsername(username) match {
+      case Some(recipient) => {
+        val wishlists = Wishlist.findWishlistsByUsername(username)
+        Ok(views.html.recipient.profile(recipient,wishlists))
+      }
+      case None => NotFound(views.html.error.notfound())
+    }
   }
 
   def showEditRecipient(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
-    val recipient = Recipient.findByUsername(username).get
-    val editForm = editRecipientForm.fill(recipient.username,recipient.username,recipient.fullname,recipient.email)
-    Ok(views.html.recipient.editrecipient(recipient,editForm))
+    Recipient.findByUsername(username) match {
+      case Some(recipient) => {
+        val editForm = editRecipientForm.fill(recipient.username,recipient.username,recipient.fullname,recipient.email)
+        Ok(views.html.recipient.editrecipient(recipient,editForm))
+      }
+      case None => NotFound(views.html.error.notfound())
+    }
   }
 
   def showDeleteRecipient(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
-    val recipient = Recipient.findByUsername(username).get
-    Ok(views.html.recipient.deleterecipient(recipient))
+    Recipient.findByUsername(username) match {
+      case Some(recipient) => {
+        val recipient = Recipient.findByUsername(username).get
+        Ok(views.html.recipient.deleterecipient(recipient))
+      }
+      case None => NotFound(views.html.error.notfound())
+    }
   }
 
 
   def deleteRecipient(username:String) = withCurrentRecipient { currentEERecipient => implicit request =>
-    val recipient = Recipient.findByUsername(username).get
-
-    if( findCurrentRecipient == recipient ){
-      recipient.delete
-      Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
-    } else {
-      Logger.warn("Recipient {} can not delete recipient {}".format(findCurrentRecipient.get.recipientId,recipient.recipientId))
-      Redirect(routes.RecipientController.showDeleteRecipient(username)).flashing("messageError" -> "Permission denied")
+    Recipient.findByUsername(username) match {
+      case Some(recipient) => {
+        if( findCurrentRecipient == recipient ){
+          recipient.delete
+          Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
+        } else {
+          Logger.warn("Recipient {} can not delete recipient {}".format(findCurrentRecipient.get.recipientId,recipient.recipientId))
+          Redirect(routes.RecipientController.showDeleteRecipient(username)).flashing("messageError" -> "Permission denied")
+        }
+      }
+      case None => NotFound(views.html.error.notfound())
     }
   }
 
 
   def updateRecipient(username:String)  = withCurrentRecipient { currentEERecipient => implicit request =>
-    val recipient = Recipient.findByUsername(username).get
-    editRecipientForm.bindFromRequest.fold(
-      errors => {
-        Logger.warn("Update failed: " + errors)
-        BadRequest(views.html.recipient.editrecipient(recipient,errors))
-      },
-      editForm => {
-        if( findCurrentRecipient == recipient ){
-          val updatedRecipient = recipient.copy(
-            fullname=editForm._3,
-            email=editForm._4 )
+    Recipient.findByUsername(username) match {
+      case Some(recipient) => {
+        editRecipientForm.bindFromRequest.fold(
+          errors => {
+            Logger.warn("Update failed: " + errors)
+            BadRequest(views.html.recipient.editrecipient(recipient,errors))
+          },
+          editForm => {
+            if( findCurrentRecipient == recipient ){
+              val updatedRecipient = recipient.copy(
+                fullname=editForm._3,
+                email=editForm._4 )
 
-          updatedRecipient.update
+              updatedRecipient.update
 
-          Redirect(routes.RecipientController.showEditRecipient(username)).flashing("message" -> "Recipient updated")
-        } else {
-          Logger.warn("Recipient {} can not update recipient {}".format(findCurrentRecipient.get.recipientId,recipient.recipientId))
-          Redirect(routes.RecipientController.showEditRecipient(username)).flashing("messageError" -> "Permission denied")
-        }
+              Redirect(routes.RecipientController.showEditRecipient(username)).flashing("message" -> "Recipient updated")
+            } else {
+              Logger.warn("Recipient {} can not update recipient {}".format(findCurrentRecipient.get.recipientId,recipient.recipientId))
+              Redirect(routes.RecipientController.showEditRecipient(username)).flashing("messageError" -> "Permission denied")
+            }
+          }
+        )
       }
-    )
+      case None => NotFound(views.html.error.notfound())
+    }
   }
 
 

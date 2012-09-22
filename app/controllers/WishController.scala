@@ -5,6 +5,7 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
+import scala.None
 
 object WishController extends Controller with Secured {
 
@@ -41,18 +42,24 @@ object WishController extends Controller with Secured {
         )
     }
 
+
     def showEditWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
-        val wishlist = Wishlist.findById(wishlistId).get
-        val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
-        val wishes = Wishlist.findWishesForWishlist(wishlist)
-        Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
+          val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
+          val wishes = Wishlist.findWishesForWishlist(wishlist)
+          Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
+        }
+        case None => NotFound(views.html.error.notfound())
+      }
     }
 
 
     def updateWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-        val wishlist = Wishlist.findById(wishlistId).get
-        val wishes = Wishlist.findWishesForWishlist(wishlist)
-        editWishlistForm.bindFromRequest.fold(
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
+          val wishes = Wishlist.findWishesForWishlist(wishlist)
+          editWishlistForm.bindFromRequest.fold(
             errors => {
               Logger.warn("Update failed: " + errors)
               BadRequest(views.html.wishlist.editwishlist(wishlist,wishes,errors))
@@ -60,36 +67,49 @@ object WishController extends Controller with Secured {
             editForm => {
                 Logger.info("Updating wishlist: " + editForm)
 
-                val updatedWishlist = wishlist.copy(title=editForm._1,description=editForm._2)
-
-                updatedWishlist.update
+                wishlist.copy(title=editForm._1,description=editForm._2).update
 
                 Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist updated")
             }
-        )
+            )
+          }
+        case None => NotFound(views.html.error.notfound())
+      }
     }
 
 
 
     def deleteWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-        Logger.info("Deleting wishlist: " + wishlistId)
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
 
-        Wishlist.findById(wishlistId).get.delete
+          Logger.info("Deleting wishlist: " + wishlistId)
 
-        Redirect(routes.Application.index()).flashing("messageWarning" -> "Wishlist deleted")
+          Wishlist.findById(wishlistId).get.delete
+
+          Redirect(routes.Application.index()).flashing("messageWarning" -> "Wishlist deleted")
+        }
+        case None => NotFound(views.html.error.notfound())
+      }
     }
 
 
     def showWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
-        val wishlist = Wishlist.findById(wishlistId).get
-        val wishes = Wishlist.findWishesForWishlist(wishlist)
-        Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
+          val wishes = Wishlist.findWishesForWishlist(wishlist)
+          Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
+        }
+        case None => NotFound(views.html.error.notfound())
+      }
     }
 
 
     def showConfirmDeleteWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-        val wishlist = Wishlist.findById(wishlistId).get
-        Ok(views.html.wishlist.deletewishlist(wishlist))
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => Ok(views.html.wishlist.deletewishlist(wishlist))
+        case None => NotFound(views.html.error.notfound())
+      }
     }
 
 
@@ -111,37 +131,36 @@ object WishController extends Controller with Secured {
 
 
     def addWishToWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-        simpleAddWishForm.bindFromRequest.fold(
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
+          simpleAddWishForm.bindFromRequest.fold(
             errors => {
                 Logger.warn("Add failed: " + errors)
                 BadRequest
             }, 
             title => {
-                val wishlist = Wishlist.findById(wishlistId).get
-
-                val wish = Wish(None,title,None,Some(wishlist))
-
-                wish.save
-
+                Wish(None,title,None,Some(wishlist)).save
                 Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added")
             }
-        )   
+          )
+        }
+        case None => NotFound(views.html.error.notfound())
+      }
    }
 
 
    def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-
-        val wishlist = Wishlist.findById(wishlistId).get
-
+    Wishlist.findById(wishlistId) match {
+      case Some(wishlist) => {
         val wish = Wish.findById(wishId).get
-        
         // TODO: validate wish is part of wishlist
-
         // TODO: Permission
+          wish.delete
 
-        wish.delete       
-
-        Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageWarning" -> "Wish deleted")
+          Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageWarning" -> "Wish deleted")
+        }
+        case None => NotFound(views.html.error.notfound())
+      }
    }
 
 
