@@ -23,10 +23,16 @@
 	        @message
 	    </p>
 	    }
-	    
-		
 
-		<div class="well" >
+        @for(error <- addWishForm.errors){
+        <p class="alert alert-error">
+            @error.message: @error.key
+        </p>
+        }
+
+
+
+        <div class="well" >
 		
 			<h3>@wishlist.title</h3>
 		

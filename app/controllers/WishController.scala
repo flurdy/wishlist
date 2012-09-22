@@ -136,7 +136,8 @@ object WishController extends Controller with Secured {
           simpleAddWishForm.bindFromRequest.fold(
             errors => {
                 Logger.warn("Add failed: " + errors)
-                BadRequest
+              val wishes = Wishlist.findWishesForWishlist(wishlist)
+                BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors))
             }, 
             title => {
                 Wish(None,title,None,Some(wishlist)).save
