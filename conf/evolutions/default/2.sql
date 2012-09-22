@@ -11,16 +11,16 @@ insert into recipient (recipientid,username,fullname,email,password)
 
 
 insert into wishlist (wishlistid,title,description,recipientid)
-	values ((select NEXTVAL('wishlist_seq')),'Christmas list for Ivar','',(select recipientid from recipient where username='testuser'));
+	values ((select NEXTVAL('wishlist_seq')),'Christmas list','',(select recipientid from recipient where username='testuser'));
 
 insert into wishlist (wishlistid,title,description,recipientid)
-	values ((select NEXTVAL('wishlist_seq')),'Main list for Xerxes','',(select recipientid from recipient where username='anotheruser'));
+	values ((select NEXTVAL('wishlist_seq')),'Xerxes wishes','',(select recipientid from recipient where username='anotheruser'));
 
 insert into wish (wishid,title,description,wishlistid)
-	values ((select NEXTVAL('wish_seq')),'Red car','',(select wishlistid from wishlist where title='Christmas list for Ivar'));
+	values ((select NEXTVAL('wish_seq')),'Red car','',(select wishlistid from wishlist where title='Christmas list'));
 
 insert into wish (wishid,title,description,wishlistid)
-	values ((select NEXTVAL('wish_seq')),'Blue watch','',(select wishlistid from wishlist where title='Christmas list for Ivar'));
+	values ((select NEXTVAL('wish_seq')),'Blue watch','',(select wishlistid from wishlist where title='Christmas list'));
 
 
 # --- !Downs

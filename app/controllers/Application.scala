@@ -50,8 +50,11 @@ object Application extends Controller with Secured{
 	)	
 
 	def index = Action { implicit request =>
-    currentParticipant match {
-      case Some(recipient) => Ok(views.html.indexrecipient(WishController.editWishlistForm))
+    findCurrentRecipient match {
+      case Some(recipient) => {
+        val wishlists = Wishlist.findWishlistsByUsername(recipient.username)
+        Ok(views.html.indexrecipient(WishController.editWishlistForm,wishlists))
+      }
       case None => Ok(views.html.indexanon())
     }
 	}
@@ -130,39 +133,6 @@ object Application extends Controller with Secured{
       Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")
    }
   
-}
-
-
-
-trait Secured {
-
-  	def username(request: RequestHeader) = request.session.get(Security.username)
-
-  	def isAuthenticated(f: => String => Request[AnyContent] => Result) = {
-    	Security.Authenticated(username, onUnauthenticated) { username =>
-      	  Action(request => f(username)(request))
-   	}
-  	}
-	
-	private def onUnauthenticated(request: RequestHeader) = {
-		Results.Redirect(routes.Application.showLoginForm)      
-  	}
-
-	implicit def currentParticipant(implicit session: Session): Option[Recipient] = {
-		session.get(Security.username) match { 
-			case None => None
-			case Some(sessionUsername) => Recipient.findByUsername( sessionUsername )
-		}
-	}
-
-  def withCurrentRecipient(f: Recipient => Request[AnyContent] => Result) = isAuthenticated {
-    username => implicit request =>
-      Recipient.findByUsername(username).map {
-        recipient => f(recipient)(request)
-      }.getOrElse(onUnauthenticated(request))
-  }
-
-
 }
 
 

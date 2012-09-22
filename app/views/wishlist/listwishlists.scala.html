@@ -26,7 +26,7 @@
 							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
 						</td>
 						<td>
-							@wishlist.recipient.username
+                            <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a>
 						</td>
 					</tr>
 				}

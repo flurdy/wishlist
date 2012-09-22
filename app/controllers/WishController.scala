@@ -6,8 +6,6 @@ import play.api.data._
 import play.api.data.Forms._
 import models._
 
-
-
 object WishController extends Controller with Secured {
 
 
@@ -138,6 +136,8 @@ object WishController extends Controller with Secured {
         val wish = Wish.findById(wishId).get
         
         // TODO: validate wish is part of wishlist
+
+        // TODO: Permission
 
         wish.delete       
 

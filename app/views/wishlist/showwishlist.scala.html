@@ -30,7 +30,7 @@
 		
 			<h3>@wishlist.title</h3>
 		
-			<p>A wishlist for <em>@wishlist.recipient.username</em></p>
+			<p>A wishlist for <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a></p>
 
 			<p>@wishlist.description</p>
 
@@ -68,13 +68,6 @@
 					</div>
 				}
 			<table class="table table-striped">
-			<!--
-				<thead>
-					<tr>
-						<th></th>
-					</tr>
-				</thead>
-			-->
 				<tbody>
 					@for(wish <- wishes){
 
@@ -95,18 +88,18 @@
 				<button class="btn btn-success input-medium" type="submit">add wish</button>
 			}
 		</div>
-	}
 
 
 
 		<div class="well" >
 			<div class="control-group">
 				<div class="buttons">
-					<a class="btn btn-warning input-medium" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
+					<a class="btn btn-warning input-small" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
 				</div>
 			</div>
 		</div>
 
+        }
 
 	
 	</div>

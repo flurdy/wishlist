@@ -64,20 +64,20 @@ object RecipientController extends Controller with Secured {
   }
 
 
-  def deleteRecipient(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
+  def deleteRecipient(username:String) = withCurrentRecipient { currentEERecipient => implicit request =>
     val recipient = Recipient.findByUsername(username).get
 
-    if( currentRecipient == recipient ){
+    if( findCurrentRecipient == recipient ){
       recipient.delete
       Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
     } else {
-      Logger.warn("Recipient {} can not delete recipient {}".format(currentRecipient.recipientId,recipient.recipientId))
+      Logger.warn("Recipient {} can not delete recipient {}".format(findCurrentRecipient.get.recipientId,recipient.recipientId))
       Redirect(routes.RecipientController.showDeleteRecipient(username)).flashing("messageError" -> "Permission denied")
     }
   }
 
 
-  def updateRecipient(username:String)  = withCurrentRecipient { currentRecipient => implicit request =>
+  def updateRecipient(username:String)  = withCurrentRecipient { currentEERecipient => implicit request =>
     val recipient = Recipient.findByUsername(username).get
     editRecipientForm.bindFromRequest.fold(
       errors => {
@@ -85,7 +85,7 @@ object RecipientController extends Controller with Secured {
         BadRequest(views.html.recipient.editrecipient(recipient,errors))
       },
       editForm => {
-        if( currentRecipient == recipient ){
+        if( findCurrentRecipient == recipient ){
           val updatedRecipient = recipient.copy(
             fullname=editForm._3,
             email=editForm._4 )
@@ -94,7 +94,7 @@ object RecipientController extends Controller with Secured {
 
           Redirect(routes.RecipientController.showEditRecipient(username)).flashing("message" -> "Recipient updated")
         } else {
-          Logger.warn("Recipient {} can not update recipient {}".format(currentRecipient.recipientId,recipient.recipientId))
+          Logger.warn("Recipient {} can not update recipient {}".format(findCurrentRecipient.get.recipientId,recipient.recipientId))
           Redirect(routes.RecipientController.showEditRecipient(username)).flashing("messageError" -> "Permission denied")
         }
       }
