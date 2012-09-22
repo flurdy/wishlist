@@ -20,6 +20,8 @@ case class Recipient (
 
   def delete = Recipient.delete(this)
 
+  def update = Recipient.update(this)
+
 }
 
 object Recipient {
@@ -138,6 +140,26 @@ object Recipient {
       ).on(
         'recipientid -> recipient.recipientId
       ).execute()
+    }
+  }
+
+
+
+  def update(recipient:Recipient) = {
+    Logger.debug("Updating recipient: "+recipient.username)
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            update recipient
+            set fullname = {fullname},
+            email = {email}
+            where recipientid = {recipientid}
+        """
+      ).on(
+        'recipientid -> recipient.recipientId,
+        'fullname -> recipient.fullname,
+        'email -> recipient.email
+      ).executeUpdate()
     }
   }
 

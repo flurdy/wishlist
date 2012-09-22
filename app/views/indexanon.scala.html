@@ -10,15 +10,22 @@
 
 
 
-	    @flash.get("message").map { message =>
-	    <p class="alert alert-info">
-	    	 <button type="button" class="close" data-dismiss="alert">×</button>
-	        @message
-	    </p>
-	    }
-	    
-	    
-	   <div class="well">
+        @flash.get("message").map { message =>
+        <p class="alert alert-info">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            @message
+        </p>
+        }
+
+        @flash.get("messageWarning").map { message =>
+        <p class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            @message
+        </p>
+        }
+
+
+        <div class="well">
 			<p>
 				<strong>Wish</strong> is the place to keep your wish lists online, <br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;

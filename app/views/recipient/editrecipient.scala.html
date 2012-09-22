@@ -1,4 +1,4 @@
-@(recipient:Recipient,editRecipientForm:Form[(String,String)])(implicit flash:Flash, currentRecipient: Option[Recipient])
+@(recipient:Recipient,editRecipientForm:Form[(String,String,Option[String],String)])(implicit flash:Flash, currentRecipient: Option[Recipient])
 
 @import helper._
 
@@ -8,13 +8,20 @@
 
 
     @flash.get("message").map { message =>
-    <p class="alert alert-info">
-        <button type="button" class="close" data-dismiss="alert">×</button>
-        @message
-    </p>
+        <p class="alert alert-info">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            @message
+        </p>
     }
 
-    @for(error <- editRecipientForm.errors){
+    @flash.get("messageWarning").map { message =>
+        <p class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            @message
+       </p>
+    }
+
+@for(error <- editRecipientForm.errors){
     <p class="alert alert-error">
         @error.message: @error.key
     </p>
@@ -28,11 +35,11 @@
 
         <div class="well" >
             @form(action = routes.RecipientController.updateRecipient(recipient.username), 'class -> "form-horizontal"){
-
+            <input type="hidden" name="oldusername" value="@editRecipientForm("oldusername").value"/>
             <div class="control-group">
                 <label class="control-label" for="inputUsername">Username</label>
                 <div class="controls">
-                    <input type="text" class="input-xlarge" id="inputUsername" name="username" placeholder="" value="@editRecipientForm("username").value"/>
+                    <input type="text" class="input-xlarge" id="inputUsername" name="username" placeholder="" value="@editRecipientForm("username").value" readonly="readonly" title="Contact support to change username"/>
                 </div>
             </div>
 
@@ -40,6 +47,19 @@
                 <label class="control-label" for="inputFullname">Full name</label>
                 <div class="controls">
                     <input type="text" class="input-xlarge" id="inputFullname" name="fullname" placeholder="" value="@editRecipientForm("fullname").value"/>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="inputEmail">Email</label>
+                <div class="controls">
+                    <input type="text" class="input-xlarge" id="inputEmail" name="email" placeholder="" value="@editRecipientForm("email").value"/>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="buttons">
+                    <button class="btn btn-warning input-medium">update recipient</button>
                 </div>
             </div>
 

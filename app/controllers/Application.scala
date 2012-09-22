@@ -9,8 +9,6 @@ import models._
 object Application extends Controller with Secured{
 
 
-	val ValidEmailAddress = """^[0-9a-zA-Z]([+-_\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9}$""".r
-
 	val simpleRegisterForm = Form {
 		"email" -> optional(text(maxLength = 99))
  	}	
@@ -26,13 +24,17 @@ object Application extends Controller with Secured{
       case (username, fullname, email, password, confirmPassword) => {
         password.trim == confirmPassword.trim
      }
-    }) verifying("Username is already taken", fields => fields match {
-     case (username, fullname, email, password, confirmPassword) => {
-        !Recipient.findByUsername(username.trim).isDefined
-     }
-    }) verifying("Email address is not valid", fields => fields match {
+    })  verifying("Email address is not valid", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
-      	ValidEmailAddress.findFirstIn(email.trim).isDefined
+        RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+      }
+    }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
+      case (username, fullname, email, password, confirmPassword) => {
+        RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
+      }
+    }) verifying("Username is already taken", fields => fields match {
+      case (username, fullname, email, password, confirmPassword) => {
+        !Recipient.findByUsername(username.trim).isDefined
       }
     })
   )
