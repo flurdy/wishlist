@@ -10,23 +10,6 @@
 		<h2>Log in</h2>
 
 
-	    @flash.get("message").map { message =>
-	    <p class="alert alert-info">
-	        @message
-	    </p>
-	    }
-
-	    @flash.get("warningMessage").map { message =>
-	    <p class="alert alert-warning">
-	        @message
-	    </p>
-	    }
-
-	    @flash.get("errorMessage").map { message =>
-	    <p class="alert alert-error">
-	        @message
-	    </p>
-	    }
 
 	    @for(error <- loginForm.errors){
 	    <p class="alert alert-error">

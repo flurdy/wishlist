@@ -75,7 +75,7 @@ object Application extends Controller with Secured{
 	      	// TODO: Send email confirmation
 
          	Redirect(routes.Application.index()).withSession(
-          "username" -> registeredForm._1).flashing("message"-> "Welcome, you have successfully registered")
+          "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered")
       	}
       )
   }

@@ -10,20 +10,6 @@
 
 
 
-	    @flash.get("message").map { message =>
-	    <p class="alert alert-info">
-	    	 <button type="button" class="close" data-dismiss="alert">×</button>
-	        @message
-	    </p>
-	    }
-
-	    @flash.get("messageWarning").map { message =>
-	    <p class="alert alert-warning">
-	    	 <button type="button" class="close" data-dismiss="alert">×</button>
-	        @message
-	    </p>
-	    }
-
 	    @for(error <- createWishlistForm.errors){
 	    <p class="alert alert-error">
 	        @error.message: @error.key

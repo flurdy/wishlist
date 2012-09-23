@@ -17,7 +17,7 @@ insert into wishlist (wishlistid,title,description,recipientid)
 	values ((select NEXTVAL('wishlist_seq')),'Xerxes wishes','',(select recipientid from recipient where username='anotheruser'));
 
 insert into wish (wishid,title,description,wishlistid)
-	values ((select NEXTVAL('wish_seq')),'Red car','',(select wishlistid from wishlist where title='Christmas list'));
+	values ((select NEXTVAL('wish_seq')),'Red car','with 4 wheels',(select wishlistid from wishlist where title='Christmas list'));
 
 insert into wish (wishid,title,description,wishlistid)
 	values ((select NEXTVAL('wish_seq')),'Blue watch','',(select wishlistid from wishlist where title='Christmas list'));
