@@ -40,38 +40,46 @@
 			<h4>Wishes</h4>
 
 				@for(wish <- wishes){
-					<div class="modal hide fade" id="wishModal-@wish.wishId.get" tabindex="-1" role="dialog" aria-labelledby="myModalLabel-@wish.wishId.get" aria-hidden="true">
-					  <div class="modal-header">
-					    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-					    <h3 id="wishModalLabel-@wish.wishId.get" @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){ class="editable" }><span>@wish.title</span> <i class="icon-pencil"></i></h3>
-					  </div>
-					  <div class="modal-body editable-area">
-                          @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
-                            <p>
-                                <i class="icon-pencil pull-right"></i>
-                                <span>@wish.description</span>
-                            </p>
-                          } else {
-                            <p>@wish.description</p>
-                          }
-					  </div>
-					  <div class="modal-footer">
-					    @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
-                            <button class="btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true">cancel</button>
-                          @form(action = routes.WishController.updateWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline",'onsubmit -> "updateWish(@wish.wishId,this); return false;" ){
-                              <input type="hidden" name="title" value="@wish.title"/>
-                              <input type="hidden" name="description" value="@wish.description"/>
-                                <button class="btn btn-success input-small btn-small" type="submit">update wish</button>
-                          }
-					    	@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
-									<button type="submit" class="btn btn-danger input-small btn-small">delete wish</button>
-								}
-					 	} else {
-                            <button class="btn btn-small input-small btn-primary" data-dismiss="modal" aria-hidden="true">close</button>
+					<div class="modal hide fade" id="wishModal-@wish.wishId.get" tabindex="-1" role="dialog" aria-labelledby="wishModalLabel-@wish.wishId.get" aria-hidden="true">
+                        @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
+                            @form(action = routes.WishController.updateWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline update-wish-form" ){
+                                <input type="hidden" name="wishId" value="@wish.wishId.get"/>
+                                <input type="hidden" name="title" value="@wish.title"/>
+                                <input type="hidden" name="description" value="@wish.description"/>
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                    <h3 id="wishModalLabel-@wish.wishId.get" class="editable"><span>@wish.title</span> <i class="icon-pencil"></i></h3>
+                                </div>
+                                <div class="modal-body editable-area">
+                                    <p>
+                                        <i class="icon-pencil pull-right"></i>
+                                        <span>@wish.description</span>
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true">cancel</button>
+                                    <button class="btn btn-success input-small btn-small" type="submit">update wish</button>
+                            }
+                            @form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
+                                    <button type="submit" class="btn btn-danger input-small btn-small">delete wish</button>
+                            }
+                                </div>
+                        } else {
+                          <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h3 id="wishModalLabel-@wish.wishId.get"><span>@wish.title</span></h3>
+                          </div>
+                          <div class="modal-body">
+                                <p>@wish.description</p>
+                          </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true">cancel</button>
+                            </div>
                         }
-					  </div>
 					</div>
 				}
+
+
 			<table class="table table-striped">
 				<tbody>
 					@for(wish <- wishes){
@@ -82,6 +90,7 @@
 				</tbody>
 			</table>
 		</div>
+
 		}
 
 
@@ -153,15 +162,19 @@
                     .contents()
                     .replaceWith(contents);
             });
+        $(".modal .update-wish-form")
+            .submit(function(e) {
+                e.preventDefault();
+                var wishId = $('input[name="wishId"]',this).val();
+                var title = $.trim($('.modal-header .editable span',this).html());
+                var description = $.trim($('.modal-body span',this).html());
+                $('input[name="title"]',this).val(title);
+                $('input[name="description"]',this).val(description);
+                alert($('input[name="title"]',this).val());
+                alert($('input[name="description"]',this).val());
+            });
+
     });
-
-    function updateWish(wishId,form){
-        var $titleField = $.find('#wishModalLabel-'+wishId + ' span');
-        var contents = $.trim($titleField.html());
-        alert("OO="+contents);
-        return false;
-    }
-
 </script>
 
 

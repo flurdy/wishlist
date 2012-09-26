@@ -23,7 +23,14 @@ object WishController extends Controller with Secured {
 
     val simpleAddWishForm = Form {
         "title" -> text(maxLength = 180,minLength = 2 )
-    }   
+    }
+
+    val editWishForm = Form(
+      tuple(
+        "title" -> nonEmptyText(maxLength = 180,minLength = 2 ),
+        "description" -> optional(text(maxLength = 2000))
+      )
+    )
 
 
     def create(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
@@ -136,7 +143,7 @@ object WishController extends Controller with Secured {
           simpleAddWishForm.bindFromRequest.fold(
             errors => {
                 Logger.warn("Add failed: " + errors)
-              val wishes = Wishlist.findWishesForWishlist(wishlist)
+                val wishes = Wishlist.findWishesForWishlist(wishlist)
                 BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors))
             }, 
             title => {
@@ -166,7 +173,32 @@ object WishController extends Controller with Secured {
 
 
 
-  def updateWish(username:String,wishlistId:Long,wishId:Long) = TODO
+  def updateWish(username:String,wishlistId:Long,wishId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
+    Wishlist.findById(wishlistId) match {
+      case Some(wishlist) => {
+        Wish.findById(wishId) match {
+          case Some(wish) => {
+            editWishForm.bindFromRequest.fold(
+              errors => {
+                Logger.warn("Update failed: " + errors)
+                val wishes = Wishlist.findWishesForWishlist(wishlist)
+                BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
+              },
+              editForm => {
+                Logger.debug("Update title: " + editForm._1)
+                wish.copy(title=editForm._1,description=editForm._2).update
+                Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish updated")
+              }
+            )
+          }
+          case None => NotFound(views.html.error.notfound())
+        }
+      }
+      case None => NotFound(views.html.error.notfound())
+    }
+  }
+
+
 
 
 }

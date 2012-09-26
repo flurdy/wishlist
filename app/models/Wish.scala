@@ -20,6 +20,8 @@ case class Wish(
 
     def delete = Wish.delete(this)
 
+    def update = Wish.update(this)
+
 }
 
 
@@ -85,5 +87,24 @@ object Wish {
         }
     }
 
-    
+  def update(wish:Wish) = {
+    Logger.debug("Updating wish: "+wish.wishId)
+    DB.withConnection { implicit connection =>
+      val nextId = SQL("SELECT NEXTVAL('wish_seq')").as(scalar[Long].single)
+      SQL(
+        """
+                    update wish
+                    set title = {title}, description = {description}
+                    where wishid = {wishid}
+        """
+      ).on(
+        'wishid -> wish.wishId,
+        'title -> wish.title,
+        'description -> wish.description
+      ).executeInsert()
+      wish
+    }
+  }
+
+
 }
