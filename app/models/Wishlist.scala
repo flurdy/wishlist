@@ -28,8 +28,16 @@ object Wishlist {
     get[Long]("wishlistid") ~
       get[String]("title") ~
       get[Option[String]]("description") ~
-      get[Long]("recipientid")  map {
-      case wishlistid~title~description~recipientid=> Wishlist( Some(wishlistid), title, description, Recipient.findById(recipientid).get)
+      get[Long]("recipientid") map {
+      case wishlistid~title~description~recipientid=> {
+        Recipient.findById(recipientid) match {
+            case Some(recipient) => Wishlist( Some(wishlistid), title, description, recipient)
+            case None => {
+                Logger.error("Wishlist {} recipient {} not found".format(wishlistid,recipientid))
+                null
+            }
+        }
+      }
     }
   }
 
