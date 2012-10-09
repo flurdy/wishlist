@@ -17,7 +17,6 @@ case class Wish(
 
     def save = Wish.save(this)
 
-
     def delete = Wish.delete(this)
 
     def update = Wish.update(this)

@@ -42,7 +42,7 @@
 			<table class="table table-striped">
 				<tbody>
 					@for(wish <- wishes){
-                        @showwish(wishlist,wish,currentRecipient)
+                        @showwish(wishlist,wish)
 					}
 				</tbody>
 			</table>
@@ -85,6 +85,7 @@
 </style>
 <script type="text/javascript">
     $(document).ready(function(){
+
         $(".editable, .editable-area")
             .hover(function() {
                 $(this).find(':first-child:input').toggleClass("over-inline");
@@ -110,6 +111,7 @@
                         $editable.trigger('blur');
                     });
             });
+
         $(".editable span, .editable-area span")
             .blur(function(e) {
                 var $editable = $(this);
@@ -119,6 +121,7 @@
                     .contents()
                     .replaceWith(contents);
             });
+
         $(".modal .update-wish-form")
             .submit(function(e) {
                 e.preventDefault();
@@ -127,8 +130,7 @@
                 var description = $.trim($('.modal-body span',this).html());
                 $('input[name="title"]',this).val(title);
                 $('input[name="description"]',this).val(description);
-                alert($('input[name="title"]',this).val());
-                alert($('input[name="description"]',this).val());
+                this.submit();
             });
 
     });

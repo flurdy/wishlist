@@ -182,7 +182,7 @@ object WishController extends Controller with Secured {
               errors => {
                 Logger.warn("Update failed: " + errors)
                 val wishes = Wishlist.findWishesForWishlist(wishlist)
-                BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
+                 Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Wish update failed")
               },
               editForm => {
                 Logger.debug("Update title: " + editForm._1)

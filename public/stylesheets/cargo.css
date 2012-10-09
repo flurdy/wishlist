@@ -113,3 +113,4 @@ ul.vertical li a { }
 
 #cargo .modal { width: 30em; margin: -10em 0 0 -15em; }
 
+#cargo .modal .well { margin-bottom: 0;}
