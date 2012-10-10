@@ -4,8 +4,8 @@
 
 
 CREATE SEQUENCE recipient_seq START WITH 1000;
-CREATE SEQUENCE wishlist_seq START WITH 1000;
-CREATE SEQUENCE wish_seq START WITH 1000;
+CREATE SEQUENCE wishlist_seq START WITH 2000;
+CREATE SEQUENCE wish_seq START WITH 3000;
 
 
 CREATE TABLE recipient (
@@ -18,16 +18,16 @@ CREATE TABLE recipient (
 
 CREATE TABLE wishlist (
 	wishlistid 		SERIAL PRIMARY KEY,
-	title				VARCHAR(100) NOT NULL,
+	title				VARCHAR(200) NOT NULL,
 	description		VARCHAR(2000),
-	recipientid		BIGINT NOT NULL
+	recipientid		BIGINT REFERENCES recipient (recipientid) ON DELETE CASCADE
 );
 
 CREATE TABLE wish (
 	wishid 		SERIAL PRIMARY KEY,
-	title				VARCHAR(100) NOT NULL,
+	title				VARCHAR(200) NOT NULL,
 	description		VARCHAR(2000),
-	wishlistid		BIGINT NOT NULL
+	wishlistid		BIGINT REFERENCES wishlist (wishlistid) ON DELETE CASCADE
 );
 
 
