@@ -37,7 +37,7 @@
 					<div class="controls" id="buttons-row">
 						<button type="submit" class="btn btn-primary input-small">log in</button>
 						<a href="@routes.Application.showRegisterForm" class="btn btn-inverse">register</a>
-					   @for(error <- loginForm.errors){
+					   @if(loginForm.errors){
 					   	<a href="@routes.Application.showResetPassword" class="btn btn-warning">reset password</a>
 					   }
 					</div>
