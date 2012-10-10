@@ -11,7 +11,7 @@
 
 
 	    @for(error <- createWishlistForm.errors){
-	    <p class="alert alert-error">
+	    <p class="alert alert-error"><button type="button" class="close" data-dismiss="alert">×</button>
 	        @error.message: @error.key
 	    </p>
 	    }
@@ -19,8 +19,10 @@
 
 		<div class="well" id="search-box">	
 			@form(action = routes.WishController.search(), 'class -> "form-search", 'method -> "get"){
+			<div class="input-append">
 				<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient" name="term"/>
 				<button type="submit" class="btn btn-primary input-small">search</button> 
+			</div>
 			}
 		</div>
 

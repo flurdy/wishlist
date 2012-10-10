@@ -83,6 +83,14 @@ object Wishlist {
         DB.withConnection { implicit connection =>
             SQL(
                 """
+                    delete from wish
+                    where wishlistid = {wishlistid}
+                """
+            ).on(
+                'wishlistid -> wishlist.wishlistId
+            ).execute()
+            SQL(
+                """
                     delete from wishlist
                     where wishlistid = {wishlistid}
                 """

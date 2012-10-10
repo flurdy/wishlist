@@ -131,6 +131,9 @@ object Recipient {
 
   def delete(recipient:Recipient) {
     Logger.debug("Deleting recipient: "+ recipient.username)
+    Wishlist.findWishlistsByUsername(recipient.username).map { wishlist => 
+      wishlist.delete
+    }
     DB.withConnection { implicit connection =>
       SQL(
         """
