@@ -44,7 +44,7 @@ object WishController extends Controller with Secured {
 
                 val wishlist = new Wishlist(None, titleForm._1.trim, None, currentRecipient).save
 
-                Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("messageSuccess" -> "Wishlist created")
+                Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageSuccess" -> "Wishlist created")
             }
         )
     }
