@@ -40,26 +40,41 @@ object WishController extends Controller with Secured {
               BadRequest(views.html.wishlist.createwishlist(errors))
             },
            titleForm => {
+              if(username == currentRecipient.username)  {
                 Logger.info("New wishlist: " + titleForm._1)
 
                 val wishlist = new Wishlist(None, titleForm._1.trim, None, currentRecipient).save
 
                 Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageSuccess" -> "Wishlist created")
-            }
+              } else {
+                  Logger.warn("Recipient %s tried to create wishlist for %d".format(currentRecipient.username,username))
+                 Unauthorized(views.html.error.permissiondenied())
+              }
+          }
         )
     }
 
 
-    def showEditWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
+  def showEditWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
+    if(username == currentRecipient.username){
       Wishlist.findById(wishlistId) match {
         case Some(wishlist) => {
-          val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
-          val wishes = Wishlist.findWishesForWishlist(wishlist)
-          Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
+          if(currentRecipient == wishlist.recipient){
+            val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
+            val wishes = Wishlist.findWishesForWishlist(wishlist)
+            Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
+          } else {
+            Logger.warn("Recipient %s can not edit wishlist %d".format(currentRecipient.username,wishlistId))
+            Unauthorized(views.html.error.permissiondenied())
+          }
         }
         case None => NotFound(views.html.error.notfound())
       }
+    } else {
+      Logger.warn("Recipient %s tried to edit wishlist for %d".format(currentRecipient.username,username))
+      Unauthorized(views.html.error.permissiondenied())            
     }
+  }
 
 
     def updateWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
@@ -72,12 +87,22 @@ object WishController extends Controller with Secured {
               BadRequest(views.html.wishlist.editwishlist(wishlist,wishes,errors))
             }, 
             editForm => {
-                Logger.info("Updating wishlist: " + editForm)
+              if(username == currentRecipient.username){
+                if(currentRecipient == wishlist.recipient){
+                  Logger.info("Updating wishlist: " + editForm)
 
-                wishlist.copy(title=editForm._1,description=editForm._2).update
+                  wishlist.copy(title=editForm._1,description=editForm._2).update
 
-                Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist updated")
-            }
+                  Redirect(routes.WishController.showEditWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist updated")
+                  } else {
+                    Logger.warn("Recipient %s can not edit wishlist %d".format(currentRecipient.username,wishlistId))
+                    Unauthorized(views.html.error.permissiondenied())
+                  }
+                } else {
+                  Logger.warn("Recipient %s tried to edit wishlist for %d".format(currentRecipient.username,username))
+                  Unauthorized(views.html.error.permissiondenied())            
+                }
+              }
             )
           }
         case None => NotFound(views.html.error.notfound())
@@ -87,16 +112,25 @@ object WishController extends Controller with Secured {
 
 
     def deleteWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-      Wishlist.findById(wishlistId) match {
-        case Some(wishlist) => {
+      if(username == currentRecipient.username){
+        Wishlist.findById(wishlistId) match {
+          case Some(wishlist) => {
+            if(currentRecipient == wishlist.recipient){
+              Logger.info("Deleting wishlist: " + wishlistId)
 
-          Logger.info("Deleting wishlist: " + wishlistId)
+              wishlist.delete
 
-          Wishlist.findById(wishlistId).get.delete
-
-          Redirect(routes.Application.index()).flashing("messageWarning" -> "Wishlist deleted")
+              Redirect(routes.Application.index()).flashing("messageWarning" -> "Wishlist deleted")
+            } else {
+              Logger.warn("Recipient %s can not delete wishlist %d".format(currentRecipient.username,wishlistId))
+              Unauthorized(views.html.error.permissiondenied())
+            }
+          }
+          case None => NotFound(views.html.error.notfound())
         }
-        case None => NotFound(views.html.error.notfound())
+      } else {
+        Logger.warn("Recipient %s tried to edit wishlist for %d".format(currentRecipient.username,username))
+        Unauthorized(views.html.error.permissiondenied())            
       }
     }
 
@@ -113,9 +147,21 @@ object WishController extends Controller with Secured {
 
 
     def showConfirmDeleteWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-      Wishlist.findById(wishlistId) match {
-        case Some(wishlist) => Ok(views.html.wishlist.deletewishlist(wishlist))
-        case None => NotFound(views.html.error.notfound())
+      if(username == currentRecipient.username){
+        Wishlist.findById(wishlistId) match {
+          case Some(wishlist) => {
+            if(currentRecipient == wishlist.recipient){
+              Ok(views.html.wishlist.deletewishlist(wishlist))
+            } else {
+              Logger.warn("Recipient %s can not delete wishlist %d".format(currentRecipient.username,wishlistId))
+              Unauthorized(views.html.error.permissiondenied())
+            }
+          }
+          case None => NotFound(views.html.error.notfound())
+        }
+      } else {
+        Logger.warn("Recipient %s tried to delete wishlist for %d".format(currentRecipient.username,username))
+        Unauthorized(views.html.error.permissiondenied())  
       }
     }
 
@@ -138,63 +184,106 @@ object WishController extends Controller with Secured {
 
 
     def addWishToWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-      Wishlist.findById(wishlistId) match {
-        case Some(wishlist) => {
-          simpleAddWishForm.bindFromRequest.fold(
-            errors => {
-                Logger.warn("Add failed: " + errors)
-                val wishes = Wishlist.findWishesForWishlist(wishlist)
-                BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors))
-            }, 
-            title => {
-                Wish(None,title,None,Some(wishlist)).save
-                Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added")
+      if(username == currentRecipient.username){  
+        Wishlist.findById(wishlistId) match {
+          case Some(wishlist) => {
+            if(currentRecipient == wishlist.recipient){ 
+              simpleAddWishForm.bindFromRequest.fold(
+                errors => {
+                    Logger.warn("Add failed: " + errors)
+                    val wishes = Wishlist.findWishesForWishlist(wishlist)
+                    BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors))
+                }, 
+                title => {
+                    Wish(None,title,None,Some(wishlist)).save
+                    Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added") 
+                }            
+              )    
+            } else {
+              Logger.warn("Recipient %s can not add wish to wishlist %d".format(currentRecipient.username,wishlistId))
+              Unauthorized(views.html.error.permissiondenied())
             }
-          )
+          }
+          case None => NotFound(views.html.error.notfound())
         }
-        case None => NotFound(views.html.error.notfound())
+      } else {
+        Logger.warn("Recipient %s tried to add wish to wishlist for %d".format(currentRecipient.username,username))
+        Unauthorized(views.html.error.permissiondenied())  
       }
    }
 
 
-   def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-    Wishlist.findById(wishlistId) match {
-      case Some(wishlist) => {
-        val wish = Wish.findById(wishId).get
-        // TODO: validate wish is part of wishlist
-        // TODO: Permission
-          wish.delete
+  def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
+    if(username == currentRecipient.username){
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
+          if(currentRecipient == wishlist.recipient){
+            Wish.findById(wishId) match {
+              case Some(wish) => {
+               if(wishlist == wish.wishlist){
 
-          Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageWarning" -> "Wish deleted")
+                  wish.delete
+
+                  Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageWarning" -> "Wish deleted")
+                } else {
+                  Logger.warn("Recipient %s can not delete wish %d from wishlist %d".format(currentRecipient.username,wishId,wishlistId))
+                  NotFound(views.html.error.notfound())
+                }
+              }
+              case None => NotFound(views.html.error.notfound())
+            }
+          } else {
+              Logger.warn("Recipient %s can not delete wish from wishlist %d".format(currentRecipient.username,wishlistId))
+              Unauthorized(views.html.error.permissiondenied()) 
+            }
+          }
+          case None => NotFound(views.html.error.notfound())
         }
-        case None => NotFound(views.html.error.notfound())
+      } else {
+        Logger.warn("Recipient %s tried to delete wish from wishlist for %d".format(currentRecipient.username,username))
+        Unauthorized(views.html.error.permissiondenied()) 
       }
    }
 
 
 
   def updateWish(username:String,wishlistId:Long,wishId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
-    Wishlist.findById(wishlistId) match {
-      case Some(wishlist) => {
-        Wish.findById(wishId) match {
-          case Some(wish) => {
-            editWishForm.bindFromRequest.fold(
-              errors => {
-                Logger.warn("Update failed: " + errors)
-                val wishes = Wishlist.findWishesForWishlist(wishlist)
-                 Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Wish update failed")
-              },
-              editForm => {
-                Logger.debug("Update title: " + editForm._1)
-                wish.copy(title=editForm._1,description=editForm._2).update
-                Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish updated")
+    if(username == currentRecipient.username){
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
+          if(currentRecipient == wishlist.recipient){
+            Wish.findById(wishId) match {
+              case Some(wish) => {
+                if(wishlist == wish.wishlist){ 
+                  editWishForm.bindFromRequest.fold(
+                    errors => {
+                      Logger.warn("Update failed: " + errors)
+                      val wishes = Wishlist.findWishesForWishlist(wishlist)
+                       Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Wish update failed")
+                    },
+                    editForm => {
+                      Logger.debug("Update title: " + editForm._1)
+                      wish.copy(title=editForm._1,description=editForm._2).update
+                      Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish updated")
+                    }
+                  )
+                } else {
+                  Logger.warn("Recipient %s can not update wish %d from wishlist %d".format(currentRecipient.username,wishId,wishlistId))
+                  NotFound(views.html.error.notfound())
+                }
               }
-            )
+              case None => NotFound(views.html.error.notfound())
+            }
+          } else {
+            Logger.warn("Recipient %s can not update wish from wishlist %d".format(currentRecipient.username,wishlistId))
+            Unauthorized(views.html.error.permissiondenied()) 
           }
-          case None => NotFound(views.html.error.notfound())
         }
+        case None => NotFound(views.html.error.notfound())
       }
-      case None => NotFound(views.html.error.notfound())
+    } else {
+      Logger.warn("Recipient %s tried to edit wish from wishlist for %s".format(currentRecipient.username,username))
+      Unauthorized(views.html.error.permissiondenied()) 
     }
   }
 

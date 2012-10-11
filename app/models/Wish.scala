@@ -30,8 +30,17 @@ object Wish {
   val simple = {
     get[Long]("wishid") ~
       get[String]("title") ~
-      get[Option[String]]("description") map {
-      case wishid~title~description => Wish( Some(wishid), title, description , None)
+      get[Option[String]]("description") ~
+      get[Long]("wishlistid") map {
+      case wishid~title~description~wishlistid => {
+        Wishlist.findById(wishlistid) match {
+          case Some(wishlist) => Wish( Some(wishid), title, description, Some(wishlist))
+          case None => { 
+            Logger.error("Wish %d wishlist %d not found".format(wishid,wishlistid))
+            null
+          }
+        }
+      }
     }
   }
 

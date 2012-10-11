@@ -33,7 +33,7 @@ object Wishlist {
         Recipient.findById(recipientid) match {
             case Some(recipient) => Wishlist( Some(wishlistid), title, description, recipient)
             case None => {
-                Logger.error("Wishlist {} recipient {} not found".format(wishlistid,recipientid))
+                Logger.error("Wishlist %d recipient %d not found".format(wishlistid,recipientid))
                 null
             }
         }

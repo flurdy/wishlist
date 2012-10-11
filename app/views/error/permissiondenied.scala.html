@@ -1,0 +1,22 @@
+@()(implicit flash:Flash, currentRecipient: Option[Recipient])
+
+@import helper._
+
+@nautical("401 error") {
+}{
+
+        <div class="">
+    <h3>Unauthorised <small>(401)</small></h3>
+
+    <h4>Permission denied</h4>
+
+    <br/>
+    <br/>
+
+    <p>
+         <a href="@routes.Application.index()">Return to the home page</a>
+    </p>
+
+        </div>
+
+}

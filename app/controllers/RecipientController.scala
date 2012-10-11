@@ -59,8 +59,12 @@ object RecipientController extends Controller with Secured {
   def showEditRecipient(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
     Recipient.findByUsername(username) match {
       case Some(recipient) => {
-        val editForm = editRecipientForm.fill(recipient.username,recipient.username,recipient.fullname,recipient.email)
-        Ok(views.html.recipient.editrecipient(recipient,editForm))
+        if( currentRecipient == recipient ){
+          val editForm = editRecipientForm.fill(recipient.username,recipient.username,recipient.fullname,recipient.email)
+          Ok(views.html.recipient.editrecipient(recipient,editForm))
+        } else {
+          Unauthorized(views.html.error.permissiondenied())
+        }
       }
       case None => NotFound(views.html.error.notfound())
     }
@@ -69,8 +73,12 @@ object RecipientController extends Controller with Secured {
   def showDeleteRecipient(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
     Recipient.findByUsername(username) match {
       case Some(recipient) => {
-        val recipient = Recipient.findByUsername(username).get
-        Ok(views.html.recipient.deleterecipient(recipient))
+        if( currentRecipient == recipient ){
+          val recipient = Recipient.findByUsername(username).get
+          Ok(views.html.recipient.deleterecipient(recipient))
+        } else {  
+          Unauthorized(views.html.error.permissiondenied())
+        }
       }
       case None => NotFound(views.html.error.notfound())
     }
