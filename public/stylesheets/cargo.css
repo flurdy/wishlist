@@ -112,9 +112,9 @@ ul.vertical li a { }
 
 
 #cargo .modal { width: 30em; margin: -10em 0 0 -15em; }
-
 #cargo .modal .well { margin-bottom: 0;}
-
+#cargo .modal .wish-noshow { display: none; }
 
 #cargo .form-search input { margin-top: 0.1em; }
 #cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; }
+

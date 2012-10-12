@@ -28,7 +28,7 @@ GET		/search						controllers.WishController.search
 POST		/:username/wishlist 		controllers.WishController.create(username)
 GET		/:username/wishlist/:wishlistId/ 		controllers.WishController.showWishlist(username,wishlistId:Long)
 GET		/:username/wishlist/:wishlistId/edit.html 		controllers.WishController.showEditWishlist(username,wishlistId:Long)
-POST		/:username/wishlist/:wishlistId/edit 		controllers.WishController.updateWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/update 		controllers.WishController.updateWishlist(username,wishlistId:Long)
 PUT		/:username/wishlist/:wishlistId/ 		controllers.WishController.updateWishlist(username,wishlistId:Long)
 GET		/:username/wishlist/:wishlistId/delete.html 		controllers.WishController.showConfirmDeleteWishlist(username,wishlistId:Long)
 POST		/:username/wishlist/:wishlistId/delete 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
@@ -38,7 +38,7 @@ DELETE	/:username/wishlist/:wishlistId/ 		controllers.WishController.deleteWishl
 POST		/:username/wishlist/:wishlistId/wish/ 		controllers.WishController.addWishToWishlist(username,wishlistId:Long)
 POST		/:username/wishlist/:wishlistId/wish/:wishId/delete 		controllers.WishController.deleteWishFromWishlist(username,wishlistId:Long,wishId:Long)
 DELETE	/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.deleteWishFromWishlist(username,wishlistId:Long,wishId:Long)
-POST		/:username/wishlist/:wishlistId/wish/:wishId/edit 		controllers.WishController.updateWish(username,wishlistId:Long, wishId:Long)
+POST		/:username/wishlist/:wishlistId/wish/:wishId/update 		controllers.WishController.updateWish(username,wishlistId:Long, wishId:Long)
 PUT		/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.updateWish(username,wishlistId:Long,wishId:Long)
 
 

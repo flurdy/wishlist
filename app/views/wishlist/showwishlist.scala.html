@@ -74,69 +74,24 @@
 
 	
 	</div>
-
-<style>
-    .over-inline {
-        background-color: #FFFACD;
-    }
-
-    body .active-inline {
-        background-color: inherit;
-    }
-</style>
+@if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
 <script type="text/javascript">
     $(document).ready(function(){
-
-        $(".editable, .editable-area")
-            .hover(function() {
-                $(this).find(':first-child:input').toggleClass("over-inline");
-            })
-            .click(function(e) {
-                var $editableContainer = $(this);
-                var $editable = $editableContainer.find('span');
-                if($editable.hasClass('active-inline')){
-                    return;
-                }
-                var contents = $.trim($editable.html());
-                $editable
-                    .addClass("active-inline")
-                    .empty();
-                var editElement = $editableContainer.hasClass('editable')
-                    ? '<input type="text" name="title" class="input-xlarge" ∕>'
-                    : '<textarea name="description" class="input-xlarge" rows="4"></textarea>';
-                $(editElement)
-                    .val(contents)
-                    .appendTo($editable)
-                    .focus()
-                    .blur(function(e) {
-                        $editable.trigger('blur');
+        $(".wish-modal")
+            .each(function(e){
+                var $modalWindow = $(this);
+                $modalWindow.find(".wish-edit-button")
+                    .click(function(e){
+                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("wish-noshow");
+                    });
+                $modalWindow.find(".wish-cancel-button")
+                    .click(function(e){
+                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("wish-noshow");
                     });
             });
-
-        $(".editable span, .editable-area span")
-            .blur(function(e) {
-                var $editable = $(this);
-                var contents = $editable.find(':first-child:input').val();
-                $editable
-                    .removeClass('active-inline')
-                    .contents()
-                    .replaceWith(contents);
-            });
-
-        $(".modal .update-wish-form")
-            .submit(function(e) {
-                e.preventDefault();
-                var wishId = $('input[name="wishId"]',this).val();
-                var title = $.trim($('.modal-header .editable span',this).html());
-                var description = $.trim($('.modal-body span',this).html());
-                $('input[name="title"]',this).val(title);
-                $('input[name="description"]',this).val(description);
-                this.submit();
-            });
-
     });
 </script>
-
+}
 
 
 }
