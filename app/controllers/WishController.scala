@@ -220,7 +220,7 @@ object WishController extends Controller with Secured {
           if(currentRecipient == wishlist.recipient){
             Wish.findById(wishId) match {
               case Some(wish) => {
-               if(wishlist == wish.wishlist){
+               if(wishlist == wish.wishlist.get){
 
                   wish.delete
 
@@ -254,7 +254,7 @@ object WishController extends Controller with Secured {
           if(currentRecipient == wishlist.recipient){
             Wish.findById(wishId) match {
               case Some(wish) => {
-                if(wishlist == wish.wishlist){ 
+                if(wishlist == wish.wishlist.get){ 
                   editWishForm.bindFromRequest.fold(
                     errors => {
                       Logger.warn("Update failed: " + errors)
