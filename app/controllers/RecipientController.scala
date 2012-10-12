@@ -50,7 +50,7 @@ object RecipientController extends Controller with Secured {
     Recipient.findByUsername(username) match {
       case Some(recipient) => {
         val wishlists = Wishlist.findWishlistsByUsername(username)
-        Ok(views.html.recipient.profile(recipient,wishlists))
+        Ok(views.html.recipient.profile(recipient,wishlists,WishController.editWishlistForm))
       }
       case None => NotFound(views.html.error.notfound())
     }
