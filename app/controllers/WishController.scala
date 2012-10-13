@@ -310,9 +310,8 @@ object WishController extends Controller with Secured {
 
                   var ordinalCount = 1;
                   listOrder.split(",") map { idOrder => 
-                    Logger.debug("Wish id : " + idOrder)
                     Wish.findById(idOrder.toInt) map { wish =>  
-                      wish.copy(ordinal=Some(ordinalCount)).update
+                      wish.copy(ordinal=Some(ordinalCount)).updateOrdinal
                       ordinalCount += 1
                     }
                   }

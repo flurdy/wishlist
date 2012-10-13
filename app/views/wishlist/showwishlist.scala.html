@@ -36,24 +36,14 @@
 
 		<div class="well" id="wishlist-wishes">
 
-
 			<h4>Wishes</h4>
+
 			<ul id="wish-list" class="unstyled sortable">				
-					@for(wish <- wishes){
-                        @showwish(wishlist,wish)
-					}				
+				@for(wish <- wishes){
+                    @showwish(wishlist,wish)
+				}				
 			</ul>
 
-			@if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
-
-			<div id="wish-order-form" class="well noshow" >
-				@form(action = routes.WishController.updateWishlistOrder(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
-					<input type="hidden" name="order" maxlength="500"/>
-					<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)" class="btn btn-inverse input-small">reset order</a>
-					<button class="btn btn-primary input-medium" type="submit">update order</button>
-				}
-			</div>
-			}
 		</div>
 
 		}
@@ -80,48 +70,41 @@
 		</div>
 
 
-<script type="text/javascript">
-    $(document).ready(function(){
-        $(".wish-modal")
-            .each(function(e){
-                var $modalWindow = $(this);
-                $modalWindow.find(".wish-edit-button")
-                    .click(function(e){
-                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("noshow");
-                    });
-                $modalWindow.find(".wish-cancel-button")
-                    .click(function(e){
-                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("noshow");
-                    });
-            });
-        $(".sortable")
-        	.sortable({
-            	placeholder: "ui-state-highlight",
-            	change: function(event,ui){    	
-			    	$("#wish-order-form")
-			    		.recipientemoveClass("noshow");			    		
-        		},
-    		});
-        $(".sortable").disableSelection();         
-	    $("ul#wish-list li:odd").addClass("list-row-odd");
-	    $("ul#wish-list li:even").addClass("list-row-even");
-	    $("ul#wish-list li")
-	    	.mouseover(function(e){
-	    		$(this).addClass("list-row-hover");
-	    	})
-	    	.mouseout(function(e){
-	    		$(this).removeClass("list-row-hover");
-	    	});
-	    $("#wish-order-form form")
-	    	.submit(function(e) {
--               e.preventDefault();
-				var serialisedData = $('#wish-list').sortable('toArray').join().replace(/wish-row-/g,"");	
-				$('input[name="order"]',this).val(serialisedData);	
-				this.submit();
-	    	});
-    });
-</script>
-}
+		<script type="text/javascript">
+		    $(document).ready(function(){
+		        $(".wish-modal")
+		            .each(function(e){
+		                var $modalWindow = $(this);
+		                $modalWindow.find(".wish-edit-button")
+		                    .click(function(e){
+		                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("noshow");
+		                    });
+		                $modalWindow.find(".wish-cancel-button")
+		                    .click(function(e){
+		                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("noshow");
+		                    });
+		            });
+		        $(".sortable")
+		        	.sortable({
+		            	placeholder: "ui-state-highlight",
+		        		update: function(event,ui){    
+		        			var serialisedData = $('#wish-list').sortable('toArray').join().replace(/wish-row-/g,"");		
+		        		  $.post('@routes.WishController.updateWishlistOrder(wishlist.recipient.username,wishlist.wishlistId.get)', 'order='+serialisedData);
+		        		}
+		    		});
+		        $(".sortable").disableSelection();         
+			    $("ul#wish-list li:odd").addClass("list-row-odd");
+			    $("ul#wish-list li:even").addClass("list-row-even");
+			    $("ul#wish-list li")
+			    	.mouseover(function(e){
+			    		$(this).addClass("list-row-hover");
+			    	})
+			    	.mouseout(function(e){
+			    		$(this).removeClass("list-row-hover");
+			    	});
+		    });
+		</script>
+		}
 	</div>
 
 

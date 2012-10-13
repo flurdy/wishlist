@@ -22,6 +22,8 @@ case class Wish(
 
     def update = Wish.update(this)
 
+    def updateOrdinal = Wish.updateOrdinal(this)
+
 }
 
 
@@ -102,7 +104,6 @@ object Wish {
   def update(wish:Wish) = {
     Logger.debug("Updating wish: "+wish.wishId)
     DB.withConnection { implicit connection =>
-      val nextId = SQL("SELECT NEXTVAL('wish_seq')").as(scalar[Long].single)
       SQL(
         """
                     update wish
@@ -114,6 +115,22 @@ object Wish {
         'title -> wish.title,
         'ordinal -> wish.ordinal,
         'description -> wish.description
+      ).executeInsert()
+      wish
+    }
+  }
+
+  def updateOrdinal(wish:Wish) = {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+                    update wish
+                    set ordinal = {ordinal}
+                    where wishid = {wishid}
+        """
+      ).on(
+        'wishid -> wish.wishId,
+        'ordinal -> wish.ordinal
       ).executeInsert()
       wish
     }
