@@ -3,9 +3,9 @@
 
 @import helper._
 
-<tr>
+<li id="wish-row-@wish.wishId.get">
 
-	<td>
+	
 		<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@wish.title</a> &nbsp;&nbsp; <small class="muted">@wish.description</small>
 
 
@@ -19,31 +19,31 @@
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 				<h3 id="wishModalLabel-@wish.wishId.get"><span>@wish.title</span></h3>
 			</div>
-			<div class="modal-header wish-edit wish-noshow">
+			<div class="modal-header wish-edit noshow">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 				<input type="text" name="title" class="input-xlarge" placeholder="Wish title" value="@wish.title" maxlength="200"/>
 			</div>
 			<div class="modal-body wish-read">
 				<p>@wish.description</p>
 			</div>
-			<div class="modal-body wish-edit wish-noshow">
+			<div class="modal-body wish-edit noshow">
 				<textarea name="description" class="input-xlarge" rows="5" placeholder="Describe wish if necessary">@wish.description</textarea>
 			</div>
 			<div class="modal-footer">
 				@if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
-					<button class="wish-cancel-button wish-edit wish-noshow btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">cancel</button>
+					<button class="wish-cancel-button wish-edit noshow btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">cancel</button>
 					<button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>		
 					<button class="wish-edit-button wish-read btn btn-warning input-small btn-small" type="button">edit wish</button>
-					<button class="wish-update-button wish-edit wish-noshow btn btn-success input-small btn-small" type="submit">update wish</button>
+					<button class="wish-update-button wish-edit noshow btn btn-success input-small btn-small" type="submit">update wish</button>
 				} else {
 					<button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>	
 				}
 			}
 			@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
-		      <button type="submit" class="wish-edit wish-noshow btn btn-danger input-small btn-small">delete wish</button>
+		      <button type="submit" class="wish-edit noshow btn btn-danger input-small btn-small">delete wish</button>
 		   }	
 			</div>
 		</div>	
 
-	</td>
-</tr>
+	
+</li>

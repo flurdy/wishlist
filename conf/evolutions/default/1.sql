@@ -27,6 +27,7 @@ CREATE TABLE wish (
 	wishid 		SERIAL PRIMARY KEY,
 	title				VARCHAR(200) NOT NULL,
 	description		VARCHAR(2000),
+	ordinal			INT,
 	wishlistid		BIGINT REFERENCES wishlist (wishlistid) ON DELETE CASCADE
 );
 

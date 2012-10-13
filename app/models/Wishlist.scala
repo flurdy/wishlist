@@ -154,7 +154,7 @@ object Wishlist {
                 """
                   SELECT * FROM wish
                   where wishlistid = {wishlistid}
-                  ORDER BY title DESC
+                  ORDER BY ordinal,title DESC
                 """
             ).on(
                 'wishlistid -> wishlist.wishlistId

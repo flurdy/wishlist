@@ -33,6 +33,8 @@ PUT		/:username/wishlist/:wishlistId/ 		controllers.WishController.updateWishlis
 GET		/:username/wishlist/:wishlistId/delete.html 		controllers.WishController.showConfirmDeleteWishlist(username,wishlistId:Long)
 POST		/:username/wishlist/:wishlistId/delete 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
 DELETE	/:username/wishlist/:wishlistId/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/order 		controllers.WishController.updateWishlistOrder(username,wishlistId:Long)
+PUT		/:username/wishlist/:wishlistId/order 		controllers.WishController.updateWishlistOrder(username,wishlistId:Long)
 
 
 POST		/:username/wishlist/:wishlistId/wish/ 		controllers.WishController.addWishToWishlist(username,wishlistId:Long)
@@ -40,6 +42,7 @@ POST		/:username/wishlist/:wishlistId/wish/:wishId/delete 		controllers.WishCont
 DELETE	/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.deleteWishFromWishlist(username,wishlistId:Long,wishId:Long)
 POST		/:username/wishlist/:wishlistId/wish/:wishId/update 		controllers.WishController.updateWish(username,wishlistId:Long, wishId:Long)
 PUT		/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.updateWish(username,wishlistId:Long,wishId:Long)
+
 
 
 GET		/recipient/:username/ 		        controllers.RecipientController.showProfile(username)

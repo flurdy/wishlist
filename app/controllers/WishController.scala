@@ -32,6 +32,9 @@ object WishController extends Controller with Secured {
       )
     )
 
+    val updateWishlistOrderForm = Form(
+        "order" -> text(maxLength=500)
+    ) 
 
     def create(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
         editWishlistForm.bindFromRequest.fold(
@@ -195,7 +198,7 @@ object WishController extends Controller with Secured {
                     BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors))
                 }, 
                 title => {
-                    Wish(None,title,None,Some(wishlist)).save
+                    Wish(None,title,None,None,Some(wishlist)).save
                     Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added") 
                 }            
               )    
@@ -288,6 +291,47 @@ object WishController extends Controller with Secured {
   }
 
 
+
+
+
+    def updateWishlistOrder(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
+      Wishlist.findById(wishlistId) match {
+        case Some(wishlist) => {
+          val wishes = Wishlist.findWishesForWishlist(wishlist)
+          updateWishlistOrderForm.bindFromRequest.fold(
+            errors => {
+              Logger.warn("Update order failed: " + errors)
+              Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Order update failed")
+            }, 
+            listOrder => {
+              if(username == currentRecipient.username){
+                if(currentRecipient == wishlist.recipient){
+                  Logger.info("Updating wishlist's order: " + wishlist.wishlistId.get)
+
+                  var ordinalCount = 1;
+                  listOrder.split(",") map { idOrder => 
+                    Logger.debug("Wish id : " + idOrder)
+                    Wish.findById(idOrder.toInt) map { wish =>  
+                      wish.copy(ordinal=Some(ordinalCount)).update
+                      ordinalCount += 1
+                    }
+                  }
+
+                  Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist updated")
+                  } else {
+                    Logger.warn("Recipient %s can not edit wishlist %d".format(currentRecipient.username,wishlistId))
+                    Unauthorized(views.html.error.permissiondenied())
+                  }
+                } else {
+                  Logger.warn("Recipient %s tried to edit wishlist for %d".format(currentRecipient.username,username))
+                  Unauthorized(views.html.error.permissiondenied())            
+                }
+              }
+            )
+          }
+        case None => NotFound(views.html.error.notfound())
+      }
+    }
 
 
 }

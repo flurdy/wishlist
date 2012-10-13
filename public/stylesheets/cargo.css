@@ -23,13 +23,6 @@
 #stern img#flurdyLink { padding: 0 0 0.5em 1.2em; height: 2em; width: 7em; float: left; }
 #stern #nodesigner { padding: 0.6em; }
 
-/*
-#cargo a { color: black; }
-#cargo a:visited { color: black; }
-#cargo a:visited:hover { color: black; }
-#cargo a:hover { color: #aaffaa; }
-#cargo a:active { color: #ffaaaa; }
-*/
 
 #aft { text-align: right; }
 
@@ -65,29 +58,6 @@ ul.vertical li a { }
 
 #jib { color: black; }
 
-/*
-
-.rotatemenu { margin: 1em 0 0 1em; padding: 0; }
-.rotatemenu li {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	width: 1em;
-	height: 4em;
-	font-size: 1.3em;
-	font-weight: bold;
-	left: 1em;
-	position: relative;
-	-webkit-transform: rotate(-90deg);
-	-moz-transform: rotate(-90deg);
-	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
-	-o-transform: rotate(-90deg);
-}
-.rotatemenu li a { text-decoration: none; color: black; }
-.rotatemenu li a:hover { text-decoration: underline; }
-
-*/
-
 #cargo .well-header {  font-size: 1.2em; font-weight: bold; }
 #cargo a { text-decoration: underline; }
 
@@ -113,8 +83,19 @@ ul.vertical li a { }
 
 #cargo .modal { width: 30em; margin: -10em 0 0 -15em; }
 #cargo .modal .well { margin-bottom: 0;}
-#cargo .modal .wish-noshow { display: none; }
+#cargo .noshow { display: none; }
 
 #cargo .form-search input { margin-top: 0.1em; }
 #cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; }
 
+#cargo #wish-list { margin: 0 1em 1em 1em; font-size: 1.1em;  }
+#cargo #wish-list li, 
+#cargo #wish-list .ui-state-highlight { 
+	border-top: 1px solid #dddddd;
+	padding: 0.6em 1em 0.3em 1em; 
+	height: 1.5em;
+	line-height: 1.2em; 
+}
+#cargo #wish-list:last-child{ border-bottom: 1px solid #dddddd; } 
+#cargo .list-row-even { background-color: #F9F9F9; }
+#cargo .list-row-hover { background-color: #ffffff; border: 1px dashed #b9b9b9; }
