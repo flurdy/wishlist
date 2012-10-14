@@ -9,6 +9,9 @@
 		<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@wish.title</a> &nbsp;&nbsp; <small class="muted">@wish.description</small>
 
 
+		 @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
+		 	<i class="icon-resize-vertical pull-right"></i>
+		 }
 
 
 		<div class="modal hide fade wish-modal" id="wishModal-@wish.wishId.get" tabindex="-1" role="dialog" aria-labelledby="wishModalLabel-@wish.wishId.get" aria-hidden="true">

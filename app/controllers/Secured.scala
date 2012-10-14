@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc._
-import models.Recipient
+import models._
 
 
 trait Secured {
@@ -30,6 +30,17 @@ trait Secured {
       Recipient.findByUsername(username).map {
         recipient => f(recipient)(request)
       }.getOrElse(onUnauthenticated(request))
+  }
+
+
+
+
+  def isRecipientOf(wishlist:Wishlist)(f: => Recipient => Request[AnyContent] => Result) = withCurrentRecipient { currentRecipient => implicit request
+    if(wishlist.recipient == currentRecipient) {
+      f(currentRecipient)(request)
+    } else {
+      Results.Unauthorized(views.html.error.permissiondenied())
+    }
   }
 
 
