@@ -26,6 +26,9 @@ insert into wish (wishid,title,description,wishlistid)
 insert into wish (wishid,title,description,ordinal,wishlistid)
 	values ((select NEXTVAL('wish_seq')),'Games console','',1,(select wishlistid from wishlist where title='Christmas list'));
 
+insert into wish (wishid,title,description,ordinal,wishlistid)
+	values ((select NEXTVAL('wish_seq')),'Games console','',1,(select wishlistid from wishlist where title='Xerxes wishes'));
+
 
 # --- !Downs
 
