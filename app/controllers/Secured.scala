@@ -1,5 +1,6 @@
 package controllers
 
+import play.api._
 import play.api.mvc._
 import models._
 
@@ -18,12 +19,14 @@ trait Secured {
     Results.Redirect(routes.Application.showLoginForm)
   }
 
+
   implicit def findCurrentRecipient(implicit session: Session): Option[Recipient] = {
     session.get(Security.username) match {
       case None => None
       case Some(sessionUsername) => Recipient.findByUsername( sessionUsername )
     }
   }
+
 
   def withCurrentRecipient(f: Recipient => Request[AnyContent] => Result) = isAuthenticated {
     username => implicit request =>
@@ -33,13 +36,17 @@ trait Secured {
   }
 
 
-
-
-  def isRecipientOf(wishlist:Wishlist)(f: => Recipient => Request[AnyContent] => Result) = withCurrentRecipient { currentRecipient => implicit request
-    if(wishlist.recipient == currentRecipient) {
-      f(currentRecipient)(request)
-    } else {
-      Results.Unauthorized(views.html.error.permissiondenied())
+  def isRecipientOf(username:String,wishlistId:Long)(f: => (Wishlist,Recipient) => Request[AnyContent] => Result) = withCurrentRecipient { currentRecipient => implicit request =>
+    Wishlist.findById(wishlistId) match {
+      case Some(wishlist) => {
+        if(wishlist.recipient == currentRecipient && username == currentRecipient.username) {
+          f(wishlist,currentRecipient)(request)
+        } else {
+            Logger.warn("Recipient %s can not a recipient of wishlist %d".format(currentRecipient.username,wishlistId))
+          Results.Unauthorized(views.html.error.permissiondenied()(request.flash,Some(currentRecipient)))
+        }
+      }
+      case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
     }
   }
 

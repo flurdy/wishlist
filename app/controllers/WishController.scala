@@ -5,7 +5,6 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
-import scala.None
 
 object WishController extends Controller with Secured {
 
@@ -58,29 +57,14 @@ object WishController extends Controller with Secured {
     }
 
 
-  def showEditWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
-    if(username == currentRecipient.username){
-      Wishlist.findById(wishlistId) match {
-        case Some(wishlist) => {
-          if(currentRecipient == wishlist.recipient){
-            val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
-            val wishes = Wishlist.findWishesForWishlist(wishlist)
-            Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
-          } else {
-            Logger.warn("Recipient %s can not edit wishlist %d".format(currentRecipient.username,wishlistId))
-            Unauthorized(views.html.error.permissiondenied())
-          }
-        }
-        case None => NotFound(views.html.error.notfound())
-      }
-    } else {
-      Logger.warn("Recipient %s tried to edit wishlist for %d".format(currentRecipient.username,username))
-      Unauthorized(views.html.error.permissiondenied())            
-    }
+  def showEditWishlist(username:String,wishlistId:Long) =  isRecipientOf(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
+    val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
+    val wishes = Wishlist.findWishesForWishlist(wishlist)
+    Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
   }
 
 
-    def updateWishlist(username:String,wishlistId:Long) = withCurrentRecipient { currentRecipient => implicit request =>
+    def updateWishlist(username:String,wishlistId:Long) = isRecipientOf { currentRecipient => implicit request =>
       Wishlist.findById(wishlistId) match {
         case Some(wishlist) => {
           val wishes = Wishlist.findWishesForWishlist(wishlist)
