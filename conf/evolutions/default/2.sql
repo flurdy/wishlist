@@ -16,18 +16,18 @@ insert into wishlist (wishlistid,title,description,recipientid)
 insert into wishlist (wishlistid,title,description,recipientid)
 	values ((select NEXTVAL('wishlist_seq')),'Xerxes wishes','',(select recipientid from recipient where username='anotheruser'));
 
-insert into wish (wishid,title,description,ordinal,wishlistid)
-	values ((select NEXTVAL('wish_seq')),'Red car','with 4 wheels',2,(select wishlistid from wishlist where title='Christmas list'));
+insert into wish (wishid,title,description,wishlistid)
+	values ((select NEXTVAL('wish_seq')),'Red car','with 4 wheels',(select wishlistid from wishlist where title='Christmas list'));
 
 insert into wish (wishid,title,description,wishlistid)
 	values ((select NEXTVAL('wish_seq')),'Blue watch','',(select wishlistid from wishlist where title='Christmas list'));
 
 
-insert into wish (wishid,title,description,ordinal,wishlistid)
-	values ((select NEXTVAL('wish_seq')),'Games console','',1,(select wishlistid from wishlist where title='Christmas list'));
+insert into wish (wishid,title,description,wishlistid)
+	values ((select NEXTVAL('wish_seq')),'Games console','',(select wishlistid from wishlist where title='Christmas list'));
 
-insert into wish (wishid,title,description,ordinal,wishlistid)
-	values ((select NEXTVAL('wish_seq')),'Games console','',1,(select wishlistid from wishlist where title='Xerxes wishes'));
+insert into wish (wishid,title,description,wishlistid)
+	values ((select NEXTVAL('wish_seq')),'Games console','',(select wishlistid from wishlist where title='Xerxes wishes'));
 
 
 # --- !Downs
