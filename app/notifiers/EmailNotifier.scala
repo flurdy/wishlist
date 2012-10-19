@@ -8,13 +8,32 @@ import play.api.{Mode, Play}
 import play.core.Router
 
 
-object EmailNotifier {
+
+trait EmailNotifierTrait {
 
   private def noSmtpHostDefinedException = throw new NullPointerException("No SMTP host defined")
-  private val alertRecipient = Play.configuration.getString("mail.alerts").getOrElse("wish@example.org")
-  private val emailFrom = Play.configuration.getString("mail.from").getOrElse("wish@example.com")
 
-  private def hostname = Play.configuration.getString("net.hostname").getOrElse("localhost")
+  protected def dispatcher:EmailDispatcher = {
+    if (Play.mode == Mode.Prod) {
+      Play.configuration.getString("smtp.host") match {
+        case None => noSmtpHostDefinedException
+        case Some("mock") => MockEmailDispatcher
+        case _ => SmtpEmailDispatcher
+      }
+    } else {
+      MockEmailDispatcher
+    }
+  }
+}
+
+object EmailTemplate {
+  
+}
+
+object EmailConfiguration {
+
+  private val hostname = Play.configuration.getString("net.hostname").getOrElse("localhost")
+  private val emailFrom = Play.configuration.getString("mail.from").getOrElse("wish@example.com")
 
   private def footer = {
     """
@@ -24,6 +43,71 @@ object EmailNotifier {
       Host: %s
     """.format(hostname)
   }
+
+}
+
+object EmailNotifier with EmailNotifier {
+
+  def sendPasswordResetEmail {
+
+  }
+
+  def sendRecipientDeletedNotification {
+
+  }
+
+  def sendEmailVerificationEmail(recipient:Recipient, verificationHash: String) {
+    val verificationUrl = hostname + "/recipient/" + recipient.recipientId + "/verify/" + verificationHash +"/"
+    dispatcher.sendEmail(recipient.email,emailVerificationText(recipient.username, verificationUrl))
+  }
+
+} 
+
+
+object EmailAlerter  with EmailTrait{
+  private val alertRecipient = Play.configuration.getString("mail.alerts").getOrElse("wish@example.org")
+
+  def sendNewRegistrationAlert {
+
+  }
+  
+  def sendRecipientDeletedAlert {
+
+  }
+
+} 
+
+trait EmailDispatcher {
+
+}
+
+object MockEmailDispatcher with EmailDispatcher {
+
+
+  def sendEmail(subject: String) {
+    Logger.info("Notification (mock): " + subject)
+  }
+
+}
+
+
+
+object SmtpEmailDispatcher with EmailDispatcher {
+
+  def sendEmail(recipient:String,subject: String, bodyText: String) {
+    val mail = use[MailerPlugin].email
+    mail.setSubject("WISH: " + subject)
+    mail.addFrom(emailFrom)
+    mail.addRecipient(recipient)
+    mail.send(bodyText+footer)
+    Logger.info("Notification sent: " + subject)
+  }
+
+
+}
+
+-----
+
 
   private def sendOrMockAlert(notification: (String, String)) {
     if (Play.mode == Mode.Prod) {
@@ -50,30 +134,17 @@ object EmailNotifier {
   }
 
 
-  private def sendNotification(recipient:String,subject: String, bodyText: String) {
-    val mail = use[MailerPlugin].email
-    mail.setSubject("WISH: " + subject)
-    mail.addFrom(emailFrom)
-    mail.addRecipient(recipient)
-    mail.send(bodyText+footer)
-    Logger.info("Notification sent: " + subject)
-  }
 
 
-  private def mockNotification(subject: String) {
-    Logger.info("Notification (mock): " + subject)
-  }
-
-
-  def registrationAlert(recipient: Recipient) {
+  def sendRegistrationAlert(recipient: Recipient) {
     sendOrMockAlert(registrationText(recipient))
   }
 
-  def deleteRecipientAlert(recipient: Recipient) {
+  def sendDeleteRecipientAlert(recipient: Recipient) {
     sendOrMockAlert(deleteRecipientAlertText(recipient))
   }
 
-  def deleteRecipientNotification(recipient: Recipient) {
+  def sendDeleteRecipientNotification(recipient: Recipient) {
     sendOrMockNotification(recipient.email,deleteRecipientNotificationText(recipient))
   }
 
@@ -104,7 +175,7 @@ object EmailNotifier {
 
 
 
-  def newPasswordText(recipient: Recipient, newPassword: String): (String, String) = {
+  private def newPasswordText(recipient: Recipient, newPassword: String): (String, String) = {
     ("Password reset","Your new password is : " + newPassword)
   }
 
@@ -114,7 +185,7 @@ object EmailNotifier {
 
 
 
-  def emailVerificationText(username: String, verificationUrl: String): (String, String) = {
+  private def emailVerificationText(username: String, verificationUrl: String): (String, String) = {
     ("Please verify your email address",
       """
         Hi, welcome to Wish.
@@ -125,11 +196,5 @@ object EmailNotifier {
 
         If you didn't register with Snaps, please let us know at %s
       """.format(verificationUrl,hostname))
-  }
-
-
-  def sendEmailVerification(recipient:Recipient, verificationHash: String) {
-    val verificationUrl = hostname + "/recipient/" + recipient.recipientId + "/verify/" + verificationHash +"/"
-    sendOrMockNotification(recipient.email,emailVerificationText(recipient.username, verificationUrl))
   }
 }

@@ -134,7 +134,7 @@ object WishController extends Controller with Secured {
           }, 
           title => {
               Wish(None,title,None,None,Some(wishlist)).save
-              Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wish added") 
+              Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageSuccess" -> "Wish added") 
           }            
         )   
    }
