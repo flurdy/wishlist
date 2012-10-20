@@ -121,7 +121,6 @@ object Application extends Controller with Secured{
 		)		
 	}
     
-   def showResetPassword = TODO 
 
    def about = Action { implicit request =>
     Ok(views.html.about())

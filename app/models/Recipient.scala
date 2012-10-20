@@ -7,6 +7,8 @@ import play.api.db.DB
 import anorm._
 import anorm.SqlParser._
 import play.Logger
+import java.math.BigInteger
+import java.security.{SecureRandom, MessageDigest}
 
 case class Recipient (
     recipientId: Option[Long],
@@ -21,6 +23,8 @@ case class Recipient (
   def delete = Recipient.delete(this)
 
   def update = Recipient.update(this)
+
+  def resetPassword = Recipient.resetPassword(this)
 
 }
 
@@ -49,32 +53,33 @@ object Recipient {
     }.getOrElse(None)
   }
 
-    def save(recipient:Recipient) = {
-        Logger.debug("Inserting recipient: "+recipient.username)
-        findByUsername(recipient.username) match {
-            case None => {
-                DB.withConnection { implicit connection =>
-                    val nextRecipientId = SQL("SELECT NEXTVAL('recipient_seq')").as(scalar[Long].single)
-                    SQL(
-                        """
-                            insert into recipient 
-                            (recipientid,username,fullname,email,password) 
-                            values 
-                            ({recipientid},{username},{fullname},{email},{password})
-                        """
-                    ).on(
-                        'recipientid -> nextRecipientId,
-                        'username -> recipient.username,
-                        'fullname -> recipient.fullname,
-                        'email -> recipient.email,
-                        'password -> encrypt(recipient.password)
-                    ).executeInsert()
-                    recipient.copy(recipientId = Some(nextRecipientId),password=None)
-                }
-            }
-            case Some(existingRecipient) => throw new IllegalArgumentException("Username already exists")
-        }
-    }
+
+  def save(recipient:Recipient) = {
+      Logger.debug("Inserting recipient: "+recipient.username)
+      findByUsername(recipient.username) match {
+          case None => {
+              DB.withConnection { implicit connection =>
+                  val nextRecipientId = SQL("SELECT NEXTVAL('recipient_seq')").as(scalar[Long].single)
+                  SQL(
+                      """
+                          insert into recipient 
+                          (recipientid,username,fullname,email,password) 
+                          values 
+                          ({recipientid},{username},{fullname},{email},{password})
+                      """
+                  ).on(
+                      'recipientid -> nextRecipientId,
+                      'username -> recipient.username,
+                      'fullname -> recipient.fullname,
+                      'email -> recipient.email,
+                      'password -> encrypt(recipient.password)
+                  ).executeInsert()
+                  recipient.copy(recipientId = Some(nextRecipientId),password=None)
+              }
+          }
+          case Some(existingRecipient) => throw new IllegalArgumentException("Username already exists")
+      }
+  }
 
     def findByUsername(username:String) : Option[Recipient]= {
         DB.withConnection { implicit connection =>
@@ -85,6 +90,21 @@ object Recipient {
             """
           ).on(
             'username -> username.trim
+          ).as(Recipient.simple.singleOpt)
+        }
+    }
+
+    def findByUsernameAndEmail(username:String,email:String) : Option[Recipient]= {
+        DB.withConnection { implicit connection =>
+          SQL(
+            """
+              SELECT * FROM recipient
+                WHERE username = {username}
+                AND email = {email}
+            """
+          ).on(
+            'username -> username.trim,
+            'email -> email.trim
           ).as(Recipient.simple.singleOpt)
         }
     }
@@ -165,6 +185,40 @@ object Recipient {
       ).executeUpdate()
     }
   }
+
+
+
+  def updatePassword(recipient:Recipient) = {
+    Logger.debug("Updating password for recipient: "+recipient.username)
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            update recipient
+            set password = {fullname},
+            email = {email}
+            where recipientid = {recipientid}
+        """
+      ).on(
+        'recipientid -> recipient.recipientId,
+        'fullname -> recipient.fullname,
+        'email -> recipient.email
+      ).executeUpdate()
+    }
+  }
+
+
+
+  def generateRandomPassword = {
+    val source = new BigInteger(130,  new SecureRandom()).toString(32);
+    source.substring(0,3)+"-"+source.substring(4,7)+"-"+source.substring(8,11)+"-"+source.substring(12,15)
+  }
+
+  def resetPassword(recipient:Recipient) : String = {
+      val newPassword = generateRandomPassword
+      updatePassword( recipient.copy(password=Option(newPassword)) )
+      newPassword
+  }
+
 
 
 }

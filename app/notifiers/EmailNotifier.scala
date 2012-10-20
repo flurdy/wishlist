@@ -39,7 +39,7 @@ object SmtpEmailDispatcher extends EmailDispatcher {
 
   override def sendEmail(recipient:String, subjectAndBody:(String,String)) {
     val mail = use[MailerPlugin].email
-    mail.setSubject("WISH: " + subjectAndBody._1)
+    mail.setSubject(EmailTemplate.subjectPrefix + subjectAndBody._1)
     mail.addFrom(EmailConfiguration.emailFrom)
     mail.addRecipient(recipient)
     mail.send(subjectAndBody._2 + EmailTemplate.footer)
@@ -105,6 +105,8 @@ object EmailAlerter extends EmailService {
 
 
 object EmailTemplate {
+
+  def subjectPrefix = "Wish: "
 
   def footer = {
     """

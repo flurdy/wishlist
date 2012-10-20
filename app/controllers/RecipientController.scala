@@ -5,6 +5,7 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
+import notifiers._
 
 
 object RecipientController extends Controller with Secured {
@@ -44,6 +45,30 @@ object RecipientController extends Controller with Secured {
         password.trim == confirmPassword.trim
       }
     })
+  )
+
+  val resetPasswordForm = Form(
+    tuple(
+    "username" -> nonEmptyText(maxLength = 99),
+    "email" -> nonEmptyText(maxLength = 99)
+    ) verifying("Email address is not valid", fields => fields match {
+      case (username, email) => {
+        RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+      }
+    }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
+      case (username, email) => {
+        RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
+      }
+    }) verifying("Username and email does match or exist", fields => fields match {
+      case (username, email) => {
+        if(RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined &&
+            RecipientController.ValidUsername.findFirstIn(username.trim).isDefined) {
+          Recipient.findByUsernameAndEmail(username.trim,email.trim).isDefined
+        } else {
+          true
+        }
+      }
+    }) 
   )
 
 	def showProfile(username:String) = Action {  implicit request =>
@@ -94,6 +119,33 @@ object RecipientController extends Controller with Secured {
   }
 
 
+   def showResetPassword = Action { implicit request =>
+    Ok(views.html.recipient.passwordreset(resetPasswordForm))
+  } 
+
+    def resetPassword = Action { implicit request =>
+      resetPasswordForm.bindFromRequest.fold(
+        errors => {
+          BadRequest(views.html.recipient.passwordreset(errors))
+        },
+        resetForm => {
+          Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match { 
+            case Some(recipient) => {
+              Logger.info("Password reset requested for: " + recipient.recipientId)
+
+              val newPassword = recipient.resetPassword
+              
+              EmailNotifier.sendPasswordResetEmail(recipient,newPassword)
+
+              Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset and sent by email")
+            }
+            case None => {
+              NotFound(views.html.error.notfound())   
+            }
+          }
+        }
+     )
+   }
 
 
 }

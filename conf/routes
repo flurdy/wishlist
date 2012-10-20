@@ -16,7 +16,6 @@ GET		/register.html					controllers.Application.showRegisterForm
 POST		/register/						controllers.Application.register
 GET		/register/						controllers.Application.showRegisterForm
 POST		/register.html					controllers.Application.redirectToRegisterForm
-GET		/password.html							controllers.Application.showResetPassword
 GET		/logout							controllers.Application.logout
 
 GET		/about.html						controllers.Application.about
@@ -53,7 +52,12 @@ GET		/recipient/:username/delete.html 	controllers.RecipientController.showDelet
 POST		/recipient/:username/delete 	controllers.RecipientController.deleteRecipient(username)
 DELETE		/recipient/:username/           controllers.RecipientController.deleteRecipient(username)
 
+GET		/password.html					controllers.RecipientController.showResetPassword
+POST	/password						controllers.RecipientController.resetPassword
+
+
 
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
 
 
