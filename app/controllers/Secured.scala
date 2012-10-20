@@ -43,7 +43,7 @@ trait Secured {
     currentRecipient => implicit request =>
     Recipient.findByUsername(profileUsername) match {
       case Some(profileRecipient) => {
-        if( currentRecipient == profileRecipient ){
+        if( currentRecipient == profileRecipient || currentRecipient.isAdmin ){
         
           f(profileRecipient,currentRecipient)(request)
 
@@ -57,12 +57,18 @@ trait Secured {
 
 
 
-  def withWishlist(wishlistId:Long)(f: (Wishlist,Recipient) => Request[AnyContent] => Result) = withCurrentRecipient {
+  def withWishlist(username:String,wishlistId:Long)(f: (Wishlist,Recipient) => Request[AnyContent] => Result) = withCurrentRecipient {
     currentRecipient => implicit request =>
     Wishlist.findById(wishlistId) match {
       case Some(wishlist) => {
+        if(wishlist.recipient.username == username) {
 
-        f(wishlist,currentRecipient)(request) 
+          f(wishlist,currentRecipient)(request) 
+
+        } else {
+          Logger.warn("Wishlit %d recipient is not %s".format(wishlistId,username))
+          Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
+        }  
 
       }
       case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
@@ -70,8 +76,8 @@ trait Secured {
   }
 
 
-  def isRecipientOfWishlist(username:String,wishlistId:Long)(f: => (Wishlist,Recipient) => Request[AnyContent] => Result) = withWishlist(wishlistId) { (wishlist,currentRecipient) => implicit request =>
-    if(wishlist.recipient == currentRecipient && username == currentRecipient.username) {
+  def isRecipientOfWishlist(username:String,wishlistId:Long)(f: => (Wishlist,Recipient) => Request[AnyContent] => Result) = withWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
+    if(wishlist.recipient == currentRecipient || currentRecipient.isAdmin) {
 
       f(wishlist,currentRecipient)(request)
 

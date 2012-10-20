@@ -123,29 +123,29 @@ object RecipientController extends Controller with Secured {
     Ok(views.html.recipient.passwordreset(resetPasswordForm))
   } 
 
-    def resetPassword = Action { implicit request =>
-      resetPasswordForm.bindFromRequest.fold(
-        errors => {
-          BadRequest(views.html.recipient.passwordreset(errors))
-        },
-        resetForm => {
-          Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match { 
-            case Some(recipient) => {
-              Logger.info("Password reset requested for: " + recipient.recipientId)
+  def resetPassword = Action { implicit request =>
+    resetPasswordForm.bindFromRequest.fold(
+      errors => {
+        BadRequest(views.html.recipient.passwordreset(errors))
+      },
+      resetForm => {
+        Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match { 
+          case Some(recipient) => {
+            Logger.info("Password reset requested for: " + recipient.recipientId)
 
-              val newPassword = recipient.resetPassword
-              
-              EmailNotifier.sendPasswordResetEmail(recipient,newPassword)
+            val newPassword = recipient.resetPassword
+            
+            EmailNotifier.sendPasswordResetEmail(recipient,newPassword)
 
-              Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset and sent by email")
-            }
-            case None => {
-              NotFound(views.html.error.notfound())   
-            }
+            Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset and sent by email")
+          }
+          case None => {
+            NotFound(views.html.error.notfound())   
           }
         }
-     )
-   }
+      }
+    )
+  }
 
 
 }

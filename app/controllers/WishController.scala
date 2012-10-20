@@ -92,14 +92,9 @@ object WishController extends Controller with Secured {
     }
 
 
-    def showWishlist(username:String,wishlistId:Long) =  withCurrentRecipient { currentRecipient => implicit request =>
-      Wishlist.findById(wishlistId) match {
-        case Some(wishlist) => {
-          val wishes = Wishlist.findWishesForWishlist(wishlist)
-          Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
-        }
-        case None => NotFound(views.html.error.notfound())
-      }
+    def showWishlist(username:String,wishlistId:Long) =  withWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
+      val wishes = Wishlist.findWishesForWishlist(wishlist)
+      Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
     }
 
 
@@ -169,6 +164,7 @@ object WishController extends Controller with Secured {
 
 
     def updateWishlistOrder(username:String,wishlistId:Long) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request => 
+      
       val wishes = Wishlist.findWishesForWishlist(wishlist)
       updateWishlistOrderForm.bindFromRequest.fold(
         errors => {

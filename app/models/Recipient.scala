@@ -15,7 +15,8 @@ case class Recipient (
     username: String,
     fullname: Option[String],
     email: String,
-    password: Option[String]
+    password: Option[String],
+    isAdmin: Boolean=false
 ){
 
   def save = Recipient.save(this)
@@ -34,8 +35,9 @@ object Recipient {
     get[Long]("recipientid") ~
       get[String]("username") ~
       get[Option[String]]("fullname") ~
-      get[String]("email")  map {
-      case recipientid~username~fullname~email=> Recipient( Some(recipientid), username, fullname, email, None)
+      get[String]("email") ~
+      get[Boolean]("isAdmin")  map {
+      case recipientid~username~fullname~email~isadmin => Recipient( Some(recipientid), username, fullname, email, None, isadmin)
     }
   }
 
@@ -63,9 +65,9 @@ object Recipient {
                   SQL(
                       """
                           insert into recipient 
-                          (recipientid,username,fullname,email,password) 
+                          (recipientid,username,fullname,email,password,isadmin) 
                           values 
-                          ({recipientid},{username},{fullname},{email},{password})
+                          ({recipientid},{username},{fullname},{email},{password},false)
                       """
                   ).on(
                       'recipientid -> nextRecipientId,
@@ -168,7 +170,7 @@ object Recipient {
 
 
 
-  def update(recipient:Recipient) = {
+  def update(recipient:Recipient) {
     Logger.debug("Updating recipient: "+recipient.username)
     DB.withConnection { implicit connection =>
       SQL(
@@ -188,20 +190,18 @@ object Recipient {
 
 
 
-  def updatePassword(recipient:Recipient) = {
+  def updatePassword(recipient:Recipient) {
     Logger.debug("Updating password for recipient: "+recipient.username)
     DB.withConnection { implicit connection =>
       SQL(
         """
             update recipient
-            set password = {fullname},
-            email = {email}
+            set password = {password}
             where recipientid = {recipientid}
         """
       ).on(
         'recipientid -> recipient.recipientId,
-        'fullname -> recipient.fullname,
-        'email -> recipient.email
+        'password -> encrypt(recipient.password)
       ).executeUpdate()
     }
   }

@@ -144,7 +144,12 @@ object EmailTemplate {
   }
 
   def newPasswordText(recipient: Recipient, newPassword: String): (String, String) = {
-    ("Password reset","Your new password is : " + newPassword)
+    ("Password reset",
+      """
+        Your new password is : %s
+
+        If you didn't request this password reset for Wish, please let us know at %s
+      """.format(newPassword,EmailConfiguration.hostname))
   }
 
   def emailVerificationText(username: String, verificationUrl: String): (String, String) = {
@@ -156,7 +161,7 @@ object EmailTemplate {
         %s
 
 
-        If you didn't register with Snaps, please let us know at %s
+        If you didn't register with Wish, please let us know at %s
       """.format(verificationUrl,EmailConfiguration.hostname))
   }
   
