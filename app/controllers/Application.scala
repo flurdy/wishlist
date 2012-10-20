@@ -5,6 +5,7 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
+import notifiers._
 
 object Application extends Controller with Secured{
 
@@ -72,7 +73,8 @@ object Application extends Controller with Secured{
 	      		
 	      	recipient.save	
 	      	
-	      	// TODO: Send email confirmation
+	      	// TODO: Send email verification
+          EmailAlerter.sendNewRegistrationAlert(recipient)
 
          	Redirect(routes.Application.index()).withSession(
           "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered")
