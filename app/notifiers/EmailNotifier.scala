@@ -76,6 +76,11 @@ object EmailNotifier extends EmailService {
     dispatcher.sendEmail(recipient.email,EmailTemplate.newPasswordText(recipient, newPassword))
   }
 
+  def sendPasswordChangeEmail(recipient: Recipient) {
+    dispatcher.sendEmail(recipient.email,EmailTemplate.changePasswordText(recipient))
+  }
+
+
   def sendRecipientDeletedNotification(recipient: Recipient) {
     dispatcher.sendEmail(recipient.email,EmailTemplate.deleteRecipientNotificationText(recipient))
   }
@@ -150,6 +155,16 @@ object EmailTemplate {
 
         If you didn't request this password reset for Wish, please let us know at %s
       """.format(newPassword,EmailConfiguration.hostname))
+  }
+
+
+  def changePasswordText(recipient: Recipient): (String, String) = {
+    ("Password changed",
+      """
+        Your password for Wish has just been changed.
+
+        If you didn't request this password change for Wish, please let us know at %s
+      """.format(EmailConfiguration.hostname))
   }
 
   def emailVerificationText(username: String, verificationUrl: String): (String, String) = {

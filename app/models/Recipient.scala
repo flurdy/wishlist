@@ -27,6 +27,9 @@ case class Recipient (
 
   def resetPassword = Recipient.resetPassword(this)
 
+  def updatePassword(newPassword:String) { 
+    Recipient.updatePassword(this.copy(password=Some(newPassword)))
+  }
 }
 
 object Recipient {

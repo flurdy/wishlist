@@ -36,16 +36,22 @@ object RecipientController extends Controller with Secured {
     })
   )
 
-  val changePasswordForm = Form(
+
+  def changePasswordForm(username:String) = Form(
     tuple(
+      //"username" -> nonEmptyText(minLength = 4, maxLength = 99),
       "password" -> nonEmptyText(minLength = 4, maxLength = 99),
+      "newpassword" -> nonEmptyText(minLength = 4, maxLength = 99),
       "confirm" -> nonEmptyText(minLength = 4, maxLength = 99)
     ) verifying("Passwords do not match", fields => fields match {
-      case (password, confirmPassword) => {
-        password.trim == confirmPassword.trim
+      case (password, newpassword, confirmPassword) => {
+        newpassword.trim == confirmPassword.trim
       }
-    })
+    }) verifying("Current password is invalid", fields => fields match {
+      case (password, newpassword, confirmPassword) =>  Recipient.authenticate(username, password).isDefined
+    })  
   )
+
 
   val resetPasswordForm = Form(
     tuple(
@@ -147,6 +153,30 @@ object RecipientController extends Controller with Secured {
     )
   }
 
+
+
+   def showChangePassword(username:String)  = isProfileRecipient(username) { (profileRecipient,currentRecipient) => implicit request =>
+    Ok(views.html.recipient.passwordchange(changePasswordForm(username)))
+  } 
+
+  def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient,currentRecipient) => implicit request =>
+    changePasswordForm(username).bindFromRequest.fold(
+      errors => {
+        BadRequest(views.html.recipient.passwordchange(errors))
+      },
+      resetForm => {
+
+        Logger.info("Password change requested for: " + profileRecipient.username)
+
+        profileRecipient.updatePassword(resetForm._3)
+        
+        EmailNotifier.sendPasswordChangeEmail(profileRecipient)
+
+        Redirect(routes.Application.showLoginForm
+          ).withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
+      }
+    )
+  } 
 
 }
 
