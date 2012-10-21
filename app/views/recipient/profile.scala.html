@@ -1,4 +1,4 @@
-@(recipient:Recipient,wishlists:Seq[Wishlist],createWishlistForm:Form[(String,Option[String])])(implicit flash:Flash, currentRecipient: Option[Recipient])
+@(recipient:Recipient,wishlists:Seq[Wishlist],createWishlistForm:Form[(String,Option[String])],gravatarUrl:String)(implicit flash:Flash, currentRecipient: Option[Recipient])
 
 @import helper._
 
@@ -6,10 +6,15 @@
 	<li><a href="@routes.RecipientController.showProfile(recipient.username)">recipient</a></li>
 }{
 
+
+
 	
 	<div id="list-wishlists-page">
 
+		<img id="gravatar" src="@gravatarUrl"/>
+
 		<h4>Recipient: @recipient.username</h4>
+		
 
 		<div class="well" id="wishlist-list">
 

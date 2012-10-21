@@ -49,7 +49,7 @@ ul.vertical li a { }
 #jib ul.horizontal li { padding: 0 0.1em;}
 #jib #logout-box { float: right}
 
-#jib { color: black; }
+#jib { color: black; height: 0.5em; }
 
 #cargo .well-header {  font-size: 1.2em; font-weight: bold; }
 #cargo a { text-decoration: underline; }
@@ -92,3 +92,6 @@ ul.vertical li a { }
 #cargo #wish-list:last-child{ border-bottom: 1px solid #dddddd; } 
 #cargo .list-row-even { background-color: #F9F9F9; }
 #cargo .list-row-hover { background-color: #ffffff; border: 1px dashed #b9b9b9; }
+
+#cargo #gravatar { float: right; width: 35px; border: 2px inset silver; padding: 0.2em; margin: 0.5em; }
+#cargo #gravatar + h4 + .well { clear: right; }

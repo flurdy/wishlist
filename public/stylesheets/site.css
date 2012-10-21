@@ -73,7 +73,7 @@ body {  background-color: #444444;  color: white; }
 .compartment { padding: 0.2em 1em; }
 body {  }
 #ocean { margin: 0.2em 0.1em 0.1em 1em; }
-#ballast { min-width: 35em; max-width: 60em; padding: 1em 2em 0em 2em; min-height: 24em;  }
+#ballast { min-width: 35em; max-width: 60em; padding: 0 2em 0em 2em; min-height: 24em;  }
 
 #port {  width: 1em; min-width: 1em; }
 #starboard {  width: 4em; min-width: 4em;   }
@@ -91,7 +91,7 @@ body {  }
 	height: 0;
 }
 #bridge.compartment  {  padding: 0 0; }
-#cargo.compartment  {  padding: 0.2em 0; }
+#cargo.compartment  {  padding: 0 0 0.2em 0; }
 
 #ama { padding: 0.3em 0 0 1em;  }
 #tug > .compartment { margin: 0 0 0.5em 0; text-align: center; }

@@ -6,6 +6,7 @@ import play.api.data._
 import play.api.data.Forms._
 import models._
 import notifiers._
+import scravatar._
 
 
 object RecipientController extends Controller with Secured {
@@ -77,12 +78,13 @@ object RecipientController extends Controller with Secured {
     }) 
   )
 
+  def gravatarUrl(recipient:Recipient) = Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
+
 	def showProfile(username:String) = Action {  implicit request =>
     Recipient.findByUsername(username) match {
-      case Some(recipient) => {
-        
-        val wishlists = Wishlist.findWishlistsByUsername(username)
-        Ok(views.html.recipient.profile(recipient,wishlists,WishController.editWishlistForm))
+      case Some(recipient) => {        
+        val wishlists = Wishlist.findWishlistsByUsername(username)        
+        Ok(views.html.recipient.profile(recipient,wishlists,WishController.editWishlistForm,gravatarUrl(recipient)))
       }
       case None => NotFound(views.html.error.notfound())
     }

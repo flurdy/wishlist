@@ -92,9 +92,9 @@ object WishController extends Controller with Secured {
     }
 
 
-    def showWishlist(username:String,wishlistId:Long) =  withWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
+    def showWishlist(username:String,wishlistId:Long) =  withWishlist(username,wishlistId) { (wishlist) => implicit request =>
       val wishes = Wishlist.findWishesForWishlist(wishlist)
-      Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm))
+      Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm,recipientGravatarUrl(wishlist)))
     }
 
 
@@ -119,13 +119,15 @@ object WishController extends Controller with Secured {
         )   
    }
 
+   private def recipientGravatarUrl(wishlist:Wishlist) = RecipientController.gravatarUrl(wishlist.recipient)
+
 
     def addWishToWishlist(username:String,wishlistId:Long) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request => 
         simpleAddWishForm.bindFromRequest.fold(
           errors => {
               Logger.warn("Add failed: " + errors)
               val wishes = Wishlist.findWishesForWishlist(wishlist)
-              BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors))
+              BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors,recipientGravatarUrl(wishlist)))
           }, 
           title => {
               Wish(None,title,None,None,Some(wishlist)).save
