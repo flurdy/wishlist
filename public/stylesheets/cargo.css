@@ -11,20 +11,13 @@
 	font-weight: bold;
 }
 #bow img { float: right; height: 0.8em; padding: 0.1em 0.2em 0.3em 0; }
-#bow h2 { font-size: 1em; font-weight: bold; margin: 0 0.5em; padding: 0 0.5em; }
-
-#stern {
-    text-align: center;
-	margin: 0 0 0 0;
-	padding: 0.2em 0.2em;
-	font-size: 0.4em;
-	color: gray;
-}
-#stern img#flurdyLink { padding: 0 0 0.5em 1.2em; height: 2em; width: 7em; float: left; }
-#stern #nodesigner { padding: 0.6em; }
-
+#bow h2 { font-size: 1em; font-weight: bold; margin: 0 0 0 0; padding: 0 0 0 0; text-align: center}
+#bow #tagline { display: none; font-size: 0.4em; float: left; margin: 0 1em 0 0.5em; padding: 0 0 0 0; }
 
 #aft { text-align: right; }
+
+#aft img#flurdyLink { padding: 0.5em 0 0 0; height: 0.8em; width: 2.5em; float: left; }
+
 
 ul.horizontal {
 	margin: 0;

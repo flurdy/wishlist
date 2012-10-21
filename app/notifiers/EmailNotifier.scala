@@ -29,7 +29,7 @@ trait EmailDispatcher {
 object MockEmailDispatcher extends EmailDispatcher {
   
   override def sendEmail(recipient:String,subjectAndBody:(String,String)) {
-    Logger.info("Email (mock): " + subjectAndBody._1)
+    Logger.info("Email sent (mock): [%s] to [%s]" .format(subjectAndBody._1,recipient))
   }
 
 }
@@ -43,7 +43,7 @@ object SmtpEmailDispatcher extends EmailDispatcher {
     mail.addFrom(EmailConfiguration.emailFrom)
     mail.addRecipient(recipient)
     mail.send(subjectAndBody._2 + EmailTemplate.footer)
-    Logger.info("Email sent: " + subjectAndBody._1)
+    Logger.info("Email sent: [%s] to [%s]" .format(subjectAndBody._1,recipient))
   }
 
 }
