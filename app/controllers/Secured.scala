@@ -3,6 +3,7 @@ package controllers
 import play.api._
 import play.api.mvc._
 import models._
+import play.api.Play.current
 
 
 trait Secured {
@@ -48,10 +49,10 @@ trait Secured {
           f(profileRecipient,currentRecipient)(request)
 
         } else {
-          Results.Unauthorized(views.html.error.permissiondenied()(request.flash,Some(currentRecipient)))
+          Results.Unauthorized(views.html.error.permissiondenied()(request.flash,Some(currentRecipient),analyticsDetails))
         }
       }
-      case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
+      case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
     }
   }
 
@@ -66,11 +67,11 @@ trait Secured {
 
         } else {
           Logger.warn("Wishlist %d recipient is not %s".format(wishlistId,username))
-          Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session)))
+          Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
         }  
 
       }
-      case None => Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session)))
+      case None => Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
     }
   }
 
@@ -85,14 +86,14 @@ trait Secured {
 
           } else {
             Logger.warn("Recipient %s is not a recipient of wishlist %d".format(currentRecipient.username,wishlistId))
-            Results.Unauthorized(views.html.error.permissiondenied()(request.flash,Some(currentRecipient)))
+            Results.Unauthorized(views.html.error.permissiondenied()(request.flash,Some(currentRecipient),analyticsDetails))
           }        
         } else {
           Logger.warn("Wishlist %d recipient is not %s".format(wishlistId,username))
-          Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
+          Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
         } 
       }
-      case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
+      case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
     }
   }
 
@@ -106,12 +107,15 @@ trait Secured {
 
         } else {
           Logger.warn("Wish %d is not a member of wishlist %d".format(wishId,wishlistId))
-          Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
+          Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
         }
       }
-      case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient)))
+      case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
     }
   }
+
+  implicit def analyticsDetails: Option[String] = Play.configuration.getString("analytics.id")
+  
 
 
 }

@@ -1,4 +1,4 @@
-@(wishlists:Seq[Wishlist],searchForm:Form[(Option[String])],createWishlistForm:Form[(String,Option[String])])(implicit flash:Flash, currentRecipient: Option[Recipient])
+@(wishlists:Seq[Wishlist],searchForm:Form[(Option[String])],createWishlistForm:Form[(String,Option[String])])(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
