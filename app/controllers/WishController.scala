@@ -174,7 +174,7 @@ object WishController extends Controller with Secured {
           Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Order update failed")
         }, 
         listOrder => {
-          Logger.info("Updating wishlist's order: " + wishlist.wishlistId.get)
+          Logger.info("Updating wishlist's order: " + wishlistId)
 
           var ordinalCount = 1;
           listOrder.split(",") map { idOrder => 
@@ -184,11 +184,17 @@ object WishController extends Controller with Secured {
             }
           }
 
-          Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("message" -> "Wishlist updated")
+          Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("message" -> "Wishlist updated")
          
         }
       )
     }
 
+  def reserveWish(username:String, wishlistId:Long, wishId:Long) = withWishAndCurrentRecipient(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
+
+    wish.reserve(currentRecipient)
+
+    Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish reserved")
+  }
 
 }

@@ -24,6 +24,8 @@ case class Wish(
 
     def updateOrdinal = Wish.updateOrdinal(this)
 
+    def reserve(recipient:recipient) = new Reservation(recipient,this).save
+
 }
 
 
@@ -106,9 +108,9 @@ object Wish {
     DB.withConnection { implicit connection =>
       SQL(
         """
-                    update wish
-                    set title = {title}, description = {description}, ordinal = {ordinal}
-                    where wishid = {wishid}
+            update wish
+            set title = {title}, description = {description}, ordinal = {ordinal}
+            where wishid = {wishid}
         """
       ).on(
         'wishid -> wish.wishId,
@@ -124,9 +126,9 @@ object Wish {
     DB.withConnection { implicit connection =>
       SQL(
         """
-                    update wish
-                    set ordinal = {ordinal}
-                    where wishid = {wishid}
+            update wish
+            set ordinal = {ordinal}
+            where wishid = {wishid}
         """
       ).on(
         'wishid -> wish.wishId,

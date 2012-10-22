@@ -37,6 +37,8 @@ DELETE	/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishControlle
 POST		/:username/wishlist/:wishlistId/wish/:wishId/update 		controllers.WishController.updateWish(username,wishlistId:Long, wishId:Long)
 PUT		/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.updateWish(username,wishlistId:Long,wishId:Long)
 
+POST		/:username/wishlist/:wishlistId/wish/:wishId/reserve 		controllers.WishController.reserveWish(username, wishlistId:Long, wishId:Long)
+
 
 
 GET		/recipient/:username/ 		        controllers.RecipientController.showProfile(username)

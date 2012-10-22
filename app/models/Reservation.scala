@@ -12,23 +12,23 @@ case class Reservation(
 	recipient: Recipient,
 	wish: Wish
 ) {
+
+	def this(recipient: Recipient,wish: Wish) = this(None,recipient,wish)
+
+	def save = Reservation.save(this)
 	
 }
 
 object Reservation {
 	
 	val simple = {
-   	get[Long]("reservationid") ~
-    	get[Long]("recipientid") ~
-    	get[Long]("wishid") map {
+   	  get[Long]("res.reservationid") ~
+      get[Long]("res.recipientid") ~
+      get[Long]("res.wishid") map {
       	case reservationid~recipientid~wishid => { 
-      		Wish.findById(wishid) flatMap { wish =>
-      			Recipient.findById(recipientid) flatMap { recipient =>
-		      		Reservation( Some(reservationid), recipient, wish )
-      			}
-      		}
-			} 
-   	}
+			Reservation( Some(reservationid), Recipient.findById(recipientid).get, Wish.findById(wishid).get )
+   		}
+   	  }
   	}
 
 
@@ -40,10 +40,10 @@ object Reservation {
          val nextId = SQL("SELECT NEXTVAL('reservation_seq')").as(scalar[Long].single)
       	SQL(
              """
-					insert into reservation 
-						(reservationid,recipientid,wishid) 
-					values 
-						({reservationid},{recipientid},{wishid})
+				insert into reservation 
+					(reservationid,recipientid,wishid) 
+				values 
+					({reservationid},{recipientid},{wishid})
              """
          ).on(
 				'reservationid -> nextId,
@@ -60,7 +60,7 @@ object Reservation {
 		DB.withConnection { implicit connection =>
 			SQL(
 				"""
-					SELECT * FROM reservation
+					SELECT * FROM reservation 
 		 			WHERE reservationid = {reservationid}
 				"""
 			).on(

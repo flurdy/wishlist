@@ -34,16 +34,22 @@
 			</div>
 			<div class="modal-footer">
 				@if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
-					<button class="wish-cancel-button wish-edit noshow btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">cancel</button>
-					<button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>		
-					<button class="wish-edit-button wish-read btn btn-warning input-small btn-small" type="button">edit wish</button>
-					<button class="wish-update-button wish-edit noshow btn btn-success input-small btn-small" type="submit">update wish</button>
-				} else {
+						<button class="wish-cancel-button wish-edit noshow btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">cancel</button>
+						<button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>		
+						<button class="wish-edit-button wish-read btn btn-warning input-small btn-small" type="button">edit wish</button>
+						<button class="wish-update-button wish-edit noshow btn btn-success input-small btn-small" type="submit">update wish</button>
+				} else {	
 					<button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>	
 				}
 			}
+			@if(currentRecipient.isDefined){
+		   		@form(action = routes.WishController.reserveWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline update-wish-form" ){
+					<button class="btn btn-small btn-primary input-small reserve-button" type="submit">reserve</button>	
+				}
+			}
 			@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
-		      <button type="submit" class="wish-edit noshow btn btn-danger input-small btn-small">delete wish</button>
+				<input type="hidden" name="username" value="@currentRecipient.get.username" />
+		    	<button type="submit" class="wish-edit noshow btn btn-danger input-small btn-small">delete wish</button>
 		   }	
 			</div>
 		</div>	

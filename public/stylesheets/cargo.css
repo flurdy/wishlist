@@ -95,3 +95,5 @@ ul.vertical li a { }
 
 #cargo #gravatar { float: right; width: 35px; border: 2px inset silver; padding: 0.2em; margin: 0.5em; }
 #cargo #gravatar + h4 + .well { clear: right; }
+
+#cargo #wish-list button .reserve-button { }

@@ -58,7 +58,7 @@ trait Secured {
 
 
 
-  def withWishlist(username:String,wishlistId:Long)(f: (Wishlist) => Request[AnyContent] => Result) = Action { implicit request =>
+  def withWishlist(username:String,wishlistId:Long)(f: Wishlist => Request[AnyContent] => Result) = Action { implicit request =>
     Wishlist.findById(wishlistId) match {
       case Some(wishlist) => {
         if(wishlist.recipient.username == username) {
@@ -116,6 +116,52 @@ trait Secured {
 
   implicit def analyticsDetails: Option[String] = Play.configuration.getString("analytics.id")
   
+
+  def withWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist) => Request[AnyContent] => Result) = withWishlist(username,wishlistId) { wishlist => implicit request =>
+    Wish.findById(wishId) match {
+      case Some(wish) => {
+        if(wishlist == wish.wishlist.get){ 
+
+          f(wish,wishlist)(request)
+
+        } else {
+          Logger.warn("Wish %d is not a member of wishlist %d".format(wishId,wishlistId))
+          Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
+        }
+      }
+      case None => Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
+    }
+  }
+
+
+  def withWishAndCurrentRecipient(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist,Recipient) => Request[AnyContent] => Result) = withCurrentRecipient { currentRecipient => implicit request =>
+    Wishlist.findById(wishlistId) match {
+      case Some(wishlist) => {
+        if(wishlist.recipient.username == username) {
+          Wish.findById(wishId) match {
+            case Some(wish) => {
+              if(wishlist == wish.wishlist.get){ 
+
+                f(wish,wishlist,currentRecipient)(request)
+
+              } else {
+                Logger.warn("Wish %d is not a member of wishlist %d".format(wishId,wishlistId))
+                Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
+              }
+            }
+            case None => Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
+          }
+        } else {
+          Logger.warn("Wishlist %d recipient is not %s".format(wishlistId,username))
+          Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))          
+        }
+      }
+      case None => Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
+    }
+
+
+  }
+
 
 
 }
