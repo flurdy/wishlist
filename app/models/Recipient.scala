@@ -36,11 +36,11 @@ object Recipient {
 
   val simple = {
     get[Long]("recipientid") ~
-      get[String]("username") ~
-      get[Option[String]]("fullname") ~
-      get[String]("email") ~
-      get[Boolean]("isAdmin")  map {
-      case recipientid~username~fullname~email~isadmin => Recipient( Some(recipientid), username, fullname, email, None, isadmin)
+    get[String]("username") ~
+    get[Option[String]]("fullname") ~
+    get[String]("email") ~
+    get[Boolean]("isAdmin")  map {
+    case recipientid~username~fullname~email~isadmin => Recipient( Some(recipientid), username, fullname, email, None, isadmin)
     }
   }
 
