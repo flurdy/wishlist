@@ -97,3 +97,6 @@ ul.vertical li a { }
 #cargo #gravatar + h4 + .well { clear: right; }
 
 #cargo #wish-list button .reserve-button { }
+
+#cargo #wish-list .reserved { font-style: italic; color: #5555dd; float: right; font-size: 0.8em; }
+

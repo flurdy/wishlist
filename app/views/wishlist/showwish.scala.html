@@ -5,9 +5,13 @@
 
 <li id="wish-row-@wish.wishId.get">
 
+		@if(currentRecipient.isDefined && wishlist.recipient != currentRecipient.get && wish.reservation.isDefined){
+			<div class="reserved">reserved</div>
+			<s><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@wish.title</a></s> &nbsp;&nbsp; <s><small class="muted">@wish.description</small></s>
+		} else {
+			<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@wish.title</a> &nbsp;&nbsp; <small class="muted">@wish.description</small>
+		}
 	
-		<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@wish.title</a> &nbsp;&nbsp; <small class="muted">@wish.description</small>
-
 
 		 @if(currentRecipient.isDefined && wishlist.recipient == currentRecipient.get){
 		 	<i class="icon-resize-vertical pull-right"></i>
@@ -55,9 +59,8 @@
 						<button class="btn btn-small btn-primary input-small reserve-button" type="submit">reserve</button>	
 					}
 				}
+				</div>
 			}
-			</div>
-		</div>	
-
+		</div>
 	
 </li>

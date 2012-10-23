@@ -41,7 +41,6 @@ object Wish {
       get[Long]("wishlistid") ~
       get[Option[Long]]("reservationid") map {
       case wishid~title~description~ordinal~wishlistid~reservationid => {
-        Logger.info("Wish reservationid"+reservationid)
         Wish( Some(wishid), title, description, ordinal, Some(new Wishlist(wishlistid)), Reservation.create(reservationid))
       }
     }
