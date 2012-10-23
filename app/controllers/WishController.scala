@@ -130,7 +130,7 @@ object WishController extends Controller with Secured {
               BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors,recipientGravatarUrl(wishlist)))
           }, 
           title => {
-              Wish(None,title,None,None,Some(wishlist)).save
+              Wish(None,title,None,None,Some(wishlist),None).save
               Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageSuccess" -> "Wish added") 
           }            
         )   
@@ -189,6 +189,7 @@ object WishController extends Controller with Secured {
         }
       )
     }
+    
 
   def reserveWish(username:String, wishlistId:Long, wishId:Long) = withWishAndCurrentRecipient(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
 

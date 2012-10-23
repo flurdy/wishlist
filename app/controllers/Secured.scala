@@ -140,7 +140,7 @@ trait Secured {
         if(wishlist.recipient.username == username) {
           Wish.findById(wishId) match {
             case Some(wish) => {
-              if(wishlist == wish.wishlist.get){ 
+              if(wishlistId == wish.wishlist.get.wishlistId.get){ 
 
                 f(wish,wishlist,currentRecipient)(request)
 

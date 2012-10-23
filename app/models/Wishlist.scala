@@ -13,6 +13,7 @@ case class Wishlist(
     recipient:Recipient
 ) {
 
+    def this(wishlistId:Long) = this(Some(wishlistId),"",None,null)
 
     def save = Wishlist.save(this)
 
@@ -152,8 +153,8 @@ object Wishlist {
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                  SELECT * FROM wish
-                  where wishlistid = {wishlistid}
+                  SELECT * FROM wish 
+                  where wishlistid = {wishlistid} 
                   ORDER BY ordinal,title DESC
                 """
             ).on(

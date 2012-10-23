@@ -13,7 +13,9 @@ case class Reservation(
 	wish: Wish
 ) {
 
-	def this(recipient: Recipient,wish: Wish) = this(None,recipient,wish)
+	def this(reservationId: Long) = this(Some(reservationId),null,null)
+
+	def this(recipient: Recipient, wish: Wish) = this(None,recipient,wish)
 
 	def save = Reservation.save(this)
 	
@@ -22,15 +24,21 @@ case class Reservation(
 object Reservation {
 	
 	val simple = {
-   	  get[Long]("res.reservationid") ~
-      get[Long]("res.recipientid") ~
-      get[Long]("res.wishid") map {
+   	  get[Long]("reservationid") ~
+      get[Long]("recipientid") ~
+      get[Long]("wishid") map {
       	case reservationid~recipientid~wishid => { 
-			Reservation( Some(reservationid), Recipient.findById(recipientid).get, Wish.findById(wishid).get )
+			Reservation( Some(reservationid), new Recipient(recipientid), new Wish(wishid) )
    		}
    	  }
   	}
 
+
+  	def create(reservation:Option[Long]) = {
+  		reservation map { reservationId =>
+  			new Reservation(reservationId)
+  		}
+  	}
 
 
 
@@ -40,31 +48,41 @@ object Reservation {
          val nextId = SQL("SELECT NEXTVAL('reservation_seq')").as(scalar[Long].single)
       	SQL(
              """
-				insert into reservation 
-					(reservationid,recipientid,wishid) 
-				values 
-					({reservationid},{recipientid},{wishid})
+					insert into reservation 
+						(reservationid,recipientid,wishid) 
+					values 
+						({reservationid},{recipientid},{wishid})
              """
          ).on(
 				'reservationid -> nextId,
 				'recipientid -> reservation.recipient.recipientId.get,
 				'wishid -> reservation.wish.wishId.get
 			).executeInsert()
+	      SQL(
+	        """
+	            update wish
+	            set reservationid = {reservationid}
+	            where wishid = {wishid}
+	        """
+	      ).on(
+				'reservationid -> nextId,
+				'wishid -> reservation.wish.wishId.get
+	      ).executeInsert()
 			reservation.copy(reservationId = Some(nextId))
  		}
  	}
 
 
 
-	def findById(reservationId:Long) : Option[Reservation]= {
+	def findByWish(wishId:Long) : Option[Reservation]= {
 		DB.withConnection { implicit connection =>
 			SQL(
 				"""
 					SELECT * FROM reservation 
-		 			WHERE reservationid = {reservationid}
+		 			WHERE wishid = {wishid}
 				"""
 			).on(
-				'reservationid -> reservationId
+				'wishid -> wishId
 			).as(Reservation.simple.singleOpt)
 		}
 	}

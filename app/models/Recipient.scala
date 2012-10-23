@@ -19,6 +19,8 @@ case class Recipient (
     isAdmin: Boolean=false
 ){
 
+  def this(recipientId:Long) = this(Some(recipientId),"",None,"",None,false)
+
   def save = Recipient.save(this)
 
   def delete = Recipient.delete(this)
