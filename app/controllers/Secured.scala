@@ -101,7 +101,7 @@ trait Secured {
   def isRecipientOfWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist,Recipient) => Request[AnyContent] => Result) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
     Wish.findById(wishId) match {
       case Some(wish) => {
-        if(wishlist == wish.wishlist.get){ 
+        if(wishlistId == wish.wishlist.get.wishlistId.get){ 
 
           f(wish,wishlist,currentRecipient)(request)
 

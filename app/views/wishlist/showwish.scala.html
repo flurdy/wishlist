@@ -44,12 +44,11 @@
 						<button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>		
 						<button class="wish-edit-button wish-read btn btn-warning input-small btn-small" type="button">edit wish</button>
 						<button class="wish-update-button wish-edit noshow btn btn-success input-small btn-small" type="submit">update wish</button>
-
+		   	}
 						@form(action = routes.WishController.deleteWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
 							<input type="hidden" name="username" value="@currentRecipient.get.username" />
 					    	<button type="submit" class="wish-edit noshow btn btn-danger input-small btn-small">delete wish</button>
 					   }	
-		   	}
 					</div>
 			} else {
 				<div class="modal-footer">
