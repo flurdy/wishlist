@@ -1,4 +1,4 @@
-@(contactForm:Form[(String,String,Option[String],Option[String],String,String)],captchaId:String)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(contactForm:Form[(String,String,Option[String],Option[String],String,String)],captchaId:String,captchaError:Option[String] = None)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -26,6 +26,13 @@
     <p class="alert alert-error">
         <button type="button" class="close" data-dismiss="alert">×</button>
         @error.message: @error.key
+    </p>
+    }
+
+	@captchaError.map { error =>
+    <p class="alert alert-error">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        Please try another validation entry
     </p>
     }
 
@@ -79,7 +86,7 @@
 				</div>
 				<div class="control-group">
 					<label class="control-label" for="contactValidation">Entry</label>
-					<div class="controls">
+					<div class="controls">@captchaId
 					<input type="text" class="input-xlarge" id="contactValidation" name="validation" value="" maxlength="20" placeholder="Copy the text above"/>	
 					</div>
 				</div>

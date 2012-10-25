@@ -8,6 +8,7 @@ import models._
 import notifiers._
 import java.math.BigInteger
 import java.security.SecureRandom
+import dispatch._
 
 object Application extends Controller with Secured{
 
@@ -146,42 +147,54 @@ object Application extends Controller with Secured{
   }
 
   private def generateCaptchaId : String = {
-    new BigInteger(130, new SecureRandom()).toString(16)
-  }
-   
-  private def findCaptchaId : String = { implicit session : Session =>
-    session.get("capchaId").getOrElse(generateCaptchaId)
+    new BigInteger(130, new SecureRandom()).toString(16).substring(0,8)
   }
 
-  private def isSameAsCaptcha(formId:String,captchaId:String) : Boolean = {
-    false
+  private def isSameAsCaptcha(formCaptcha:String,captchaId:String) : Boolean = {
+    Logger.debug("Form id %s | captchaId %s ".format(formCaptcha,captchaId))
+    val capthcaUrlString = "http://captchator.com/captcha/check_answer/%s/%s".format(captchaId,formCaptcha)
+    val capthcaUrl = url(capthcaUrlString)
+    Logger.debug("capthcaUrl was %s".format(capthcaUrlString))
+    val response = Http(capthcaUrl OK as.String)
+    val actualResponse = response()
+    Logger.debug("Response was %s".format(actualResponse))
+    actualResponse.trim == "1"
   }
    
    def contact = Action { implicit request =>
     val captchaId = generateCaptchaId
-    Ok(views.html.contact(contactForm,captchaId)).withSession(session + "captchaId"->captchaId)
+    Ok(views.html.contact(contactForm,captchaId)).withSession( "captchaid" -> captchaId)
   }
   
   def sendContact =  Action { implicit request =>
     contactForm.bindFromRequest.fold(
       errors => {
-          Logger.warn("Registration failed: " + errors)
+          Logger.warn("Contact failed: " + errors)
           val captchaId = generateCaptchaId
-          BadRequest(views.html.contact(errors,captchaId)).withSession(session + "captchaId"->captchaId)
+          BadRequest(views.html.contact(errors,captchaId)).withSession( "captchaid" -> captchaId)
       },
       contactFields => {
+        Logger.warn("CAPTCHA " + contactFields._6.trim)
+        request.session.get("captchaid") match {
+          case Some(captchaId) => {
+            if( isSameAsCaptcha( contactFields._6.trim, captchaId ) ){      
 
-        if( isSameAsCaptcha( contactFields._6.trim , findCaptchaId ) ){
-          
-          EmailAlerter.sendContactMessage(contactFields._1, contactFields._2, contactFields._3, contactFields._4, contactFields._5, findCurrentRecipient)
+              EmailAlerter.sendContactMessage(contactFields._1, contactFields._2, contactFields._3, contactFields._4, contactFields._5, findCurrentRecipient)
 
-          Redirect(routes.Application.index()).flashing("message"->"Your message was sent")
+              Redirect(routes.Application.index()).flashing("message"->"Your message was sent").withSession(session - "captchaid")
 
-        } else {
-          val captchaId = generateCaptchaId
-          BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId)).flashing("messageError"->"Try another validation").withSession(session + "captchaId"->captchaId)
+            } else {
+              Logger.warn("Contact captcha failed")
+              val captchaId = generateCaptchaId
+              BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession(session-"captchaid").withSession( "captchaid"-> generateCaptchaId)
+            }
+          }
+          case None => {
+            Logger.warn("Contact captcha not in session")
+            val captchaId = generateCaptchaId
+            BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession("captchaid" -> generateCaptchaId)
+          }
         }
-
       }
     )
   }
