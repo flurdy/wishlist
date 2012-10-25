@@ -6,6 +6,8 @@ import play.api.data._
 import play.api.data.Forms._
 import models._
 import notifiers._
+import java.math.BigInteger
+import java.security.SecureRandom
 
 object Application extends Controller with Secured{
 
@@ -49,6 +51,23 @@ object Application extends Controller with Secured{
 	      case (username, password, source) => Recipient.authenticate(username, password).isDefined
     	}) 
 	)	
+
+
+  val contactForm = Form(
+    tuple(
+      "name" -> nonEmptyText(maxLength = 99),
+      "email" -> nonEmptyText(maxLength = 99),
+      "username" -> optional(text(maxLength = 99)),
+      "subject" -> optional(text(maxLength = 200)),
+      "message" -> nonEmptyText(maxLength = 99),
+      "validation" -> nonEmptyText(maxLength = 20)
+    ) verifying("Email address is not valid", fields => fields match {
+      case (name, email, username, subject, message, validation) => {
+        RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+      }
+    })
+  )
+
 
 	def index = Action { implicit request =>
     findCurrentRecipient match {
@@ -125,10 +144,48 @@ object Application extends Controller with Secured{
    def about = Action { implicit request =>
     Ok(views.html.about())
   }
+
+  private def generateCaptchaId : String = {
+    new BigInteger(130, new SecureRandom()).toString(16)
+  }
+   
+  private def findCaptchaId : String = { implicit session : Session =>
+    session.get("capchaId").getOrElse(generateCaptchaId)
+  }
+
+  private def isSameAsCaptcha(formId:String,captchaId:String) : Boolean = {
+    false
+  }
    
    def contact = Action { implicit request =>
-    Ok(views.html.contact())
+    val captchaId = generateCaptchaId
+    Ok(views.html.contact(contactForm,captchaId)).withSession(session + "captchaId"->captchaId)
   }
+  
+  def sendContact =  Action { implicit request =>
+    contactForm.bindFromRequest.fold(
+      errors => {
+          Logger.warn("Registration failed: " + errors)
+          val captchaId = generateCaptchaId
+          BadRequest(views.html.contact(errors,captchaId)).withSession(session + "captchaId"->captchaId)
+      },
+      contactFields => {
+
+        if( isSameAsCaptcha( contactFields._6.trim , findCaptchaId ) ){
+          
+          EmailAlerter.sendContactMessage(contactFields._1, contactFields._2, contactFields._3, contactFields._4, contactFields._5, findCurrentRecipient)
+
+          Redirect(routes.Application.index()).flashing("message"->"Your message was sent")
+
+        } else {
+          val captchaId = generateCaptchaId
+          BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId)).flashing("messageError"->"Try another validation").withSession(session + "captchaId"->captchaId)
+        }
+
+      }
+    )
+  }
+
 
    def logout = Action {
       Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")

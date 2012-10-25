@@ -1,4 +1,4 @@
-@()(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(contactForm:Form[(String,String,Option[String],Option[String],String,String)],captchaId:String)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -7,7 +7,92 @@
 }{
 	<h2>Contact</h2>
 
-	<p>
-	    Contact via <a href="http://wishlist.sourceforge.net">the project website</a>
-	</p>
+
+
+	<div class="well">
+		<h4>Contact alternatives</h4>
+		<p>
+		    Contact via <a href="http://wishlist.sourceforge.net">the project website</a>
+		</p>
+		<p>
+		    Contact via <a href="http://github.com/flurdy/wishlist">the project page on github</a>
+		</p>
+		<p>
+		    Contact <a href="http://flurdy.com/contact">lead developer</a>
+		</p>
+	</div>
+
+	@for(error <- contactForm.errors){
+    <p class="alert alert-error">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        @error.message: @error.key
+    </p>
+    }
+
+	@form(action = routes.Application.sendContact, 'class -> "form-horizontal"){
+
+		<div class="well">
+			<h4>Contact form</h4>
+			<fieldset>
+				<legend>Your details</legend>
+				<div class="control-group">
+					<label class="control-label" for="contactName">Name</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" id="contactName" name="name" value="@contactForm("name").value" maxlength="200" placeholder="Your name"/>	
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="contactEmail">Email address</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" id="contactEmail" name="email" value="@contactForm("email").value" maxlength="200" placeholder="Your email address"/>	
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="contactEmail">Username</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" id="contactEmail" name="email" value="@currentRecipient.map{ recipient =>@recipient.username}" maxlength="200" placeholder="Your username if registered"/>	
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Message details</legend>
+				<div class="control-group">
+					<label class="control-label" for="contactSubject">Subject</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" id="contactSubject" name="subject" value="@contactForm("subject").value" maxlength="200" placeholder="The subject of this message "/>	
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="contactMessage">Message</label>
+					<div class="controls">
+						<textarea class="input-xlarge" id="contactMessage" name="message" placeholder="Your brief message" rows="12">@contactForm("message").value</textarea>	
+					</div>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Validation</legend>
+				<div class="control-group">
+					<label class="control-label">Source</label>
+					<div class="controls">
+						<img class="capthca img-rounded" src="http://captchator.com/captcha/image/@captchaId"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="contactValidation">Entry</label>
+					<div class="controls">
+					<input type="text" class="input-xlarge" id="contactValidation" name="validation" value="" maxlength="20" placeholder="Copy the text above"/>	
+					</div>
+				</div>
+			</fieldset>
+         <div class="control-group">
+             <div class="buttons">
+                 <button type="submit" class="btn btn-primary input-medium">send message</button>
+             </div>
+         </div>
+		</div>
+
+	}
+
+
+
 }

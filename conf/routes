@@ -14,6 +14,7 @@ GET		/logout							controllers.Application.logout
 
 GET		/about.html						controllers.Application.about
 GET		/contact.html					controllers.Application.contact
+POST		/contact						controllers.Application.sendContact
 
 
 GET		/search						controllers.WishController.search

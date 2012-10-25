@@ -105,6 +105,10 @@ object EmailAlerter extends EmailService {
     dispatcher.sendAlertEmail(EmailTemplate.deleteRecipientAlertText(recipient))  
   }
 
+  def sendContactMessage(name:String,email:String,username:Option[String],subject:Option[String],message:String,currentRecipient:Option[Recipient]) {
+    dispatcher.sendAlertEmail(EmailTemplate.contactMessageText(name,email,username,subject,message,currentRecipient))
+  }
+
 } 
 
 
@@ -178,6 +182,24 @@ object EmailTemplate {
 
         If you didn't register with Wish, please let us know at %s
       """.format(verificationUrl,EmailConfiguration.hostname))
+  }
+
+  def contactMessageText(name:String,email:String,username:Option[String],subject:Option[String],message:String,currentRecipient:Option[Recipient]) : (String,String) = {
+    val actualSubject = subject.getOrElse("No subject entered")
+    val actualRecipient = currentRecipient.map(recipient => recipient.username ).getOrElse("No current recipient")
+    ("Contact message",
+      """
+        Current recipient: %s
+        Name: %s
+        Email: %s
+        Username: %s
+
+        Subject: %s
+        
+        Message:
+        
+        %s
+      """.format(actualRecipient,name,email,username,actualSubject,message))
   }
   
 }
