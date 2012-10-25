@@ -7,13 +7,18 @@
 }{
 
 
+	<div id="profile-page">
 
-	
-	<div id="list-wishlists-page">
-
-		<img id="gravatar" src="@gravatarUrl" title="Avatar of @recipient.username from Gravatar.com"/>
 
 		<h4>Recipient: @recipient.username</h4>
+
+		<img class="gravatar img-rounded" src="@gravatarUrl" title="Avatar of @recipient.username from Gravatar.com"/>
+
+		@recipient.fullname.map { fullname =>
+		 	@if(fullname.length() > 1 ){
+				<h4>Full name: @recipient.fullname</h4>
+			}
+		}
 		
 
 		<div class="well" id="wishlist-list">
