@@ -14,3 +14,6 @@ A place to store and share wish lists.
 * wish item collaboration
 * integrate with gift registry 
 * integrate with shopping plans
+
+![Build status](https://travis-ci.org/flurdy/wishlist.png)
+
