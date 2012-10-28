@@ -166,17 +166,17 @@ object Application extends Controller with Secured{
    def contact = Action { implicit request =>
     request.session.get("captchaAttempts") match {
       case Some(captchaAttempts) => {
-        if(captchaAttempts.toInt > 3){
-          val captchaId = generateCaptchaId
-          Ok(views.html.contact(contactForm,captchaId)).withSession("captchaId" -> captchaId, "captchaAttempts" -> "1")
+        if(captchaAttempts.toInt > 4){
+          val newCaptchaId = generateCaptchaId
+          Ok(views.html.contact(contactForm,newCaptchaId)).withSession(session + "captchaId" -> newCaptchaId, "captchaAttempts" -> "1")
         } else {
           val captchaId = request.session.get("captchaId").getOrElse(generateCaptchaId);
-          Ok(views.html.contact(contactForm,captchaId)).withSession( "captchaId" -> captchaId, "captchaAttempts" -> (captchaAttempts.toInt + 1).toString)
+          Ok(views.html.contact(contactForm,captchaId)).withSession( session + "captchaId" -> captchaId, "captchaAttempts" -> (captchaAttempts.toInt + 1).toString)
         }
       }
       case None => {
-        val captchaId = generateCaptchaId
-        Ok(views.html.contact(contactForm,captchaId)).withSession("captchaId" -> captchaId, "captchaAttempts" -> "1")
+        val newCaptchaId = generateCaptchaId
+        Ok(views.html.contact(contactForm,newCaptchaId)).withSession(session + "captchaId" -> newCaptchaId, "captchaAttempts" -> "1")
       }
     }
   }
@@ -186,7 +186,7 @@ object Application extends Controller with Secured{
       errors => {
           Logger.warn("Contact failed: " + errors)
           val captchaId = request.session.get("captchaId").getOrElse(generateCaptchaId)
-          BadRequest(views.html.contact(errors,captchaId)).withSession( "captchaId" -> captchaId)
+          BadRequest(views.html.contact(errors,captchaId)).withSession( session + "captchaId" -> captchaId)
       },
       contactFields => {
         request.session.get("captchaId") match {
@@ -201,24 +201,24 @@ object Application extends Controller with Secured{
               Logger.info("Contact captcha failed")
               request.session.get("captchaAttempts") match {
                 case Some(captchaAttempts) => {
-                  if(captchaAttempts.toInt > 3){
+                  if(captchaAttempts.toInt > 4){
                     val captchaId = generateCaptchaId
-                    BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession("captchaId" -> captchaId, "captchaAttempts" -> "1")
+                    BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession(session + "captchaId" -> captchaId, "captchaAttempts" -> "1")
                   } else {
                     val captchaId = request.session.get("captchaId").getOrElse(generateCaptchaId)
-                    BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession( "captchaAttempts" -> (captchaAttempts.toInt + 1).toString)
+                    BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession( session + "captchaAttempts" -> (captchaAttempts.toInt + 1).toString)
                   }
                 }
                 case None => {
-                  val captchaId = generateCaptchaId
-                  BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession("captchaId" -> captchaId, "captchaAttempts" -> "1")
+                  val newCaptchaId = generateCaptchaId
+                  BadRequest(views.html.contact(contactForm.fill(contactFields),newCaptchaId,Some("Try another validation"))).withSession(session + "captchaId" -> newCaptchaId, "captchaAttempts" -> "1")
                 }
               }
             }
           }
           case None => {
-            val captchaId = generateCaptchaId
-            BadRequest(views.html.contact(contactForm.fill(contactFields),captchaId,Some("Try another validation"))).withSession("captchaId" -> generateCaptchaId)
+            val newCaptchaId = generateCaptchaId
+            BadRequest(views.html.contact(contactForm.fill(contactFields),newCaptchaId,Some("Try another validation"))).withSession(session + "captchaId" -> newCaptchaId)
           }
         }
       }
