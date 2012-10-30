@@ -1,4 +1,4 @@
-@(contactForm:Form[(String,String,Option[String],Option[String],String,String)],captchaId:String,captchaError:Option[String] = None)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(contactForm:Form[(String,String,Option[String],Option[String],String)])(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -26,13 +26,6 @@
     <p class="alert alert-error">
         <button type="button" class="close" data-dismiss="alert">×</button>
         @error.message: @error.key
-    </p>
-    }
-
-	@captchaError.map { error =>
-    <p class="alert alert-error">
-        <button type="button" class="close" data-dismiss="alert">×</button>
-        Please try another validation entry
     </p>
     }
 
@@ -73,21 +66,6 @@
 					<label class="control-label" for="contactMessage">Message</label>
 					<div class="controls">
 						<textarea class="input-xlarge" id="contactMessage" name="message" placeholder="Your brief message" rows="12">@contactForm("message").value</textarea>	
-					</div>
-				</div>
-			</fieldset>
-			<fieldset>
-				<legend>Validation</legend>
-				<div class="control-group">
-					<label class="control-label">Source</label>
-					<div class="controls">
-						<img class="capthca img-rounded" src="http://captchator.com/captcha/image/@captchaId"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label class="control-label" for="contactValidation">Entry</label>
-					<div class="controls">@captchaId
-					<input type="text" class="input-xlarge" id="contactValidation" name="validation" value="" maxlength="20" placeholder="Copy the text above"/>	
 					</div>
 				</div>
 			</fieldset>
