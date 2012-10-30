@@ -186,6 +186,7 @@ object EmailTemplate {
 
   def contactMessageText(name:String,email:String,username:Option[String],subject:Option[String],message:String,currentRecipient:Option[Recipient]) : (String,String) = {
     val actualSubject = subject.getOrElse("No subject entered")
+    val actualUsername = username.getOrElse("No username entered")
     val actualRecipient = currentRecipient.map(recipient => recipient.username ).getOrElse("No current recipient")
     ("Contact message",
       """
@@ -196,10 +197,9 @@ object EmailTemplate {
 
         Subject: %s
         
-        Message:
-        
-        %s
-      """.format(actualRecipient,name,email,username,actualSubject,message))
+        Message:        
+%s
+      """.format(actualRecipient,name,email,actualUsername,actualSubject,message))
   }
   
 }
