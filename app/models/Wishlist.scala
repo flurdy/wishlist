@@ -20,6 +20,8 @@ case class Wishlist(
     def delete = Wishlist.delete(this)
 
     def update = Wishlist.update(this)
+
+    def removeWish(wish:Wish) = WishEntry.removeWishFromWishlist(wish,this)
 }
 
 object Wishlist {
@@ -82,14 +84,22 @@ object Wishlist {
     def delete(wishlist:Wishlist) {
         Logger.debug("Deleting wishlist: "+wishlist.title)
         DB.withConnection { implicit connection =>
-            SQL(
-                """
-                    delete from wish
+//          SQL(
+//            """
+//                    delete from wish
+//                    where wishlistid = {wishlistid}
+//            """
+//          ).on(
+//            'wishlistid -> wishlist.wishlistId
+//          ).execute()
+          SQL(
+            """
+                    delete from wishentry
                     where wishlistid = {wishlistid}
-                """
-            ).on(
-                'wishlistid -> wishlist.wishlistId
-            ).execute()
+            """
+          ).on(
+            'wishlistid -> wishlist.wishlistId
+          ).execute()
             SQL(
                 """
                     delete from wishlist
@@ -153,8 +163,8 @@ object Wishlist {
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                  SELECT * FROM wish 
-                  where wishlistid = {wishlistid} 
+                  SELECT * FROM wish
+                  where wishlistid = {wishlistid}
                   ORDER BY ordinal,title DESC
                 """
             ).on(

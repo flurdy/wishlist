@@ -20,7 +20,7 @@ POST		/contact						controllers.Application.sendContact
 GET		/search						controllers.WishController.search
 
 
-POST	/:username/wishlist 		controllers.WishController.create(username)
+POST	/:username/wishlist 		controllers.WishController.createWishlist(username)
 GET		/:username/wishlist/:wishlistId/ 		controllers.WishController.showWishlist(username,wishlistId:Long)
 GET		/:username/wishlist/:wishlistId/edit.html 		controllers.WishController.showEditWishlist(username,wishlistId:Long)
 POST	/:username/wishlist/:wishlistId/update 		controllers.WishController.updateWishlist(username,wishlistId:Long)

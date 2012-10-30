@@ -35,7 +35,7 @@ object WishController extends Controller with Secured {
         "order" -> text(maxLength=500)
     ) 
 
-    def create(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
+    def createWishlist(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
         editWishlistForm.bindFromRequest.fold(
             errors => {
               Logger.warn("Create failed: " + errors)
@@ -130,18 +130,19 @@ object WishController extends Controller with Secured {
               BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors,recipientGravatarUrl(wishlist)))
           }, 
           title => {
-              Wish(None,title,None,None,Some(wishlist),None).save
-              Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageSuccess" -> "Wish added") 
+              val wish = Wish(None,title,None).save
+              wish.addToWishlist(wishlist)
+              Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish added")
           }            
         )   
    }
 
 
-  def deleteWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = isRecipientOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request => 
+  def removeWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = isRecipientOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
 
-      wish.delete
+      wishlist.removeWish(wish)
 
-      Redirect(routes.WishController.showWishlist(username,wishlist.wishlistId.get)).flashing("messageWarning" -> "Wish deleted")
+      Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageWarning" -> "Wish deleted")
    }
 
 
@@ -178,8 +179,8 @@ object WishController extends Controller with Secured {
 
           var ordinalCount = 1;
           listOrder.split(",") map { idOrder => 
-            Wish.findById(idOrder.toInt) map { wish =>  
-              wish.copy(ordinal=Some(ordinalCount)).updateOrdinal
+            WishEntry.findByIds(idOrder.toInt,wishlistId) map { wishentry =>
+              wishentry.copy(ordinal=Some(ordinalCount)).update
               ordinalCount += 1
             }
           }
