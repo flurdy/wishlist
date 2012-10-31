@@ -22,7 +22,7 @@
 
 		<div class="well" >
 
-			@form(action = routes.WishController.create(currentRecipient.get.username), 'class -> "form-horizontal"){
+			@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-horizontal"){
 
 				<div class="control-group">
     				<label class="control-label" for="inputTitle">Title</label>

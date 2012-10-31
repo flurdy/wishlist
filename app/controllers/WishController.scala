@@ -168,7 +168,7 @@ object WishController extends Controller with Secured {
 
     def updateWishlistOrder(username:String,wishlistId:Long) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request => 
       
-      val wishes = Wishlist.findWishesForWishlist(wishlist)
+      // val wishes = Wishlist.findWishesForWishlist(wishlist)
       updateWishlistOrderForm.bindFromRequest.fold(
         errors => {
           Logger.warn("Update order failed: " + errors)
@@ -178,9 +178,9 @@ object WishController extends Controller with Secured {
           Logger.info("Updating wishlist's order: " + wishlistId)
 
           var ordinalCount = 1;
-          listOrder.split(",") map { idOrder => 
-            WishEntry.findByIds(idOrder.toInt,wishlistId) map { wishentry =>
-              wishentry.copy(ordinal=Some(ordinalCount)).update
+          listOrder.split(",") map { wishId => 
+            WishEntry.findByIds(wishId.toInt,wishlistId) map { wishentry =>
+              wishentry.copy(ordinal=ordinalCount).update
               ordinalCount += 1
             }
           }

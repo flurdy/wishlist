@@ -99,11 +99,11 @@ trait Secured {
 
 
   def isRecipientOfWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist,Recipient) => Request[AnyContent] => Result) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
-    Wish.findById(wishId) match {
-      case Some(wish) => {
-        if(wishlistId == wish.wishlist.get.wishlistId.get){ 
+    WishEntry.findByIds(wishId,wishlistId) match {
+      case Some(wishEntry) => {
+        if(wishlistId == wishEntry.wishlist.wishlistId.get){ 
 
-          f(wish,wishlist,currentRecipient)(request)
+          f(wishEntry.wish,wishlist,currentRecipient)(request)
 
         } else {
           Logger.warn("Wish %d is not a member of wishlist %d".format(wishId,wishlistId))
@@ -118,11 +118,11 @@ trait Secured {
   
 
   def withWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist) => Request[AnyContent] => Result) = withWishlist(username,wishlistId) { wishlist => implicit request =>
-    Wish.findById(wishId) match {
-      case Some(wish) => {
-        if(wishlist == wish.wishlist.get){ 
+    WishEntry.findByIds(wishId,wishlistId) match {
+      case Some(wishEntry) => {
+        if(wishlistId == wishEntry.wishlist.wishlistId.get){ 
 
-          f(wish,wishlist)(request)
+          f(wishEntry.wish,wishlist)(request)
 
         } else {
           Logger.warn("Wish %d is not a member of wishlist %d".format(wishId,wishlistId))
@@ -138,11 +138,11 @@ trait Secured {
     Wishlist.findById(wishlistId) match {
       case Some(wishlist) => {
         if(wishlist.recipient.username == username) {
-          Wish.findById(wishId) match {
-            case Some(wish) => {
-              if(wishlistId == wish.wishlist.get.wishlistId.get){ 
+          WishEntry.findByIds(wishId,wishlistId) match {
+            case Some(wishEntry) => {
+              if(wishlistId == wishEntry.wishlist.wishlistId.get){ 
 
-                f(wish,wishlist,currentRecipient)(request)
+                f(wishEntry.wish,wishlist,currentRecipient)(request)
 
               } else {
                 Logger.warn("Wish %d is not a member of wishlist %d".format(wishId,wishlistId))

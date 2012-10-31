@@ -44,7 +44,7 @@ object Wish {
       get[Option[String]]("description") ~
       get[Option[Long]]("reservationid") map {
       case wishid~title~description~reservationid => {
-       new Wish( Some(wishid), title, description, Reservation.create(reservationid))
+       new Wish( wishid, title, description, Reservation.create(reservationid))
       }
     }
   }
@@ -119,6 +119,122 @@ object Wish {
       wish
     }
   }
+
+
+}
+
+
+
+
+case class WishEntry(
+        wish:Wish,
+        wishlist:Wishlist,
+        ordinal: Int
+) {
+
+ def update = WishEntry.update(this)
+
+}
+
+
+object WishEntry {
+
+
+  val simple = {
+    get[Long]("wishid") ~
+    get[Long]("wishlistid") ~
+    get[Int]("ordinal") ~
+    get[String]("title") ~
+    get[Option[String]]("description") ~
+    get[Option[Long]]("reservationid") map {
+      case wishid~wishlistid~ordinal~title~description~reservationid => {
+       WishEntry( 
+            new Wish( wishid, title, description, Reservation.create(reservationid)),
+            new Wishlist(wishlistid),
+            ordinal)
+      } 
+    }
+  }
+
+  def addWishToWishlist(wish:Wish,wishlist:Wishlist) {
+    DB.withConnection { implicit connection =>
+      val maxOrdinal = SQL(
+        """
+          SELECT COALESCE(MAX(ordinal),0) + 1 from wishentry
+          where wishlistid = {wishlistid}
+        """
+        ).on(
+            'wishlistid -> wishlist.wishlistId.get
+        ).as(scalar[Int].single)
+      SQL(
+        """
+            insert into wishentry
+            (wishid,wishlistid,ordinal)
+            values
+            ({wishid},{wishlistid},{ordinal})
+        """
+      ).on(
+        'wishid -> wish.wishId.get,
+        'wishlistid -> wishlist.wishlistId.get,
+        'ordinal -> maxOrdinal
+      ).executeInsert()
+    }
+
+  }
+
+  def removeWishFromWishlist(wish:Wish,wishlist:Wishlist){
+    Logger.debug("Deleting wishentry: "+wish.title)
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            delete from wishentry
+            where wishid = {wishid}
+            and wishlistid = {wishlistid}
+        """
+      ).on(
+        'wishid -> wish.wishId.get,
+        'wishlistid -> wishlist.wishlistId.get
+      ).execute()
+    }
+  }
+
+
+  def findByIds(wishId:Long,wishlistId:Long) : Option[WishEntry]= {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+              SELECT * FROM wishentry we
+                INNER JOIN wish wi ON wi.wishid = we.wishid
+              WHERE we.wishid = {wishid}
+              AND we.wishlistid = {wishlistid}
+        """
+      ).on(
+        'wishid -> wishId,
+        'wishlistid -> wishlistId
+      ).as(WishEntry.simple.singleOpt)
+    }
+  }
+
+
+
+  def update(wishentry:WishEntry)= {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            update wishentry
+            set ordinal = {ordinal}
+            where wishid = {wishid}
+            and wishlistid = {wishlistid}
+        """
+      ).on(
+        'wishid -> wishentry.wish.wishId.get,
+        'ordinal -> wishentry.ordinal,
+        'wishlistid -> wishentry.wishlist.wishlistId.get
+      ).executeInsert()
+      wishentry
+    }
+  }
+
 
 
 }
