@@ -203,8 +203,8 @@ object WishEntry {
     DB.withConnection { implicit connection =>
       SQL(
         """
-              SELECT * FROM wishentry we
-                INNER JOIN wish wi ON wi.wishid = we.wishid
+              SELECT we.*,wi.* FROM wishentry we
+                LEFT JOIN wish wi ON wi.wishid = we.wishid
               WHERE we.wishid = {wishid}
               AND we.wishlistid = {wishlistid}
         """
