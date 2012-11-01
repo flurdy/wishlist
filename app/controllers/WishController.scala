@@ -180,7 +180,7 @@ object WishController extends Controller with Secured {
           var ordinalCount = 1;
           listOrder.split(",") map { wishId => 
             WishEntry.findByIds(wishId.toInt,wishlistId) map { wishentry =>
-              wishentry.copy(ordinal=ordinalCount).update
+              wishentry.copy(ordinal=Some(ordinalCount)).update
               ordinalCount += 1
             }
           }

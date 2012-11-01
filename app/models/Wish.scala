@@ -129,7 +129,7 @@ object Wish {
 case class WishEntry(
         wish:Wish,
         wishlist:Wishlist,
-        ordinal: Int
+        ordinal: Option[Int]
 ) {
 
  def update = WishEntry.update(this)
@@ -143,7 +143,7 @@ object WishEntry {
   val simple = {
     get[Long]("wishid") ~
     get[Long]("wishlistid") ~
-    get[Int]("ordinal") ~
+    get[Option[Int]]("ordinal") ~
     get[String]("title") ~
     get[Option[String]]("description") ~
     get[Option[Long]]("reservationid") map {
