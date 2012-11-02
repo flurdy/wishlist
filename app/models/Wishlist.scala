@@ -84,14 +84,14 @@ object Wishlist {
     def delete(wishlist:Wishlist) {
         Logger.debug("Deleting wishlist: "+wishlist.title)
         DB.withConnection { implicit connection =>
-//          SQL(
-//            """
-//                    delete from wish
-//                    where wishlistid = {wishlistid}
-//            """
-//          ).on(
-//            'wishlistid -> wishlist.wishlistId
-//          ).execute()
+          SQL(
+            """
+                    delete from wish
+                    where wishid in (select wishid from wishentry where wishlistid = {wishlistid})
+            """
+          ).on(
+            'wishlistid -> wishlist.wishlistId
+          ).execute()
           SQL(
             """
                     delete from wishentry

@@ -60,7 +60,6 @@ object Wish {
         Logger.debug("Inserting wish: "+wish.title)
         DB.withConnection { implicit connection =>
             val nextId = SQL("SELECT NEXTVAL('wish_seq')").as(scalar[Long].single)
-//            val maxOrdinal = SQL("SELECT COALESCE(MAX(ordinal),0) + 1 from wish").as(scalar[Int].single)
             SQL(
                 """
                     insert into wish
@@ -73,8 +72,6 @@ object Wish {
                 'title -> wish.title,
                 'description -> wish.description,
                 'recipientid -> wish.recipient.recipientId.get
-//                'ordinal -> wish.ordinal.getOrElse(maxOrdinal),
-//                'wishlistid -> wish.wishlist.get.wishlistId
             ).executeInsert()
             wish.copy(wishId = Some(nextId))
         }

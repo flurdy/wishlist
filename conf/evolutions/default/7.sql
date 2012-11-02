@@ -1,4 +1,4 @@
-# --- Sixth database schema
+# --- Seventh database schema
 
 # --- !Ups
 
