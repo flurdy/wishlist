@@ -26,9 +26,18 @@ object Reservation {
 	val simple = {
    	  get[Long]("reservationid") ~
       get[Long]("recipientid") ~
-      get[Long]("wishid") map {
-      	case reservationid~recipientid~wishid => { 
-			Reservation( Some(reservationid), new Recipient(recipientid), new Wish(wishid) )
+      get[Long]("wishid") ~
+      get[Long]("wishid") ~
+      get[String]("title") ~
+      get[Option[String]]("description") ~
+      get[Option[Long]]("reservationid") ~ 
+      get[Long]("recipientid") ~
+      get[String]("username") ~
+      get[Option[String]]("fullname") ~
+      get[String]("email") ~
+      get[Boolean]("isAdmin") map {
+      	case reservationid~recipientid~wishid~wishid2~title~description~reservationid2~recipientid2~username~fullname~email~isadmin => { 
+			Reservation( Some(reservationid), new Recipient(recipientid,username,fullname), new Wish(wishid,title,description,new Recipient(recipientid,username,fullname)) )
    		}
    	  }
   	}
@@ -84,6 +93,24 @@ object Reservation {
 			).on(
 				'wishid -> wishId
 			).as(Reservation.simple.singleOpt)
+		}
+	}
+
+
+
+	def findByRecipient(recipient:Recipient) : Seq[Reservation]= {
+		DB.withConnection { implicit connection =>
+			SQL(
+				"""
+					SELECT * FROM reservation res
+					LEFT JOIN wish wi ON wi.wishid = res.wishid
+					LEFT JOIN recipient rec ON rec.recipientid = res.recipientid
+		 			WHERE res.recipientid = {recipientid}
+		 			ORDER BY res.wishid desc
+				"""
+			).on(
+				'recipientid -> recipient.recipientId.get
+			).as(Reservation.simple *)
 		}
 	}
 

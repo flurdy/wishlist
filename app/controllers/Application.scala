@@ -71,7 +71,7 @@ object Application extends Controller with Secured{
 	def index = Action { implicit request =>
     findCurrentRecipient match {
       case Some(recipient) => {
-        val wishlists = Wishlist.findWishlistsByUsername(recipient.username)
+        val wishlists = Wishlist.findByRecipient(recipient)
         Ok(views.html.indexrecipient(WishController.editWishlistForm,wishlists))
       }
       case None => Ok(views.html.indexanon())

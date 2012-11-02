@@ -83,8 +83,9 @@ object RecipientController extends Controller with Secured {
 	def showProfile(username:String) = Action {  implicit request =>
     Recipient.findByUsername(username) match {
       case Some(recipient) => {        
-        val wishlists = Wishlist.findWishlistsByUsername(username)        
-        Ok(views.html.recipient.profile(recipient,wishlists,WishController.editWishlistForm,gravatarUrl(recipient)))
+        val wishlists = recipient.findWishlists
+        val reservations = recipient.findReservations
+        Ok(views.html.recipient.profile(recipient,wishlists,reservations,WishController.editWishlistForm,gravatarUrl(recipient)))
       }
       case None => NotFound(views.html.error.notfound())
     }

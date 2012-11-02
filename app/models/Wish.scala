@@ -11,16 +11,21 @@ case class Wish(
     title:String,
     description:Option[String],
     wishEntries:Set[WishEntry] = Set.empty,
-    reservation:Option[Reservation] = None
+    reservation:Option[Reservation] = None,
+    recipient:Recipient
 ) {
 
     def this(wishId:Long,
         title:String,
         description:Option[String],
-        reservation:Option[Reservation]) =
-          this(Some(wishId), title, description, Set.empty, reservation)
+        reservation:Option[Reservation],recipient:Recipient) =
+          this(Some(wishId), title, description, Set.empty, reservation, recipient)
 
-    def this(wishId:Long) = this(Some(wishId),"",None, Set.empty, None)
+    def this(wishId:Long) = this(Some(wishId),"",None, Set.empty, None , null)
+
+    def this(wishId:Long,title:String,description:Option[String],recipient:Recipient) = this(Some(wishId),title,description, Set.empty, None, recipient:Recipient)
+
+    def this(title:String,description:Option[String],recipient:Recipient) = this(None,title,description, Set.empty, None, recipient:Recipient)
 
     def save = Wish.save(this)
 
@@ -42,9 +47,10 @@ object Wish {
     get[Long]("wishid") ~
       get[String]("title") ~
       get[Option[String]]("description") ~
-      get[Option[Long]]("reservationid") map {
-      case wishid~title~description~reservationid => {
-       new Wish( wishid, title, description, Reservation.create(reservationid))
+      get[Option[Long]]("reservationid") ~
+      get[Long]("recipientid") map {
+      case wishid~title~description~reservationid~recipientid => {
+       new Wish( wishid, title, description, Reservation.create(reservationid), new Recipient(recipientid))
       }
     }
   }
@@ -58,14 +64,15 @@ object Wish {
             SQL(
                 """
                     insert into wish
-                    (wishid,title,description)
+                    (wishid,title,description,recipientid)
                     values 
-                    ({wishid},{title},{description})
+                    ({wishid},{title},{description},{recipientid})
                 """
             ).on(
                 'wishid -> nextId,
                 'title -> wish.title,
-                'description -> wish.description
+                'description -> wish.description,
+                'recipientid -> wish.recipient.recipientId.get
 //                'ordinal -> wish.ordinal.getOrElse(maxOrdinal),
 //                'wishlistid -> wish.wishlist.get.wishlistId
             ).executeInsert()
@@ -146,10 +153,11 @@ object WishEntry {
     get[Option[Int]]("ordinal") ~
     get[String]("title") ~
     get[Option[String]]("description") ~
-    get[Option[Long]]("reservationid") map {
-      case wishid~wishlistid~ordinal~title~description~reservationid => {
+    get[Option[Long]]("reservationid") ~
+    get[Long]("recipientid") map {
+      case wishid~wishlistid~ordinal~title~description~reservationid~recipientid => {
        WishEntry( 
-            new Wish( wishid, title, description, Reservation.create(reservationid)),
+            new Wish( wishid, title, description, Reservation.create(reservationid), new Recipient(recipientid)),
             new Wishlist(wishlistid),
             ordinal)
       } 

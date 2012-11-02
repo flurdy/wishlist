@@ -21,6 +21,8 @@ case class Recipient (
 
   def this(recipientId:Long) = this(Some(recipientId),"",None,"",None,false)
 
+  def this(recipientId:Long, username:String,fullname:Option[String]) = this(Some(recipientId),username,fullname,"",None,false)
+
   def save = Recipient.save(this)
 
   def delete = Recipient.delete(this)
@@ -32,7 +34,14 @@ case class Recipient (
   def updatePassword(newPassword:String) { 
     Recipient.updatePassword(this.copy(password=Some(newPassword)))
   }
+
+  def findWishlists = Wishlist.findByRecipient(this)
+
+  def findReservations : Seq[Reservation] = Reservation.findByRecipient(this)
+
 }
+
+
 
 object Recipient {
 
@@ -158,7 +167,7 @@ object Recipient {
 
   def delete(recipient:Recipient) {
     Logger.debug("Deleting recipient: "+ recipient.username)
-    Wishlist.findWishlistsByUsername(recipient.username).map { wishlist => 
+    Wishlist.findByRecipient(recipient).map { wishlist => 
       wishlist.delete
     }
     DB.withConnection { implicit connection =>

@@ -130,7 +130,7 @@ object WishController extends Controller with Secured {
               BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors,recipientGravatarUrl(wishlist)))
           }, 
           title => {
-              val wish = Wish(None,title,None).save
+              val wish = new Wish(title,None,currentRecipient).save
               wish.addToWishlist(wishlist)
               Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish added")
           }            
