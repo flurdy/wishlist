@@ -26,18 +26,14 @@ object Reservation {
 	val simple = {
    	  get[Long]("reservationid") ~
       get[Long]("recipientid") ~
-      get[Long]("wishid") ~
-      get[Long]("wishid") ~
-      get[String]("title") ~
-      get[Option[String]]("description") ~
-      get[Option[Long]]("reservationid") ~ 
+      get[String]("username") ~
       get[Long]("recipientid") ~
       get[String]("username") ~
-      get[Option[String]]("fullname") ~
-      get[String]("email") ~
-      get[Boolean]("isAdmin") map {
-      	case reservationid~recipientid~wishid~wishid2~title~description~reservationid2~recipientid2~username~fullname~email~isadmin => { 
-			Reservation( Some(reservationid), new Recipient(recipientid,username,fullname), new Wish(wishid,title,description,new Recipient(recipientid,username,fullname)) )
+      get[Long]("wishid") ~
+      get[String]("title") ~
+      get[Option[String]]("description")  map {
+      	case reservationid~recipientid1~username1~recipientid2~username2~wishid~title~description => {
+			Reservation( Some(reservationid), new Recipient(recipientid1,username2), new Wish(wishid,title,description,new Recipient(recipientid2,username2)) )
    		}
    	  }
   	}
@@ -102,9 +98,10 @@ object Reservation {
 		DB.withConnection { implicit connection =>
 			SQL(
 				"""
-					SELECT * FROM reservation res
+					SELECT res.reservationid,rec1.recipientid,rec1.username,rec2.recipientid,rec2.username,wi.wishid,wi.title,wi.description FROM reservation res
 					LEFT JOIN wish wi ON wi.wishid = res.wishid
-					LEFT JOIN recipient rec ON rec.recipientid = res.recipientid
+					LEFT JOIN recipient rec1 ON rec1.recipientid = res.recipientid
+					LEFT JOIN recipient rec2 ON rec2.recipientid = wi.recipientid
 		 			WHERE res.recipientid = {recipientid}
 		 			ORDER BY res.wishid desc
 				"""

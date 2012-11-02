@@ -21,7 +21,7 @@ case class Recipient (
 
   def this(recipientId:Long) = this(Some(recipientId),"",None,"",None,false)
 
-  def this(recipientId:Long, username:String,fullname:Option[String]) = this(Some(recipientId),username,fullname,"",None,false)
+  def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)
 
   def save = Recipient.save(this)
 

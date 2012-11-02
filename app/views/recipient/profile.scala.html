@@ -59,16 +59,22 @@
 				<tbody>
 					<tr>
 						<th>Wish</th>
-						<th>Recipient</th>
+                        <th>Recipient</th>
+                        <th>Wishlists</th>
 					</tr>
 				@for(reservation <- reservations){
 					<tr>
 						<td>
 							@reservation.wish.title
 						</td>
-						<td>
-							@reservation.recipient.username
-						</td>
+                        <td>
+                            <a href="@routes.RecipientController.showProfile(reservation.wish.recipient.username)">@reservation.wish.recipient.username</a>
+                        </td>
+                        <td>
+                            @for(wishentry <- reservation.wish.wishEntries){
+                                <a href="@routes.WishController.showWishlist(wishentry.wish.recipient.username,wishentry.wishlist.get)">@reservation.wish.wishentry</a>
+                            }
+                        </td>
 					</tr>
 				}
 				</tbody>
