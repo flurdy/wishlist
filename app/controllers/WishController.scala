@@ -217,7 +217,7 @@ object WishController extends Controller with Secured {
       }
     }
 
-    Redirect(routes.RecipientController.showProfile(username)).flashing("message" -> "Wish reservation cancelled")
+    Redirect(routes.RecipientController.showProfile(currentRecipient.username)).flashing("message" -> "Wish reservation cancelled")
   }
 
 
