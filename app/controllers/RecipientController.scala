@@ -91,17 +91,17 @@ object RecipientController extends Controller with Secured {
     }
   }
 
-  def showEditRecipient(username:String) = isProfileRecipient(username) { (profileRecipient,currentRecipient) => implicit request =>
+  def showEditRecipient(username:String) = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     val editForm = editRecipientForm.fill(profileRecipient.username,profileRecipient.username,profileRecipient.fullname,profileRecipient.email)
     Ok(views.html.recipient.editrecipient(profileRecipient,editForm))
   }
 
-  def showDeleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient,currentRecipient) => implicit request =>
+  def showDeleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
     Ok(views.html.recipient.deleterecipient(profileRecipient))    
   }
 
 
-  def deleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient,currentRecipient) => implicit request =>
+  def deleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
     
     profileRecipient.delete
 
@@ -109,7 +109,7 @@ object RecipientController extends Controller with Secured {
   }
 
 
-  def updateRecipient(username:String)  = isProfileRecipient(username)  { (profileRecipient,currentRecipient) => implicit request =>
+  def updateRecipient(username:String)  = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
     editRecipientForm.bindFromRequest.fold(
       errors => {
         Logger.warn("Update failed: " + errors)
@@ -158,11 +158,11 @@ object RecipientController extends Controller with Secured {
 
 
 
-   def showChangePassword(username:String)  = isProfileRecipient(username) { (profileRecipient,currentRecipient) => implicit request =>
+   def showChangePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     Ok(views.html.recipient.passwordchange(changePasswordForm(username)))
   } 
 
-  def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient,currentRecipient) => implicit request =>
+  def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     changePasswordForm(username).bindFromRequest.fold(
       errors => {
         BadRequest(views.html.recipient.passwordchange(errors))

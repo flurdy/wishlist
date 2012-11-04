@@ -208,4 +208,17 @@ object WishController extends Controller with Secured {
     Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("message" -> "Wish reservation cancelled")
   }
 
+
+  def unreserveWishFromProfile(username:String, wishId:Long) = withJustWishAndCurrentRecipient(username,wishId) { (wish,currentRecipient) => implicit request =>
+
+    wish.reservation.map { reservation =>
+      if(reservation.isReserver(currentRecipient)){
+        wish.unreserve
+      }
+    }
+
+    Redirect(routes.RecipientController.showProfile(username)).flashing("message" -> "Wish reservation cancelled")
+  }
+
+
 }

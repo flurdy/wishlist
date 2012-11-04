@@ -60,6 +60,7 @@
 					<tr>
 						<th>Wish</th>
                         <th>Recipient</th>
+                        <td></td>
 					</tr>
 				@for(reservation <- reservations){
 					<tr>
@@ -68,6 +69,11 @@
 						</td>
                         <td>
                             <a href="@routes.RecipientController.showProfile(reservation.wish.recipient.username)">@reservation.wish.recipient.username</a>
+                        </td>
+                        <td>
+                            @form(action = routes.WishController.unreserveWishFromProfile(reservation.wish.recipient.username,reservation.wish.wishId.get), 'class -> "form-inline" ){
+                                <button class="btn btn-small btn-warning reserve-button" type="submit">cancel reservation</button>
+                            }
                         </td>
 					</tr>
 				}

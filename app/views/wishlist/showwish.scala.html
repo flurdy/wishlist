@@ -57,7 +57,7 @@
                     @if(wish.reservation.isDefined){
                         @if(wish.reservation.get.isReserver(currentRecipient.get) ){
                             @form(action = routes.WishController.unreserveWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline" ){
-                                <button class="btn btn-small btn-warning reserve-button" type="submit">cancel reservation</button>
+                                <button class="btn btn-mini btn-warning reserve-button" type="submit">cancel reservation</button>
                             }
 					    }
                     } else {

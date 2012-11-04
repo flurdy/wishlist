@@ -163,9 +163,10 @@ object Wishlist {
         DB.withConnection { implicit connection =>
             SQL(
               """
-                  SELECT wi.*
+                  SELECT wi.*,rec.username
                   FROM wish wi
                   INNER JOIN wishentry we on wi.wishid = we.wishid
+                  INNER JOIN recipient rec on rec.recipientid = wi.recipientid
                   where we.wishlistid = {wishlistid}
                   ORDER BY we.ordinal,wi.title DESC
               """

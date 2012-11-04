@@ -41,6 +41,8 @@ PUT		/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.
 POST		/:username/wishlist/:wishlistId/wish/:wishId/reserve 		controllers.WishController.reserveWish(username, wishlistId:Long, wishId:Long)
 POST		/:username/wishlist/:wishlistId/wish/:wishId/unreserve 		controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
 DELETE		/:username/wishlist/:wishlistId/wish/:wishId/unreserve 		controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
+POST		/:username/wish/:wishId/unreserve 		controllers.WishController.unreserveWishFromProfile(username, wishId:Long)
+DELETE		/:username/wish/:wishId/unreserve 		controllers.WishController.unreserveWishFromProfile(username, wishId:Long)
 
 
 

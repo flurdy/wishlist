@@ -50,12 +50,13 @@ object Wish {
       get[String]("title") ~
       get[Option[String]]("description") ~
       get[Option[Long]]("reservationid") ~
-      get[Long]("recipientid")   map {
-      case wishid~title~description~reservationid~recipientid => {
+      get[Long]("recipientid") ~
+      get[String]("username")   map {
+      case wishid~title~description~reservationid~recipientid~username => {
         val reservation = reservationid.map { reservationId =>
             new Reservation(reservationId) //,new Recipient(recipientid),new Wish(wishid))
         }
-        new Wish( wishid, title, description, reservation, new Recipient(recipientid))
+        new Wish( wishid, title, description, reservation, new Recipient(recipientid,username))
       }
     }
   }
@@ -87,8 +88,9 @@ object Wish {
         DB.withConnection { implicit connection =>
           SQL(
             """
-              SELECT * FROM wish
-              WHERE wishid = {wishid} 
+              SELECT wish.*,recipient.username FROM wish
+              INNER JOIN recipient on recipient.recipientid = wish.recipientid
+              WHERE wish.wishid = {wishid}
             """
           ).on(
             'wishid -> wishId
