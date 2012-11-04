@@ -35,6 +35,8 @@ case class Wish(
 
     def reserve(recipient:Recipient) = new Reservation(recipient,this).save
 
+    def unreserve = reservation map ( realReservation => realReservation.copy(wish=this).cancel )
+
     def addToWishlist(wishlist:Wishlist) = WishEntry.addWishToWishlist(this,wishlist)
 
 }
@@ -48,9 +50,12 @@ object Wish {
       get[String]("title") ~
       get[Option[String]]("description") ~
       get[Option[Long]]("reservationid") ~
-      get[Long]("recipientid") map {
+      get[Long]("recipientid")   map {
       case wishid~title~description~reservationid~recipientid => {
-       new Wish( wishid, title, description, Reservation.create(reservationid), new Recipient(recipientid))
+        val reservation = reservationid.map { reservationId =>
+            new Reservation(reservationId) //,new Recipient(recipientid),new Wish(wishid))
+        }
+        new Wish( wishid, title, description, reservation, new Recipient(recipientid))
       }
     }
   }

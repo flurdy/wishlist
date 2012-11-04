@@ -15,11 +15,17 @@ case class Reservation(
 
 	def this(reservationId: Long) = this(Some(reservationId),null,null)
 
-	def this(recipient: Recipient, wish: Wish) = this(None,recipient,wish)
+  def this(recipient: Recipient, wish: Wish) = this(None,recipient,wish)
 
 	def save = Reservation.save(this)
+
+  def cancel = Reservation.cancel(this)
+
+  def isReserver(recipient:Recipient) = Reservation.findReserver(this).get == recipient
 	
 }
+
+
 
 object Reservation {
 	
@@ -79,18 +85,33 @@ object Reservation {
 
 
 
-	def findByWish(wishId:Long) : Option[Reservation]= {
-		DB.withConnection { implicit connection =>
-			SQL(
-				"""
+  def findByWish(wishId:Long) : Option[Reservation]= {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
 					SELECT * FROM reservation 
 		 			WHERE wishid = {wishid}
-				"""
-			).on(
-				'wishid -> wishId
-			).as(Reservation.simple.singleOpt)
-		}
-	}
+        				"""
+      ).on(
+        'wishid -> wishId
+      ).as(Reservation.simple.singleOpt)
+    }
+  }
+
+
+  def findReserver(reservation:Reservation) : Option[Recipient]= {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+					SELECT rec.* FROM reservation res
+          INNER JOIN recipient rec on res.recipientid = rec.recipientid
+		 			WHERE res.reservationid = {reservationid}
+        """
+      ).on(
+        'reservationid -> reservation.reservationId
+      ).as(Recipient.simple.singleOpt)
+    }
+  }
 
 
 
@@ -111,5 +132,31 @@ object Reservation {
 		}
 	}
 
+
+
+  def cancel(reservation:Reservation) = {
+    Logger.debug("Cancelling reservation: "+reservation.wish.wishId.get)
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+					delete  from reservation
+          where reservationid = {reservationid}
+        """
+      ).on(
+        'reservationid -> reservation.reservationId.get
+      ).execute()
+    }
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+					update wish
+          set reservationid = null
+          where reservationid = {reservationid}
+        """
+      ).on(
+        'reservationid -> reservation.reservationId.get
+      ).execute()
+    }
+  }
 
 }

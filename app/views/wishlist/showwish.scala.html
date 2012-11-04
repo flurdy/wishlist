@@ -53,11 +53,19 @@
 			} else {
 				<div class="modal-footer">
 					<button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>	
-				@if(currentRecipient.isDefined && !wish.reservation.isDefined){
-		   		@form(action = routes.WishController.reserveWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline update-wish-form" ){
-						<button class="btn btn-small btn-primary input-small reserve-button" type="submit">reserve</button>	
-					}
-				}
+				@if(currentRecipient.isDefined){
+                    @if(wish.reservation.isDefined){
+                        @if(wish.reservation.get.isReserver(currentRecipient.get) ){
+                            @form(action = routes.WishController.unreserveWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline" ){
+                                <button class="btn btn-small btn-warning reserve-button" type="submit">cancel reservation</button>
+                            }
+					    }
+                    } else {
+                        @form(action = routes.WishController.reserveWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline" ){
+                            <button class="btn btn-small btn-primary input-small reserve-button" type="submit">reserve</button>
+                        }
+                    }
+                }
 				</div>
 			}
 		</div>

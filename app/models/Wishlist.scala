@@ -162,12 +162,13 @@ object Wishlist {
     def findWishesForWishlist(wishlist:Wishlist) : Seq[Wish] = {
         DB.withConnection { implicit connection =>
             SQL(
-                """
-                  SELECT wi.* FROM wishentry we
-                    INNER JOIN wish wi on wi.wishid = we.wishid
+              """
+                  SELECT wi.*
+                  FROM wish wi
+                  INNER JOIN wishentry we on wi.wishid = we.wishid
                   where we.wishlistid = {wishlistid}
                   ORDER BY we.ordinal,wi.title DESC
-                """
+              """
             ).on(
                 'wishlistid -> wishlist.wishlistId
             ).as(Wish.simple *)

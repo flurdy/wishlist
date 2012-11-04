@@ -190,13 +190,22 @@ object WishController extends Controller with Secured {
         }
       )
     }
-    
+
 
   def reserveWish(username:String, wishlistId:Long, wishId:Long) = withWishAndCurrentRecipient(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
 
     wish.reserve(currentRecipient)
 
     Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish reserved")
+  }
+
+
+
+  def unreserveWish(username:String, wishlistId:Long, wishId:Long) = withWishAndCurrentRecipient(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
+
+    wish.unreserve
+
+    Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("message" -> "Wish reservation cancelled")
   }
 
 }

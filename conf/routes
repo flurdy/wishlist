@@ -39,6 +39,8 @@ POST		/:username/wishlist/:wishlistId/wish/:wishId/update 		controllers.WishCont
 PUT		/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.updateWish(username,wishlistId:Long,wishId:Long)
 
 POST		/:username/wishlist/:wishlistId/wish/:wishId/reserve 		controllers.WishController.reserveWish(username, wishlistId:Long, wishId:Long)
+POST		/:username/wishlist/:wishlistId/wish/:wishId/unreserve 		controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
+DELETE		/:username/wishlist/:wishlistId/wish/:wishId/unreserve 		controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
 
 
 
