@@ -175,11 +175,41 @@ object RecipientController extends Controller with Secured {
         
         EmailNotifier.sendPasswordChangeEmail(profileRecipient)
 
-        Redirect(routes.Application.showLoginForm
-          ).withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
+        Redirect(routes.Application.showLoginForm)
+            .withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
       }
     )
   } 
+
+
+  def verifyEmail(username:String,verificationHash:String) = Action { implicit request =>
+    Recipient.findByUsername(username) match {
+      case Some(recipient) => {
+        Logger.info("Verifying email for %s".format(username))
+        if(recipient.isEmailVerified) {
+          Logger.warn("Already verified for %s".format(username))
+          Redirect(routes.Application.showLoginForm)
+            .withNewSession.flashing("message" -> "Email address verified. Please log in")
+        } else {
+          if(recipient.doesVerificationMatch(verificationHash)) {
+            recipient.setEmailAsVerified
+            Redirect(routes.Application.showLoginForm)
+              .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
+          } else {
+            Logger.warn("Verifying does not match for %s".format(username))
+            NotFound(views.html.error.notfound())
+          }
+        }
+      }
+      case None => NotFound(views.html.error.notfound())
+    }
+  }
+
+
+
+  def showResendVerification = TODO
+
+
 
 }
 

@@ -1,5 +1,6 @@
 package controllers
 
+import play.api.Play.current
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -48,8 +49,10 @@ object Application extends Controller with Secured{
 	      "password" -> nonEmptyText(maxLength = 99),
       	"source" -> optional(text)
 	    ) verifying("Log in failed. Username does not exist or password is invalid", fields => fields match {
-	      case (username, password, source) => Recipient.authenticate(username, password).isDefined
-    	}) 
+       case (username, password, source) => Recipient.authenticate(username, password).isDefined
+      }) verifying("Your email address not yet been verified", fields => fields match {
+       case (username, password, source) => Recipient.isEmailVerifiedOrNotRequired(username, password).isDefined
+      })
 	)	
 
 
@@ -87,34 +90,42 @@ object Application extends Controller with Secured{
    	   registeredForm => {
 	      	Logger.info("New registration: " + registeredForm._1)
 
-	      	val recipient = Recipient(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4))
-	      		
-	      	recipient.save	
-	      	
-	      	// TODO: Send email verification
+	      	val recipient = Recipient(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4)).save
+
           EmailAlerter.sendNewRegistrationAlert(recipient)
 
-         	Redirect(routes.Application.index()).withSession(
-          "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered")
+          if(Recipient.emailVerificationRequired){
+            val verificationHash = recipient.generateVerificationHash
+            EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
+            Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
+              """
+                Welcome, you have successfully registered.<br/>
+                Please click on the link sent to your email address to verify it
+              """)
+          } else {
+            Redirect(routes.Application.index()).withSession(
+              "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered")
+          }
+
       	}
       )
   }
 
   def redirectToRegisterForm = Action { implicit request =>
-  		simpleRegisterForm.bindFromRequest.fold(
-        errors => {
-          BadRequest(views.html.register(registerForm))
-        },
-   	   emailInForm => {
-   	   	emailInForm match {
-   	   		case None => Ok(views.html.register(registerForm))
-   	   		case Some(email) => {   	   	
-		         	Ok(views.html.register(	
-		         			registerForm.fill( email, None, email, "", "") ) )		
-   	   		}
-   	   	}
-      	}
-      )
+    simpleRegisterForm.bindFromRequest.fold(
+      errors => {
+        BadRequest(views.html.register(registerForm))
+      },
+     emailInForm => {
+      emailInForm match {
+        case None => Ok(views.html.register(registerForm))
+        case Some(email) => {
+            Ok(views.html.register(
+                registerForm.fill( email, None, email, "", "") ) )
+        }
+      }
+      }
+    )
   }
 
 	def showRegisterForm = Action { implicit request =>
@@ -133,9 +144,9 @@ object Application extends Controller with Secured{
 			},
 			loggedInForm => {
 				Logger.debug("Logging in: " + loggedInForm._1)
-				Redirect(routes.Application.index()).withSession(
-					"username" -> loggedInForm._1).flashing("message"->"You have logged in")
-			}
+        Redirect(routes.Application.index()).withSession(
+          "username" -> loggedInForm._1).flashing("message"->"You have logged in")
+      }
 		)		
 	}
     

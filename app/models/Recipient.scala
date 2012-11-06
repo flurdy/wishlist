@@ -9,6 +9,7 @@ import anorm.SqlParser._
 import play.Logger
 import java.math.BigInteger
 import java.security.{SecureRandom, MessageDigest}
+import play.api.Play
 
 case class Recipient (
     recipientId: Option[Long],
@@ -39,11 +40,25 @@ case class Recipient (
 
   def findReservations : Seq[Reservation] = Reservation.findByRecipient(this)
 
+  def generateVerificationHash = {
+    val verificationHash = Recipient.generateVerificationHash
+    Recipient.saveVerification(this,verificationHash)
+    verificationHash
+  }
+
+  def doesVerificationMatch(verificationHash:String) = Recipient.doesVerificationMatch(this,verificationHash)
+
+  def isEmailVerified = Recipient.isEmailVerified(this)
+
+  def setEmailAsVerified = Recipient.setEmailAsVerified(this)
 }
 
 
 
 object Recipient {
+
+
+  val emailVerificationRequired = Play.configuration.getString("mail.verification").getOrElse("false") == "true"
 
   val simple = {
     get[Long]("recipientid") ~
@@ -235,5 +250,80 @@ object Recipient {
 
 
 
+  def isEmailVerifiedOrNotRequired(username: String, password: String) : Option[Recipient]= {
+    authenticate(username,password).map { authenticatedRecipient =>
+      if( !emailVerificationRequired || authenticatedRecipient.isEmailVerified ){
+        return Some(authenticatedRecipient)
+      }
+    }
+    return None
+  }
+
+  def isEmailVerified(recipient:Recipient) : Boolean = {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+              SELECT count(*) = 1 FROM emailverification
+              WHERE recipientid = {recipientid}
+              AND verified = true
+        """
+      ).on(
+        'recipientid -> recipient.recipientId
+      ).as(scalar[Boolean].single)
+    }
+  }
+
+
+  def generateVerificationHash = new BigInteger(130,  new SecureRandom()).toString(32)
+
+
+  def saveVerification(recipient:Recipient, verificationHash: String) {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+              INSERT INTO emailverification
+              (recipientid,email,verificationhash)
+              VALUES
+              ({recipientid},{email},{verificationhash})
+        """
+      ).on(
+        'recipientid -> recipient.recipientId ,
+        'email -> recipient.email,
+        'verificationhash -> verificationHash
+      ).executeInsert()
+    }
+  }
+
+  def doesVerificationMatch(recipient:Recipient, verificationHash: String) : Boolean = {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+              SELECT count(*) = 1 FROM emailverification
+              WHERE recipientid = {recipientid}
+              AND email = {email}
+              AND verificationhash = {verificationhash}
+        """
+      ).on(
+        'recipientid -> recipient.recipientId ,
+        'email -> recipient.email,
+        'verificationhash -> verificationHash
+      ).as(scalar[Boolean].single)
+    }
+  }
+
+
+  def setEmailAsVerified(recipient:Recipient) {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+              UPDATE emailverification
+              set verified = true
+              WHERE recipientid = {recipientid}
+        """
+      ).on(
+        'recipientid -> recipient.recipientId
+      ).execute()
+    }
+  }
 }
 

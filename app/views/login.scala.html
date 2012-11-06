@@ -33,16 +33,24 @@
 						<input type="password" class="input-xlarge" id="inputPassword" name="password" placeholder="Your password"/>
 					</div>
 				</div>
-				<div class="control-group">
-					<div class="controls" id="buttons-row">
-						<button type="submit" class="btn btn-primary input-small">log in</button>
-						<a href="@routes.Application.showRegisterForm" class="btn btn-inverse">register</a>
-					   @if(loginForm.errors){
-					   	<a href="@routes.RecipientController.showResetPassword" class="btn btn-warning">reset password</a>
-					   }
-					</div>
-				</div>
-			}
+            <div class="control-group">
+                <div class="controls" id="buttons-row">
+                    <button type="submit" class="btn btn-primary input-small">log in</button>
+                    @if(!loginForm.errors){
+                        <a href="@routes.Application.showRegisterForm" class="btn btn-inverse">register</a>
+                    }
+                </div>
+            </div>
+            @if(loginForm.errors){
+            <div class="control-group">
+                <div class="controls" id="buttons-row">
+                    <a href="@routes.Application.showRegisterForm" class="btn btn-inverse">register</a>
+                    <a href="@routes.RecipientController.showResendVerification" class="btn btn-inverse">resend verfication</a>
+                    <a href="@routes.RecipientController.showResetPassword" class="btn btn-warning">reset password</a>
+                </div>
+            </div>
+            }
+            }
 		</div>
 
 	
