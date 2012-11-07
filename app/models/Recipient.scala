@@ -46,6 +46,8 @@ case class Recipient (
     verificationHash
   }
 
+  def findVerificationHash = Recipient.findVerificationHash(this)
+
   def doesVerificationMatch(verificationHash:String) = Recipient.doesVerificationMatch(this,verificationHash)
 
   def isEmailVerified = Recipient.isEmailVerified(this)
@@ -325,5 +327,19 @@ object Recipient {
       ).execute()
     }
   }
+
+  def findVerificationHash(recipient:Recipient) = {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+              SELECT verificationhash FROM emailverification
+              WHERE recipientid = {recipientid}
+        """
+      ).on(
+        'recipientid -> recipient.recipientId
+      ).as(scalar[String].singleOpt)
+    }
+  }
+
 }
 

@@ -95,7 +95,7 @@ object Application extends Controller with Secured{
           EmailAlerter.sendNewRegistrationAlert(recipient)
 
           if(Recipient.emailVerificationRequired){
-            val verificationHash = recipient.generateVerificationHash
+            val verificationHash = recipient.findVerificationHash.getOrElse(recipient.generateVerificationHash)
             EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
             Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
               """

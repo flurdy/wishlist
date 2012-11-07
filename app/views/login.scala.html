@@ -11,10 +11,10 @@
 
 
 
-	    @for(error <- loginForm.errors){
+	    @if(loginForm.errors){
 	    <p class="alert alert-error">
 	    	<button type="button" class="close" data-dismiss="alert">×</button>
-	        @error.message: @error.key
+	        @loginForm.errors(0).message: @loginForm.errors(0).key
 	    </p>
 	    }
 

@@ -40,7 +40,6 @@ object RecipientController extends Controller with Secured {
 
   def changePasswordForm(username:String) = Form(
     tuple(
-      //"username" -> nonEmptyText(minLength = 4, maxLength = 99),
       "password" -> nonEmptyText(minLength = 4, maxLength = 99),
       "newpassword" -> nonEmptyText(minLength = 4, maxLength = 99),
       "confirm" -> nonEmptyText(minLength = 4, maxLength = 99)
@@ -51,6 +50,28 @@ object RecipientController extends Controller with Secured {
     }) verifying("Current password is invalid", fields => fields match {
       case (password, newpassword, confirmPassword) =>  Recipient.authenticate(username, password).isDefined
     })  
+  )
+
+  val emailVerificationForm = Form(
+    tuple(
+      "username" -> nonEmptyText(maxLength = 99),
+      "email" -> nonEmptyText(maxLength = 99),
+      "password" -> nonEmptyText(minLength = 4, maxLength = 99)
+    ) verifying("Email address is not valid", fields => fields match {
+      case (username, email, password) => {
+        ValidEmailAddress.findFirstIn(email.trim).isDefined
+      }
+    }) verifying("Authentication failed", fields => fields match {
+      case (username, email, password) =>  Recipient.findByUsernameAndEmail(username,email).isDefined
+    }) verifying("Authentication failed", fields => fields match {
+      case (username, email, password) =>  Recipient.authenticate(username, password).isDefined
+//    })verifying("Email already verified", fields => fields match {
+//      case (username, email, password) => {
+//        Recipient.findByUsernameAndEmail(username,email).map { recipient =>
+//          !Recipient.authenticate(username, password).isDefined || Recipient.isEmailVerified(recipient)
+//        }.getOrElse(true)
+//      }
+    })
   )
 
 
@@ -207,7 +228,40 @@ object RecipientController extends Controller with Secured {
 
 
 
-  def showResendVerification = TODO
+  def showResendVerification = Action { implicit request =>
+    Ok(views.html.recipient.emailverification(emailVerificationForm))
+  }
+
+
+  def resendVerification = Action { implicit request =>
+    emailVerificationForm.bindFromRequest.fold(
+      errors => {
+        BadRequest(views.html.recipient.emailverification(errors))
+      },
+      verificationForm => {
+        Recipient.findByUsernameAndEmail(verificationForm._1,verificationForm._2) match {
+          case Some(recipient) => {
+            Logger.info("Verification resend requested for: " + recipient.recipientId)
+
+            if (recipient.isEmailVerified){
+
+              Redirect(routes.Application.login()).flashing("messageWarning" -> "Email already verified")
+            } else {
+
+              val verificationHash = recipient.generateVerificationHash
+              EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
+
+              Redirect(routes.Application.index()).flashing("messageWarning" -> "Verification resent by email")
+            }
+
+          }
+          case None => {
+            NotFound(views.html.error.notfound())
+          }
+        }
+      }
+    )
+  }
 
 
 

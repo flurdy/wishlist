@@ -1,0 +1,65 @@
+@(emailVerificationForm:Form[(String,String,String)])(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[String])
+
+@import helper._ 
+
+@nautical("email verification") {
+	<li><a href="@routes.Application.showLoginForm">login</a>
+        <span class="divider">/</span></li>
+	<li>verification</li>
+}{
+	<div id="password-reset-page">
+	    
+		<h2>Email verification</h2>
+
+
+
+        @if(emailVerificationForm.errors){
+
+	    <p class="alert alert-error">
+	    	<button type="button" class="close" data-dismiss="alert">×</button>
+            @emailVerificationForm.errors(0).message
+            @emailVerificationForm.errors(0).key
+	    </p>
+
+	    }
+
+		<div class="well">	
+			@form(action = routes.RecipientController.resendVerification, 'class -> "form-horizontal") {
+				<div class="control-group" id="username-row">
+    				<label class="control-label" for="inputUsername">Username</label>
+					<div class="controls"> 
+						<input type="text" class="input-xlarge" id="inputUsername" name="username" placeholder="Your username" value="@emailVerificationForm("username").value"/>
+					</div>
+				</div>
+                <div class="control-group">
+                    <label class="control-label" for="inputPassword">Password</label>
+                    <div class="controls">
+                        <input type="password" class="input-large" id="inputPassword" name="password" placeholder="Your password" value="@emailVerificationForm("password").value"/>
+                    </div>
+                </div>
+				<div class="control-group">
+    				<label class="control-label" for="inputEmail">Email address</label>
+					<div class="controls"> 
+						<input type="text" class="input-xlarge" id="inputEmail" name="email" placeholder="Your email address" value="@emailVerificationForm("email").value"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls" id="buttons-row">
+						<button type="submit" class="btn btn-primary input-medium">resend verification</button>
+					</div>
+				</div>
+			}
+		</div>
+
+		<div class="well">
+			<p>
+				Any further problems, please <a href="@routes.Application.contact">contact support</a>
+			</p>
+		</div>
+
+	
+	</div>
+
+
+    
+}

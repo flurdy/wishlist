@@ -62,6 +62,7 @@ PUT		/recipient/:username/password			controllers.RecipientController.updatePassw
 
 GET		/recipient/:username/verify/:verificationHash/      controllers.RecipientController.verifyEmail(username,verificationHash)
 GET		/recipient/verify.html					controllers.RecipientController.showResendVerification
+POST	/recipient/verify           controllers.RecipientController.resendVerification
 
 
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
