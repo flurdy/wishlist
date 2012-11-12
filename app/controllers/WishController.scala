@@ -40,13 +40,13 @@ object WishController extends Controller with Secured {
         "recipient" -> text(maxLength = 180,minLength = 2 ),
         "wishlistid" -> number,
         "username" -> text(maxLength = 180,minLength = 2 )
-      ) verifying("Organiser is the recipient", fields => fields match {
-        case (recipient,wishlistid,username) => {
-          recipient != username
-        }
-      }) verifying("Recipient not found", fields => fields match {
+      )  verifying("Organiser not found", fields => fields match {
         case (recipient,wishlistid,username) => {
           Recipient.findByUsername(username.trim).isDefined
+        }
+      }) verifying("Organiser is the recipient", fields => fields match {
+        case (recipient,wishlistid,username) => {
+          recipient != username
         }
       }) verifying("Recipient already an organiser", fields => fields match {
         case (recipient,wishlistid,username) => {
@@ -54,10 +54,10 @@ object WishController extends Controller with Secured {
             case Some(wishlist) => {
               Recipient.findByUsername(username.trim) match { 
                 case Some(recipient) =>  !wishlist.isOrganiser(recipient)
-                case None => false
+                case None => true
               }
             }
-            case None => false
+            case None => true
           }
         }
       })
