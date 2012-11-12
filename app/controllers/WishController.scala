@@ -35,6 +35,34 @@ object WishController extends Controller with Secured {
         "order" -> text(maxLength=500)
     ) 
 
+    val addOrganiserForm = Form {      
+      tuple(
+        "recipient" -> text(maxLength = 180,minLength = 2 ),
+        "wishlistid" -> number,
+        "username" -> text(maxLength = 180,minLength = 2 )
+      ) verifying("Organiser is the recipient", fields => fields match {
+        case (recipient,wishlistid,username) => {
+          recipient != username
+        }
+      }) verifying("Recipient not found", fields => fields match {
+        case (recipient,wishlistid,username) => {
+          Recipient.findByUsername(username.trim).isDefined
+        }
+      }) verifying("Recipient already an organiser", fields => fields match {
+        case (recipient,wishlistid,username) => {
+          Wishlist.findById(wishlistid) match {
+            case Some(wishlist) => {
+              Recipient.findByUsername(username.trim) match { 
+                case Some(recipient) =>  !wishlist.isOrganiser(recipient)
+                case None => false
+              }
+            }
+            case None => false
+          }
+        }
+      })
+    }
+
     def createWishlist(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
         editWishlistForm.bindFromRequest.fold(
             errors => {
@@ -59,17 +87,17 @@ object WishController extends Controller with Secured {
 
   def showEditWishlist(username:String,wishlistId:Long) =  isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
     val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
-    val wishes = Wishlist.findWishesForWishlist(wishlist)
-    Ok(views.html.wishlist.editwishlist(wishlist, wishes, editForm))
+    val organisers = wishlist.findOrganisers
+    Ok(views.html.wishlist.editwishlist(wishlist, editForm,organisers,addOrganiserForm))
   }
 
 
     def updateWishlist(username:String,wishlistId:Long) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
-      val wishes = Wishlist.findWishesForWishlist(wishlist)
       editWishlistForm.bindFromRequest.fold(
         errors => {
           Logger.warn("Update failed: " + errors)
-          BadRequest(views.html.wishlist.editwishlist(wishlist,wishes,errors))
+          val organisers = wishlist.findOrganisers
+          BadRequest(views.html.wishlist.editwishlist(wishlist,errors,organisers,addOrganiserForm))
         }, 
         editForm => {
           Logger.info("Updating wishlist: " + editForm)
@@ -126,7 +154,7 @@ object WishController extends Controller with Secured {
         simpleAddWishForm.bindFromRequest.fold(
           errors => {
               Logger.warn("Add failed: " + errors)
-              val wishes = Wishlist.findWishesForWishlist(wishlist)
+              val wishes = wishlist.findWishes
               BadRequest(views.html.wishlist.showwishlist(wishlist,wishes,errors,recipientGravatarUrl(wishlist)))
           }, 
           title => {
@@ -151,7 +179,7 @@ object WishController extends Controller with Secured {
       editWishForm.bindFromRequest.fold(
         errors => {
           Logger.warn("Update failed: " + errors)
-          val wishes = Wishlist.findWishesForWishlist(wishlist)
+          val wishes = wishlist.findWishes
            Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Wish update failed")
         },
         editForm => {
@@ -220,5 +248,31 @@ object WishController extends Controller with Secured {
     Redirect(routes.RecipientController.showProfile(currentRecipient.username)).flashing("message" -> "Wish reservation cancelled")
   }
 
+
+  def addOrganiserToWishlist(username:String,wishlistId:Long) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request => 
+        addOrganiserForm.bindFromRequest.fold(
+          errors => {
+              Logger.warn("Add failed: " + errors)
+              val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
+              val organisers = wishlist.findOrganisers
+              BadRequest(views.html.wishlist.editwishlist(wishlist,editForm,organisers,errors))              
+          }, 
+          organiserUsername => {
+            Recipient.findByUsername(organiserUsername._3) match { 
+              case Some(organiser) => {
+
+                Logger.info("is Organiser %s".format(wishlist.isOrganiser(organiser).toString))
+                wishlist.addOrganiser(organiser)                
+                Logger.info("is Organiser %s".format(wishlist.isOrganiser(organiser).toString))
+                wishlist.findOrganisers.map { organiser2 => 
+                    Logger.info("Organiser %d".format(organiser2.recipientId.get))
+                }
+                Redirect(routes.WishController.showEditWishlist(username,wishlistId)).flashing("messageSuccess" -> "Organiser added")
+              }
+              case None => NotFound(views.html.error.notfound())
+            }             
+          }            
+        )   
+   }
 
 }

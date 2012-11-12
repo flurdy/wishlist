@@ -1,4 +1,4 @@
-@(wishlist:Wishlist,wishes:Seq[Wish],editWishlistForm:Form[(String,Option[String])])(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(wishlist:Wishlist,editWishlistForm:Form[(String,Option[String])],organisers:Seq[Recipient],addOrganiserForm:Form[(String,Int,String)])(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -15,6 +15,14 @@
 	    <p class="alert alert-error">
 	    	<button type="button" class="close" data-dismiss="alert">×</button>
 	        @error.message: @error.key
+	    </p>
+	    }
+	    
+
+	    @for(error <- addOrganiserForm.errors){
+	    <p class="alert alert-error">
+	    	<button type="button" class="close" data-dismiss="alert">×</button>
+	        @error.message
 	    </p>
 	    }
 	    
@@ -53,6 +61,30 @@
 
 		</div>
 
+
+
+			<div class="well" >
+
+				<h4>Organisers</h4>
+
+		@if(organisers.size>0){
+				<ul class="unstyled sortable">									
+					@for(organiser <- organisers){	                    
+						<li>
+							@organiser.username
+						</li>
+					}	
+				</ul>
+		}
+
+			@form(action = routes.WishController.addOrganiserToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
+				<input type="hidden" name="wishlistid" value="@wishlist.wishlistId.get"/>
+				<input type="hidden" name="recipient" value="@currentRecipient.get.username"/>
+				<input type="text" class="input-large" name="username" placeholder="Organiser's username" value="@addOrganiserForm("username").value"/>
+				<button type="submit" class="btn btn-success input-medium">add organiser</button>
+			}
+
+			</div>
 
 
 		<div class="well" >

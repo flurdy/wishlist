@@ -26,7 +26,7 @@ object RecipientController extends Controller with Secured {
       case (oldusername, username, fullname, email) => {
         ValidEmailAddress.findFirstIn(email.trim).isDefined
       }
-    })   verifying("Username is not valid. A to Z and numbers only. No spaces", fields => fields match {
+    })   verifying("Username is not valid. A to Z and numbers only. No spaces. Sorry", fields => fields match {
       case (oldusername, username, fullname, email) => {
         ValidUsername.findFirstIn(username.trim).isDefined
       }
@@ -51,6 +51,7 @@ object RecipientController extends Controller with Secured {
       case (password, newpassword, confirmPassword) =>  Recipient.authenticate(username, password).isDefined
     })  
   )
+
 
   val emailVerificationForm = Form(
     tuple(
@@ -91,7 +92,9 @@ object RecipientController extends Controller with Secured {
     }) 
   )
 
+
   def gravatarUrl(recipient:Recipient) = Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
+
 
 	def showProfile(username:String) = Action {  implicit request =>
     Recipient.findByUsername(username) match {
@@ -104,10 +107,12 @@ object RecipientController extends Controller with Secured {
     }
   }
 
+
   def showEditRecipient(username:String) = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     val editForm = editRecipientForm.fill(profileRecipient.username,profileRecipient.username,profileRecipient.fullname,profileRecipient.email)
     Ok(views.html.recipient.editrecipient(profileRecipient,editForm))
   }
+
 
   def showDeleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
     Ok(views.html.recipient.deleterecipient(profileRecipient))    
@@ -145,6 +150,7 @@ object RecipientController extends Controller with Secured {
     Ok(views.html.recipient.passwordreset(resetPasswordForm))
   } 
 
+
   def resetPassword = Action { implicit request =>
     resetPasswordForm.bindFromRequest.fold(
       errors => {
@@ -174,6 +180,7 @@ object RecipientController extends Controller with Secured {
    def showChangePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     Ok(views.html.recipient.passwordchange(changePasswordForm(username)))
   } 
+
 
   def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     changePasswordForm(username).bindFromRequest.fold(

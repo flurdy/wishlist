@@ -45,6 +45,9 @@ POST		/:username/wish/:wishId/unreserve 		controllers.WishController.unreserveWi
 DELETE		/:username/wish/:wishId/unreserve 		controllers.WishController.unreserveWishFromProfile(username, wishId:Long)
 
 
+POST		/:username/wishlist/:wishlistId/organiser/ 		controllers.WishController.addOrganiserToWishlist(username,wishlistId:Long)
+
+
 
 GET		/recipient/:username/ 		        controllers.RecipientController.showProfile(username)
 GET		/recipient/:username/edit.html 		controllers.RecipientController.showEditRecipient(username)

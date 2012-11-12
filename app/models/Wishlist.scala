@@ -10,7 +10,8 @@ case class Wishlist(
     wishlistId:Option[Long],
     title:String,
     description:Option[String],
-    recipient:Recipient
+    recipient:Recipient,
+    organisers:Seq[Recipient] = Seq.empty
 ) {
 
     def this(wishlistId:Long) = this(Some(wishlistId),"",None,null)
@@ -22,6 +23,14 @@ case class Wishlist(
     def update = Wishlist.update(this)
 
     def removeWish(wish:Wish) = WishEntry.removeWishFromWishlist(wish,this)
+
+    def findWishes = Wishlist.findWishesForWishlist(this)
+
+    def findOrganisers = Wishlist.findOrganisers(this)
+
+    def addOrganiser(organiser:Recipient) = Wishlist.addOrganiserToWishlist(organiser,this)
+
+    def isOrganiser(organiser:Recipient) = Wishlist.isOrganiserOfWishlist(organiser,this)
 }
 
 object Wishlist {
@@ -208,6 +217,55 @@ object Wishlist {
         }
     }
 
+
+
+    def findOrganisers(wishlist:Wishlist) : Seq[Recipient] = {
+        DB.withConnection { implicit connection =>
+            SQL(
+              """
+                  SELECT rec.*
+                  FROM recipient rec
+                  INNER JOIN wishlistorganiser wo on wo.recipientid = rec.recipientid
+                  where wo.wishlistid = {wishlistid}
+                  ORDER BY rec.username
+              """
+            ).on(
+                'wishlistid -> wishlist.wishlistId
+            ).as(Recipient.simple *)
+        }
+    }
+
+
+  def addOrganiserToWishlist(organiser:Recipient,wishlist:Wishlist) {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            insert into wishlistorganiser
+            (wishlistid,recipientid)
+            values
+            ({wishlistid},{recipientid})
+        """
+      ).on(
+        'wishlistid -> wishlist.wishlistId.get,
+        'recipientid -> organiser.recipientId.get
+      ).executeInsert()
+    }
+  }
+
+  def isOrganiserOfWishlist(organiser:Recipient,wishlist:Wishlist) = {   
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+              SELECT count(*) = 1 FROM wishlistorganiser
+              WHERE recipientid = {recipientid}
+              AND wishlistid = {wishlistid}
+        """
+      ).on(
+        'wishlistid -> wishlist.wishlistId.get,
+        'recipientid -> organiser.recipientId.get
+      ).as(scalar[Boolean].single)
+    }
+  }
 
 }
 
