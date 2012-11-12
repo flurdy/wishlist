@@ -61,16 +61,8 @@ object RecipientController extends Controller with Secured {
       case (username, email, password) => {
         ValidEmailAddress.findFirstIn(email.trim).isDefined
       }
-    }) verifying("Authentication failed", fields => fields match {
-      case (username, email, password) =>  Recipient.findByUsernameAndEmail(username,email).isDefined
-    }) verifying("Authentication failed", fields => fields match {
-      case (username, email, password) =>  Recipient.authenticate(username, password).isDefined
-//    })verifying("Email already verified", fields => fields match {
-//      case (username, email, password) => {
-//        Recipient.findByUsernameAndEmail(username,email).map { recipient =>
-//          !Recipient.authenticate(username, password).isDefined || Recipient.isEmailVerified(recipient)
-//        }.getOrElse(true)
-//      }
+    }) verifying("Authentication failed or username and email does not match", fields => fields match {
+      case (username, email, password) =>  Recipient.findByUsernameAndEmail(username,email).isDefined && Recipient.authenticate(username, password).isDefined
     })
   )
 

@@ -12,3 +12,5 @@
 /target
 .history
 /dist
+/.ensime
+/.ensime_lucene

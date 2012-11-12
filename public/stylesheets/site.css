@@ -57,7 +57,7 @@
  0053cf
  335577
 */
-body {  background-color: #444444;  color: white; }
+body {  background-color: #444444;  color: black; }
 #hull { background-color: #ffffff;  }
 #bow {   }
 #tug > .compartment > iframe, #tug > .compartment img ,
