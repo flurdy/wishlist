@@ -122,7 +122,15 @@ object WishController extends Controller with Secured {
 
     def showWishlist(username:String,wishlistId:Long) =  withWishlist(username,wishlistId) { (wishlist) => implicit request =>
       val wishes = Wishlist.findWishesForWishlist(wishlist)
-      Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm,recipientGravatarUrl(wishlist)))
+
+      currentRecipient.map { recipient =>
+      
+        if( currentRecipient.canEdit(wishlist) ) {
+          Ok(views.html.wishlist.showeditwishlist(wishlist,wishes,simpleAddWishForm,recipientGravatarUrl(wishlist)))
+        } else {
+          Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm,recipientGravatarUrl(wishlist))) 
+        }
+
     }
 
 

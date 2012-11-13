@@ -80,7 +80,7 @@ trait Secured {
      Wishlist.findById(wishlistId) match {
       case Some(wishlist) => {
         if(wishlist.recipient.username == username) {
-          if(wishlist.recipient == currentRecipient || currentRecipient.isAdmin) {
+          if( currentRecipient.canEdit(wishlist) ) {
 
             f(wishlist,currentRecipient)(request)
 
@@ -96,6 +96,7 @@ trait Secured {
       case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
     }
   }
+  
 
 
   def isRecipientOfWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist,Recipient) => Request[AnyContent] => Result) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>

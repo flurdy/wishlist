@@ -1,0 +1,116 @@
+@(wishlist:Wishlist,wishes:Seq[Wish],addWishForm:Form[String],gravatarUrl:String)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+
+@import helper._
+@import wishlist._
+
+@nautical(wishlist.title) {
+	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
+}{
+	
+	<div id="view-wishlist-page">
+
+
+        @for(error <- addWishForm.errors){
+        <p class="alert alert-error">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            @error.message: @error.key
+        </p>
+        }
+
+
+
+        <div class="well" >
+			
+			<img class="gravatar img-rounded" src="@gravatarUrl" title="Avatar of @wishlist.recipient.username from Gravatar.com"/>
+		
+			<h3>@wishlist.title</h3>
+
+		
+			<p>A wishlist by <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a></p>
+
+			<p>@wishlist.description</p>
+
+
+		</div>
+
+
+
+		@if(wishes.size>0){
+
+		<div class="well" id="wishlist-wishes">
+
+			<h4>Wishes</h4>
+
+			<ul id="wish-list" class="unstyled sortable">				
+				@for(wish <- wishes){
+                    @showwish(wishlist,wish)
+				}				
+			</ul>
+
+		</div>
+            @for(wish <- wishes){
+                @wishmodal(wishlist,wish)
+            }
+
+		}
+
+
+
+
+		<div class="well" >
+			@form(action = routes.WishController.addWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
+				<input type="text" class="input-large" name="title" placeholder="New wish title" value="@addWishForm("title").value"/>
+				<button class="btn btn-success input-medium" type="submit">add wish</button>
+			}
+		</div>
+
+
+
+		<div class="well" >
+			<div class="control-group">
+				<div class="buttons">
+					<a class="btn btn-warning input-small" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
+				</div>
+			</div>
+		</div>
+
+
+		<script type="text/javascript">
+		    $(document).ready(function(){
+		        $(".wish-modal")
+		            .each(function(e){
+		                var $modalWindow = $(this);
+		                $modalWindow.find(".wish-edit-button")
+		                    .click(function(e){
+		                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("noshow");
+		                    });
+		                $modalWindow.find(".wish-cancel-button")
+		                    .click(function(e){
+		                        $modalWindow.find(".wish-read,.wish-edit").toggleClass("noshow");
+		                    });
+		            });
+		        $(".sortable")
+		        	.sortable({
+		            	placeholder: "ui-state-highlight",
+		        		update: function(event,ui){    
+		        			var serialisedData = $('#wish-list').sortable('toArray').join().replace(/wish-row-/g,"");		
+		        		  $.post('@routes.WishController.updateWishlistOrder(wishlist.recipient.username,wishlist.wishlistId.get)', 'order='+serialisedData);
+		        		}
+		    		});
+		        $(".sortable").disableSelection();         
+			    $("ul#wish-list li:odd").addClass("list-row-odd");
+			    $("ul#wish-list li:even").addClass("list-row-even");
+			    $("ul#wish-list li")
+			    	.mouseover(function(e){
+			    		$(this).addClass("list-row-hover");
+			    	})
+			    	.mouseout(function(e){
+			    		$(this).removeClass("list-row-hover");
+			    	});
+		    });
+		</script>
+		
+	</div>
+
+
+}

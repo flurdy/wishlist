@@ -55,6 +55,10 @@ case class Recipient (
   def isEmailVerified = Recipient.isEmailVerified(this)
 
   def setEmailAsVerified = Recipient.setEmailAsVerified(this)
+
+  def canEdit(wishlist:Wishlist) = {
+      isAdmin || wishlist.recipient == this || wishlist.isOrganiser(this)
+  }
 }
 
 
