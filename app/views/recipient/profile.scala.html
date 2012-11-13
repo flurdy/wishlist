@@ -1,4 +1,4 @@
-@(recipient:Recipient,wishlists:Seq[Wishlist],reservations:Seq[Reservation],createWishlistForm:Form[(String,Option[String])],gravatarUrl:String)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(recipient:Recipient,wishlists:Seq[Wishlist],organisedWishlists:Seq[Wishlist],reservations:Seq[Reservation],createWishlistForm:Form[(String,Option[String])],gravatarUrl:String)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -49,6 +49,26 @@
 			}
 
 		</div>
+
+
+		@if(!organisedWishlists.isEmpty){
+		<div class="well" id="wishlist-list">
+
+            <h4>Organising wishlists for others</h4>
+			<table class="table table-striped table-hover">
+				<tbody>
+				@for(wishlist <- organisedWishlists){
+					<tr>
+						<td>
+							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
+						</td>
+					</tr>
+				}
+				</tbody>
+			</table>
+		</div>
+		}
+
 
 
 		@if(!reservations.isEmpty){

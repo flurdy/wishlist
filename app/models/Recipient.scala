@@ -38,6 +38,8 @@ case class Recipient (
 
   def findWishlists = Wishlist.findByRecipient(this)
 
+  def findOrganisedWishlists = Wishlist.findByOrganiser(this)
+
   def findReservations : Seq[Reservation] = Reservation.findByRecipient(this)
 
   def generateVerificationHash = {

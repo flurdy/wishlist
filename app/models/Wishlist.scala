@@ -220,6 +220,22 @@ object Wishlist {
     }
 
 
+    def findByOrganiser(organiser:Recipient) : Seq[Wishlist] = {
+        DB.withConnection { implicit connection =>
+            SQL(
+                """
+                  SELECT * FROM wishlist wi
+                  INNER JOIN wishlistorganiser wo on wo.wishlistid = wi.wishlistid
+                  WHERE wo.recipientid = {recipientid}
+                  ORDER BY title DESC
+                """
+            ).on(
+                'recipientid -> organiser.recipientId.get
+            ).as(Wishlist.simple *)
+        }
+    }
+
+
 
     def findOrganisers(wishlist:Wishlist) : Seq[Recipient] = {
         DB.withConnection { implicit connection =>
