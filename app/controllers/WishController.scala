@@ -260,19 +260,32 @@ object WishController extends Controller with Secured {
           organiserUsername => {
             Recipient.findByUsername(organiserUsername._3) match { 
               case Some(organiser) => {
+                Logger.info("Adding organiser %s to wishlist %d".format(organiser.username,wishlistId))
 
-                Logger.info("is Organiser %s".format(wishlist.isOrganiser(organiser).toString))
                 wishlist.addOrganiser(organiser)                
-                Logger.info("is Organiser %s".format(wishlist.isOrganiser(organiser).toString))
-                wishlist.findOrganisers.map { organiser2 => 
-                    Logger.info("Organiser %d".format(organiser2.recipientId.get))
-                }
+                
                 Redirect(routes.WishController.showEditWishlist(username,wishlistId)).flashing("messageSuccess" -> "Organiser added")
               }
               case None => NotFound(views.html.error.notfound())
             }             
           }            
         )   
+   }
+
+
+
+
+  def removeOrganiserFromWishlist(username:String,wishlistId:Long,organiserUsername:String) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request => 
+      Logger.info("Removing organiser %s from wishlist %d".format(organiserUsername,wishlistId))
+      Recipient.findByUsername(organiserUsername) match { 
+        case Some(organiser) => {
+
+          wishlist.removeOrganiser(organiser)
+
+          Redirect(routes.WishController.showEditWishlist(username,wishlistId)).flashing("messageRemoved" -> "Organiser removed")
+        }
+        case None => NotFound(views.html.error.notfound())
+      }           
    }
 
 }

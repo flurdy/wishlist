@@ -71,11 +71,19 @@
 				<ul class="unstyled sortable">									
 					@for(organiser <- organisers){	                    
 						<li>
-							@organiser.username
+							@form(action = routes.WishController.removeOrganiserFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,organiser.username), 'class -> "form-inline"){
+								<a href="@routes.RecipientController.showProfile(organiser.username)">@organiser.username</a>
+								<button type="submit" class="btn btn-warning btn-small">remove organiser</button>								
+							}
 						</li>
 					}	
 				</ul>
 		}
+		</div>
+
+
+
+			<div class="well" >
 
 			@form(action = routes.WishController.addOrganiserToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
 				<input type="hidden" name="wishlistid" value="@wishlist.wishlistId.get"/>

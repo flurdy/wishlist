@@ -30,6 +30,8 @@ case class Wishlist(
 
     def addOrganiser(organiser:Recipient) = Wishlist.addOrganiserToWishlist(organiser,this)
 
+    def removeOrganiser(organiser:Recipient) = Wishlist.removeOrganiserFromWishlist(organiser,this)
+
     def isOrganiser(organiser:Recipient) = Wishlist.isOrganiserOfWishlist(organiser,this)
 }
 
@@ -249,6 +251,23 @@ object Wishlist {
         'wishlistid -> wishlist.wishlistId.get,
         'recipientid -> organiser.recipientId.get
       ).executeInsert()
+    }
+  }
+
+
+
+  def removeOrganiserFromWishlist(organiser:Recipient,wishlist:Wishlist) {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            delete from wishlistorganiser
+            where wishlistid = {wishlistid}
+            and recipientid = {recipientid}
+        """
+      ).on(
+        'wishlistid -> wishlist.wishlistId.get,
+        'recipientid -> organiser.recipientId.get
+      ).execute()
     }
   }
 

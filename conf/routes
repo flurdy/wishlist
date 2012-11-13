@@ -21,13 +21,17 @@ GET		/search						controllers.WishController.search
 
 
 POST	/:username/wishlist 		controllers.WishController.createWishlist(username)
+
 GET		/:username/wishlist/:wishlistId/ 		controllers.WishController.showWishlist(username,wishlistId:Long)
+
 GET		/:username/wishlist/:wishlistId/edit.html 		controllers.WishController.showEditWishlist(username,wishlistId:Long)
 POST	/:username/wishlist/:wishlistId/update 		controllers.WishController.updateWishlist(username,wishlistId:Long)
 PUT		/:username/wishlist/:wishlistId/ 		controllers.WishController.updateWishlist(username,wishlistId:Long)
+
 GET		/:username/wishlist/:wishlistId/delete.html 		controllers.WishController.showConfirmDeleteWishlist(username,wishlistId:Long)
 POST	/:username/wishlist/:wishlistId/delete 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
 DELETE	/:username/wishlist/:wishlistId/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
+
 POST	/:username/wishlist/:wishlistId/order 		controllers.WishController.updateWishlistOrder(username,wishlistId:Long)
 PUT		/:username/wishlist/:wishlistId/order 		controllers.WishController.updateWishlistOrder(username,wishlistId:Long)
 
@@ -46,6 +50,8 @@ DELETE		/:username/wish/:wishId/unreserve 		controllers.WishController.unreserve
 
 
 POST		/:username/wishlist/:wishlistId/organiser/ 		controllers.WishController.addOrganiserToWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/organiser/:organiser/delete 		controllers.WishController.removeOrganiserFromWishlist(username,wishlistId:Long,organiser:String)
+DELETE		/:username/wishlist/:wishlistId/organiser/:organiser/ 		controllers.WishController.removeOrganiserFromWishlist(username,wishlistId:Long,organiser:String)
 
 
 
