@@ -68,7 +68,7 @@
 				<h4>Organisers</h4>
 
 		@if(organisers.size>0){
-				<ul class="unstyled sortable">									
+				<ul id="organiser-list" class="unstyled">									
 					@for(organiser <- organisers){	                    
 						<li>
 							@form(action = routes.WishController.removeOrganiserFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,organiser.username), 'class -> "form-inline"){

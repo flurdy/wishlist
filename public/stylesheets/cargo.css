@@ -81,15 +81,19 @@ ul.vertical li a { }
 #cargo .form-search input { margin-top: 0.1em; }
 #cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; }
 
-#cargo #wish-list { margin: 0 1em 1em 1em; font-size: 1.1em;  }
+#cargo #wish-list, 
+#cargo #organiser-list { margin: 0 1em 1em 1em; font-size: 1.1em;  }
 #cargo #wish-list li, 
-#cargo #wish-list .ui-state-highlight { 
+#cargo #wish-list .ui-state-highlight,
+#cargo #organiser-list li, 
+#cargo #organiser-list .ui-state-highlight { 
 	border-top: 1px solid #dddddd;
 	padding: 0.6em 1em 0.3em 1em; 
 	height: 1.5em;
 	line-height: 1.2em; 
 }
-#cargo #wish-list:last-child{ border-bottom: 1px solid #dddddd; } 
+#cargo #wish-list:last-child,
+#cargo #organiser-list:last-child{ border-bottom: 1px solid #dddddd; } 
 #cargo .list-row-even { background-color: #F9F9F9; }
 #cargo .list-row-hover { background-color: #ffffff; border: 1px dashed #b9b9b9; }
 
