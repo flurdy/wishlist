@@ -62,7 +62,7 @@ object Application extends Controller with Secured{
       "email" -> nonEmptyText(maxLength = 99),
       "username" -> optional(text(maxLength = 99)),
       "subject" -> optional(text(maxLength = 200)),
-      "message" -> nonEmptyText(maxLength = 99)
+      "message" -> nonEmptyText(maxLength = 2000)
     ) verifying("Email address is not valid", fields => fields match {
       case (name, email, username, subject, message) => {
         RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
