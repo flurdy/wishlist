@@ -47,7 +47,7 @@
 		<div class="well" > -->
 
 			@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-inline"){
-				<input type="text" class="input-xlarge" placeholder="Title of new wishlist" name="title" value="@createWishlistForm("title").value"/>
+				<input type="text" class="input-xlarge" maxlength="50" placeholder="Title of new wishlist" name="title" value="@createWishlistForm("title").value"/>
 				<button type="submit" class="btn btn-info input-small">create</button> 	
 			}
 

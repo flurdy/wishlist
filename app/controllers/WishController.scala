@@ -11,7 +11,7 @@ object WishController extends Controller with Secured {
 
     val editWishlistForm = Form(
         tuple(
-          "title" -> nonEmptyText(maxLength = 180,minLength = 2 ),
+          "title" -> nonEmptyText(maxLength = 50,minLength = 2 ),
           "description" -> optional(text(maxLength = 2000))
         )
     )
@@ -21,12 +21,12 @@ object WishController extends Controller with Secured {
     }   
 
     val simpleAddWishForm = Form {
-        "title" -> text(maxLength = 180,minLength = 2 )
+        "title" -> text(maxLength = 50,minLength = 2 )
     }
 
     val editWishForm = Form(
       tuple(
-        "title" -> nonEmptyText(maxLength = 180,minLength = 2 ),
+        "title" -> nonEmptyText(maxLength = 50,minLength = 2 ),
         "description" -> optional(text(maxLength = 2000))
       )
     )
