@@ -82,7 +82,7 @@ ul.vertical li a { }
 #cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; }
 
 #cargo #wish-list {
-	height: 25em;
+	max-height: 30em;
 	overflow-x: auto;
 }
 #cargo #wish-list, 
