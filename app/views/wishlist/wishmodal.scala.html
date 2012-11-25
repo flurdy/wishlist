@@ -3,11 +3,19 @@
 
 @import helper._
 
+@titleCapper(toBeCapped:String) = {
+    @if(toBeCapped.length>30){
+        @toBeCapped.substring(0,30) ...
+    } else {
+        @toBeCapped
+    }   
+}
+
 <div class="modal hide fade wish-modal" id="wishModal-@wish.wishId.get" tabindex="-1" role="dialog" aria-labelledby="wishModalLabel-@wish.wishId.get" aria-hidden="true">
 
     <div class="modal-header wish-read">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="wishModalLabel-@wish.wishId.get"><span>@wish.title</span></h3>
+        <h3 id="wishModalLabel-@wish.wishId.get"><span>@titleCapper(wish.title)</span></h3>
     </div>
     <div class="modal-body wish-read">
         <p>@wish.description</p>
