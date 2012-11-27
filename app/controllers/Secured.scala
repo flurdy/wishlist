@@ -31,7 +31,7 @@ trait Secured {
 
   def withCurrentRecipient(f: Recipient => Request[AnyContent] => Result) = isAuthenticated {
     username => implicit request =>
-      Recipient.findByUsername(username).map { recipient => 
+      Recipient.findByUsername(username).map { recipient =>
 
         f(recipient)(request)
 
@@ -45,7 +45,7 @@ trait Secured {
     Recipient.findByUsername(profileUsername) match {
       case Some(profileRecipient) => {
         if( currentRecipient == profileRecipient || currentRecipient.isAdmin ){
-        
+
           f(currentRecipient)(request)
 
         } else {
@@ -63,12 +63,12 @@ trait Secured {
       case Some(wishlist) => {
         if(wishlist.recipient.username == username) {
 
-          f(wishlist)(request) 
+          f(wishlist)(request)
 
         } else {
           Logger.warn("Wishlist %d recipient is not %s".format(wishlistId,username))
           Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
-        }  
+        }
 
       }
       case None => Results.NotFound(views.html.error.notfound()(request.flash,findCurrentRecipient(request.session),analyticsDetails))
@@ -76,7 +76,7 @@ trait Secured {
   }
 
 
-  def isRecipientOfWishlist(username:String,wishlistId:Long)(f: => (Wishlist,Recipient) => Request[AnyContent] => Result) = withCurrentRecipient { currentRecipient => implicit request =>
+  def isEditorOfWishlist(username:String,wishlistId:Long)(f: => (Wishlist,Recipient) => Request[AnyContent] => Result) = withCurrentRecipient { currentRecipient => implicit request =>
      Wishlist.findById(wishlistId) match {
       case Some(wishlist) => {
         if(wishlist.recipient.username == username) {
@@ -87,22 +87,22 @@ trait Secured {
           } else {
             Logger.warn("Recipient %s is not a recipient of wishlist %d".format(currentRecipient.username,wishlistId))
             Results.Unauthorized(views.html.error.permissiondenied()(request.flash,Some(currentRecipient),analyticsDetails))
-          }        
+          }
         } else {
           Logger.warn("Wishlist %d recipient is not %s".format(wishlistId,username))
           Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
-        } 
+        }
       }
       case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
     }
   }
-  
 
 
-  def isRecipientOfWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist,Recipient) => Request[AnyContent] => Result) = isRecipientOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
+
+  def isEditorOfWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist,Recipient) => Request[AnyContent] => Result) = isEditorOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
     WishEntry.findByIds(wishId,wishlistId) match {
       case Some(wishEntry) => {
-        if(wishlistId == wishEntry.wishlist.wishlistId.get){ 
+        if(wishlistId == wishEntry.wishlist.wishlistId.get){
 
           f(wishEntry.wish,wishlist,currentRecipient)(request)
 
@@ -116,12 +116,12 @@ trait Secured {
   }
 
   implicit def analyticsDetails: Option[String] = Play.configuration.getString("analytics.id")
-  
+
 
   def withWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist) => Request[AnyContent] => Result) = withWishlist(username,wishlistId) { wishlist => implicit request =>
     WishEntry.findByIds(wishId,wishlistId) match {
       case Some(wishEntry) => {
-        if(wishlistId == wishEntry.wishlist.wishlistId.get){ 
+        if(wishlistId == wishEntry.wishlist.wishlistId.get){
 
           f(wishEntry.wish,wishlist)(request)
 

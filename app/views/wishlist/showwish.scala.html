@@ -8,7 +8,7 @@
 		@toBeCapped.substring(0,30)
 	} else {
 		@toBeCapped
-	}	
+	}
 }
 
 @descriptionCapper(description:Option[String]) = {
@@ -23,16 +23,16 @@
 
 <li id="wish-row-@wish.wishId.get">
 
+		 @if(editor){
+		 	<i class="icon-resize-vertical pull-right"></i>
+		 }
 		@if(currentRecipient.isDefined && wishlist.recipient != currentRecipient.get && wish.reservation.isDefined){
 			<div class="reserved">reserved</div>
 			<s><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title)</a></s> &nbsp;&nbsp; <s><small class="wish-description" class="muted">@descriptionCapper(wish.description)</small></s>
 		} else {
 			<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title)</a> &nbsp;&nbsp; <small class="wish-description" class="muted">@descriptionCapper(wish.description)</small>
 		}
-	
 
-		 @if(editor){
-		 	<i class="icon-resize-vertical pull-right"></i>
-		 }
+
 
 </li>

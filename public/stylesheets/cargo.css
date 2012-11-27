@@ -2,7 +2,7 @@
 #bow, #cargo { color: black; }
 
 #bow {
-	font-family: 'Lemon', Arial, sans-serif; 
+	font-family: 'Lemon', Arial, sans-serif;
     text-align: center;
 	margin: 0 0 0 0;
 	padding: 0.2em 0.2em 0 0.2em;
@@ -78,6 +78,8 @@ ul.vertical li a { }
 #cargo .modal .well { margin-bottom: 0;}
 #cargo .noshow { display: none; }
 
+#cargo .modal .modal-footer form { float: right; }
+
 #cargo .form-search input { margin-top: 0.1em; }
 #cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; }
 
@@ -85,23 +87,31 @@ ul.vertical li a { }
 	max-height: 30em;
 	overflow-x: auto;
 }
-#cargo #wish-list, 
+#cargo #wish-list,
 #cargo #organiser-list { margin: 0 1em 1em 1em; font-size: 1.1em;  }
-#cargo #wish-list li, 
+#cargo #wish-list li,
 #cargo #wish-list .ui-state-highlight,
-#cargo #organiser-list li, 
-#cargo #organiser-list .ui-state-highlight { 
+#cargo #organiser-list li,
+#cargo .modal-links ul li,
+#cargo #organiser-list .ui-state-highlight {
 	border-top: 1px solid #dddddd;
-	padding: 0.6em 1em 0.3em 1em; 
+	padding: 0.6em 1em 0.3em 1em;
 	height: 1.5em;
-	line-height: 1.2em; 
+	line-height: 1.2em;
 	overflow: hidden;
 }
-#cargo #wish-list li .wish-description {
+#cargo .modal .modal-links ul li { font-size: 0.9em; background-color: #F9F9F9; }
+#cargo .modal .modal-footer .modal-links li { text-align: left;}
+#cargo .modal .add-link form {  }
+#cargo .modal .modal-footer .add-link form {  }
+#cargo .modal .add-link input { font-size: 0.8em; float: left;  }
+#cargo .modal .add-link button { float: right;  }
 
-}
+#cargo .update-wish-form { margin-bottom: 0; }
+
 #cargo #wish-list:last-child,
-#cargo #organiser-list:last-child{ border-bottom: 1px solid #dddddd; } 
+#cargo #organiser-list:last-child,
+#cargo .modal-footer .modal-links ul:last-child { border-bottom: 1px solid #dddddd; }
 #cargo .list-row-even { background-color: #F9F9F9; }
 #cargo .list-row-hover { background-color: #ffffff; border: 1px dashed #b9b9b9; }
 
@@ -113,9 +123,11 @@ ul.vertical li a { }
 
 #cargo #wish-list .reserved { font-style: italic; color: #5555dd; float: right; font-size: 0.8em; }
 
-#cargo .well fieldset  { margin-bottom: 2em; } 
-#cargo .well fieldset legend { font-size: 1.3em; } 
+#cargo .well fieldset  { margin-bottom: 2em; }
+#cargo .well fieldset legend { font-size: 1.3em; }
 
 #cargo .capthca { width: 7em; height: 3.5em; border: 2px inset silver; padding: 0.2em; margin: 0.5em; }
+
+
 
 

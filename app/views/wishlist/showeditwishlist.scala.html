@@ -6,7 +6,7 @@
 @nautical(wishlist.title) {
 	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
-	
+
 	<div id="view-wishlist-page">
 
 
@@ -20,12 +20,12 @@
 
 
         <div class="well" >
-			
+
 			<img class="gravatar img-rounded" src="@gravatarUrl" title="Avatar of @wishlist.recipient.username from Gravatar.com"/>
-		
+
 			<h3>@wishlist.title</h3>
 
-		
+
 			<p>A wishlist by <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a></p>
 
 			<p>@wishlist.description</p>
@@ -41,15 +41,15 @@
 
 			<h4>Wishes</h4>
 
-			<ul id="wish-list" class="unstyled sortable">				
+			<ul id="wish-list" class="unstyled sortable">
 				@for(wish <- wishes){
                     @showwish(wishlist,wish,true)
-				}				
+				}
 			</ul>
 
 		</div>
             @for(wish <- wishes){
-                @wishmodal(wishlist,wish)
+                @wisheditmodal(wishlist,wish)
             }
 
 		}
@@ -92,14 +92,16 @@
 		        $(".sortable")
 		        	.sortable({
 		            	placeholder: "ui-state-highlight",
-		        		update: function(event,ui){    
-		        			var serialisedData = $('#wish-list').sortable('toArray').join().replace(/wish-row-/g,"");		
+		        		update: function(event,ui){
+		        			var serialisedData = $('#wish-list').sortable('toArray').join().replace(/wish-row-/g,"");
 		        		  $.post('@routes.WishController.updateWishlistOrder(wishlist.recipient.username,wishlist.wishlistId.get)', 'order='+serialisedData);
 		        		}
 		    		});
-		        $(".sortable").disableSelection();         
+		        $(".sortable").disableSelection();
 			    $("ul#wish-list li:odd").addClass("list-row-odd");
 			    $("ul#wish-list li:even").addClass("list-row-even");
+			    //$(".modal-links li:odd").addClass("list-row-odd");
+			    //$(".modal-links li:even").addClass("list-row-even");
 			    $("ul#wish-list li")
 			    	.mouseover(function(e){
 			    		$(this).addClass("list-row-hover");
@@ -109,7 +111,7 @@
 			    	});
 		    });
 		</script>
-		
+
 	</div>
 
 
