@@ -75,9 +75,11 @@ ul.vertical li a { }
 
 
 #cargo .modal { width: 30em; margin: -10em 0 0 -15em; }
+#cargo .modal-wide { width: 33em; }
 #cargo .modal .well { margin-bottom: 0;}
 #cargo .noshow { display: none; }
 
+#cargo .modal .modal-body textarea { width: 350px; }
 #cargo .modal .modal-footer form { float: right; }
 
 #cargo .form-search input { margin-top: 0.1em; }
@@ -100,12 +102,21 @@ ul.vertical li a { }
 	line-height: 1.2em;
 	overflow: hidden;
 }
-#cargo .modal .modal-links ul li { font-size: 0.9em; background-color: #F9F9F9; }
+#cargo .modal-links ul li {
+	height: 1.8em;
+	line-height: 1.5em;
+}
+#cargo .modal-footer .modal-links form { float: none; }
+#cargo .modal .modal-links ul li { font-size: 0.9em; }
+#cargo .modal .modal-links .edit-links li { padding: 0.7em 0 0.2em 0; }
 #cargo .modal .modal-footer .modal-links li { text-align: left;}
-#cargo .modal .add-link form {  }
-#cargo .modal .modal-footer .add-link form {  }
-#cargo .modal .add-link input { font-size: 0.8em; float: left;  }
+#cargo .modal .modal-footer .add-link form { width: 100%; }
+#cargo .modal .modal-footer .add-link form  { float: left; }
+#cargo .modal .add-link input { font-size: 0.8em; float: left; width:250px; }
 #cargo .modal .add-link button { float: right;  }
+#cargo .modal .modal-links .edit-links li { margin-bottom: 0.5em;  }
+
+#cargo .modal-footer form { margin-bottom: 0; }
 
 #cargo .update-wish-form { margin-bottom: 0; }
 

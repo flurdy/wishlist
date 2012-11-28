@@ -32,8 +32,14 @@ object WishController extends Controller with Secured {
     )
 
     val updateWishlistOrderForm = Form(
-        "order" -> text(maxLength=500)
+      "order" -> text(maxLength=500)
     )
+
+    val addLinkToWishForm = Form(
+      "url" -> text(minLength=4,maxLength=100)
+    )
+
+    val ValidUrl= """^https?:\/\/[0-9a-zA-Z][^@]+$""".r
 
     val addOrganiserForm = Form {
       tuple(
@@ -300,7 +306,35 @@ object WishController extends Controller with Secured {
 
 
 
-   def addLinkToWish(username:String, wishlistId:Long, wishId:Long) = TODO
-   def deleteLinkFromWish(username:String, wishlistId:Long, wishId:Long, linkId:Long) = TODO
+  def addLinkToWish(username:String, wishlistId:Long, wishId:Long) =  isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
+    addLinkToWishForm.bindFromRequest.fold(
+      errors => {
+        Logger.warn("add to link failed")
+        Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Link could not be added to wish")
+      },
+      url => {
+        ValidUrl.findFirstIn(url.trim) match {
+          case Some(_) => {
+            wish.addLink(url)
+            Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Link added to wish")
+          }
+          case None => Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Invalid url")
+        }
+      }
+    )
+  }
+
+
+  def deleteLinkFromWish(username:String, wishlistId:Long, wishId:Long, linkId:Long) = isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
+    wish.findLink(linkId) match {
+      case Some(url) => {
+        wish.deleteLink(linkId)
+        Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageWarning" -> "Link removed from wish")
+      }
+      case None => NotFound(views.html.error.notfound())
+    }
+  }
+
+
 
 }

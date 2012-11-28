@@ -39,6 +39,12 @@ case class Wish(
 
     def addToWishlist(wishlist:Wishlist) = WishEntry.addWishToWishlist(this,wishlist)
 
+    def addLink(url:String) = Wish.addLinkToWish(this,url)
+
+    def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
+
+    def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
+
 }
 
 
@@ -70,7 +76,7 @@ object Wish {
                 """
                     insert into wish
                     (wishid,title,description,recipientid)
-                    values 
+                    values
                     ({wishid},{title},{description},{recipientid})
                 """
             ).on(
@@ -131,6 +137,56 @@ object Wish {
     }
   }
 
+ def addLinkToWish(wish:Wish,url:String) = {
+    DB.withConnection { implicit connection =>
+      val nextId = SQL("SELECT NEXTVAL('wishlink_seq')").as(scalar[Long].single)
+      SQL(
+        """
+            insert into wishlink
+            (linkid,wishid,url)
+            values
+            ({linkid},{wishid},{url})
+        """
+      ).on(
+        'linkid -> nextId,
+        'wishid -> wish.wishId.get,
+        'url -> url
+      ).executeInsert()
+      nextId
+    }
+  }
+
+ def deleteLinkFromWish(wish:Wish,linkId:Long)  {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            delete from wishlink
+            where wishid = {wishid}
+            and linkid = {linkid}
+        """
+      ).on(
+        'wishid -> wish.wishId.get,
+        'linkid -> linkId
+      ).execute()
+    }
+  }
+
+
+
+  def findLink(wish:Wish,linkId:Long) : Option[String]= {
+      DB.withConnection { implicit connection =>
+        SQL(
+          """
+            select url from wishlink
+            where wishid = {wishid}
+            and linkid = {linkid}
+          """
+        ).on(
+          'wishid -> wish.wishId.get,
+          'linkid -> linkId
+        ).as(scalar[String].singleOpt)
+      }
+  }
 
 }
 
@@ -160,11 +216,11 @@ object WishEntry {
     get[Option[Long]]("reservationid") ~
     get[Long]("recipientid") map {
       case wishid~wishlistid~ordinal~title~description~reservationid~recipientid => {
-       WishEntry( 
+       WishEntry(
             new Wish( wishid, title, description, Reservation.create(reservationid), new Recipient(recipientid)),
             new Wishlist(wishlistid),
             ordinal)
-      } 
+      }
     }
   }
 
@@ -246,7 +302,6 @@ object WishEntry {
       wishentry
     }
   }
-
 
 
 }

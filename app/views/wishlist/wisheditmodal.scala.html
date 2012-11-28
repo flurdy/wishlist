@@ -39,7 +39,7 @@
         </div>
 
         <div class="modal-footer wish-edit noshow">
-            <button class="wish-update-button wish-edit noshow btn btn-success input-small btn-small" type="submit">update wish</button>
+            <button class="wish-update-button wish-edit noshow btn btn-primary input-small btn-small" type="submit">update wish</button>
         </div>
     }
         <div class="modal-footer wish-read">
@@ -60,19 +60,22 @@
 
         <div class="modal-footer wish-edit noshow">
             <div class="modal-links wish-edit noshow">
-                <ul class=" unstyled">
-                    <li><a href="#">blah.blah.com/blah.html</a>
+                <ul class="edit-links unstyled">
+                    <li>
                         @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,1L), 'class -> "form-inline wish-edit noshow"){
+                        <a href="#">blah.blah.com/blah.html</a>
                             <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
                         }
                     </li>
-                    <li><a href="#">blah.blah.com/blah.html</a>
+                    <li>
                         @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,1L), 'class -> "form-inline wish-edit noshow"){
+                        <a href="#">blah.blah.com/blah.html</a>
                             <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
                         }
                     </li>
-                    <li><a href="#">blah.blah.com/blah.html</a>
+                    <li>
                         @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,1L), 'class -> "form-inline wish-edit noshow"){
+                        <a href="#">blah.blah.com/blah.html</a>
                             <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
                         }
                     </li>
@@ -81,7 +84,7 @@
             <div class="add-link wish-edit noshow">
                 @form(action = routes.WishController.addLinkToWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline wish-edit noshow"){
                     <button type="submit" class="wish-edit noshow btn btn-success input-small btn-small">add link</button>
-                    <input type="text" name="url" class="wish-edit noshow input-large" placeholder="Enter link url e.g. http://www.example.com/someinfo/index.html" maxlength="100" />
+                    <input type="text" name="url" class="wish-edit noshow input-xlarge" placeholder="Enter link url e.g. http://www.example.com/someinfo/index.html" maxlength="100" />
                 }
             </div>
         </div>
