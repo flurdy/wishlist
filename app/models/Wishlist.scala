@@ -34,7 +34,7 @@ case class Wishlist(
 
     def isOrganiser(organiser:Recipient) = Wishlist.isOrganiserOfWishlist(organiser,this)
 
-  
+
 }
 
 object Wishlist {
@@ -65,8 +65,8 @@ object Wishlist {
             SQL(
                 """
                     insert into wishlist
-                    (wishlistid,title,description,recipientid) 
-                    values 
+                    (wishlistid,title,description,recipientid)
+                    values
                     ({wishlistid},{title},{description},{recipientid})
                 """
             ).on(
@@ -174,7 +174,7 @@ object Wishlist {
 
     def findWishesForWishlist(wishlist:Wishlist) : Seq[Wish] = {
         DB.withConnection { implicit connection =>
-            SQL(
+            val wishes = SQL(
               """
                   SELECT wi.*,rec.username
                   FROM wish wi
@@ -186,10 +186,11 @@ object Wishlist {
             ).on(
                 'wishlistid -> wishlist.wishlistId
             ).as(Wish.simple *)
+            wishes.map { wish =>
+              wish.copy(links=wish.findLinks)
+            }
         }
     }
-
-
 
 //    def findWishlistsByUsername(username:String) : Seq[Wishlist] = {
 //        val recipient = Recipient.findByUsername(username).get
@@ -289,7 +290,7 @@ object Wishlist {
     }
   }
 
-  def isOrganiserOfWishlist(organiser:Recipient,wishlist:Wishlist) = {   
+  def isOrganiserOfWishlist(organiser:Recipient,wishlist:Wishlist) = {
     DB.withConnection { implicit connection =>
       SQL(
         """

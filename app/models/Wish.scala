@@ -11,6 +11,7 @@ case class Wish(
     title:String,
     description:Option[String],
     wishEntries:Set[WishEntry] = Set.empty,
+    links:Seq[Link] = Seq.empty,
     reservation:Option[Reservation] = None,
     recipient:Recipient
 ) {
@@ -19,13 +20,13 @@ case class Wish(
         title:String,
         description:Option[String],
         reservation:Option[Reservation],recipient:Recipient) =
-          this(Some(wishId), title, description, Set.empty, reservation, recipient)
+          this(Some(wishId), title, description, Set.empty, Seq.empty, reservation, recipient)
 
-    def this(wishId:Long) = this(Some(wishId),"",None, Set.empty, None , null)
+    def this(wishId:Long) = this(Some(wishId),"",None, Set.empty, Seq.empty, None , null)
 
-    def this(wishId:Long,title:String,description:Option[String],recipient:Recipient) = this(Some(wishId),title,description, Set.empty, None, recipient:Recipient)
+    def this(wishId:Long,title:String,description:Option[String],recipient:Recipient) = this(Some(wishId),title,description, Set.empty, Seq.empty, None, recipient:Recipient)
 
-    def this(title:String,description:Option[String],recipient:Recipient) = this(None,title,description, Set.empty, None, recipient:Recipient)
+    def this(title:String,description:Option[String],recipient:Recipient) = this(None,title,description, Set.empty, Seq.empty, None, recipient:Recipient)
 
     def save = Wish.save(this)
 
@@ -44,6 +45,8 @@ case class Wish(
     def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
 
     def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
+
+    def findLinks : Seq[Link] = Wish.findLinks(this)
 
 }
 
@@ -66,7 +69,6 @@ object Wish {
       }
     }
   }
-
 
     def save(wish:Wish) = {
         Logger.debug("Inserting wish: "+wish.title)
@@ -188,6 +190,23 @@ object Wish {
       }
   }
 
+
+  def findLinks(wish:Wish) = {
+    DB.withConnection { implicit connection =>
+        SQL(
+          """
+              SELECT url
+              FROM wishlink
+              where wishid = {wishid}
+              ORDER BY linkid
+          """
+        ).on(
+            'wishid -> wish.wishId.get
+        ).as(scalar[String] *)
+    }
+  }
+
+
 }
 
 
@@ -303,5 +322,7 @@ object WishEntry {
     }
   }
 
-
 }
+
+case class Link(linkId:Option[Long] = None,url:String,wish:Wish)
+

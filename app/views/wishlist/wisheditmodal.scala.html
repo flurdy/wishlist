@@ -19,14 +19,15 @@
     <div class="modal-body wish-read well">
         <p>@wish.description</p>
     </div>
-    <div class="modal-links wish-read">
+    @if(!wish.links.isEmpty){
+    <div class="modal-links wish-read well">
         <ul class="unstyled">
-            <li><a href="#">blah.blah.com/blah.html</a></li>
-            <li><a href="#">blah.blah.com/blah.html</a></li>
-            <li><a href="#">blah.blah.com/blah.html</a></li>
+            @wish.links.map { link =>
+                <li><a href="@link.url">@link.url</a></li>
+            }
         </ul>
     </div>
-
+    }
     @form(action = routes.WishController.updateWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline update-wish-form" ){
 
         <input type="hidden" name="wishId" value="@wish.wishId.get"/>
@@ -59,14 +60,17 @@
         </div>
 
         <div class="modal-footer wish-edit noshow">
+            @if(!wish.links.isEmpty){
             <div class="modal-links wish-edit noshow">
                 <ul class="edit-links unstyled">
-                    <li>
-                        @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,1L), 'class -> "form-inline wish-edit noshow"){
-                        <a href="#">blah.blah.com/blah.html</a>
+                    @wish.links.map { link =>
+                     <li>
+                        @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,link.linkId.get), 'class -> "form-inline wish-edit noshow"){
+                        <a href="link.url">link.url</a>
                             <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
                         }
-                    </li>
+                        </li>
+                    }
                     <li>
                         @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,1L), 'class -> "form-inline wish-edit noshow"){
                         <a href="#">blah.blah.com/blah.html</a>
@@ -81,6 +85,7 @@
                     </li>
                 </ul>
             </div>
+            }
             <div class="add-link wish-edit noshow">
                 @form(action = routes.WishController.addLinkToWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline wish-edit noshow"){
                     <button type="submit" class="wish-edit noshow btn btn-success input-small btn-small">add link</button>

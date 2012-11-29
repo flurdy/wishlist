@@ -20,13 +20,15 @@
     <div class="modal-body wish-read well">
         <p>@wish.description</p>
     </div>
+    @if(!wish.links.isEmpty){
     <div class="modal-links wish-read well">
         <ul class="unstyled">
-            <li><a href="#">blah.blah.com/blah.html</a></li>
-            <li><a href="#">blah.blah.com/blah.html</a></li>
-            <li><a href="#">blah.blah.com/blah.html</a></li>
+            @wish.links.map { url =>
+                <li><a href="@url">@url</a></li>
+            }
         </ul>
     </div>
+    }
     <div class="modal-footer">
         <button class="wish-read btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">close</button>
         @if(currentRecipient.isDefined){
