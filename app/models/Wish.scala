@@ -308,6 +308,14 @@ object WishEntry {
         'wishid -> wish.wishId.get,
         'wishlistid -> wishlist.wishlistId.get
       ).execute()
+      SQL(
+        """
+            delete from wish
+            where wishid = {wishid}
+        """
+      ).on(
+        'wishid -> wish.wishId.get
+      ).execute()
     }
   }
 
