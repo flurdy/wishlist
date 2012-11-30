@@ -23,7 +23,7 @@
     <div class="modal-links wish-read well">
         <ul class="unstyled">
             @wish.links.map { link =>
-                <li><a href="@link.url">@link.url</a></li>
+                <li><a href="@link.url">@if(link.url.length>60){ @link.url.substring(0,59) } else { @link.url }</a></li>
             }
         </ul>
     </div>
@@ -65,24 +65,12 @@
                 <ul class="edit-links unstyled">
                     @wish.links.map { link =>
                      <li>
-                        @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,link.linkId.get), 'class -> "form-inline wish-edit noshow"){
-                        <a href="link.url">link.url</a>
+                        @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,link.linkId), 'class -> "form-inline wish-edit noshow"){
+                        <a href="link.url">@if(link.url.length>40){ @link.url.substring(0,39) } else { @link.url }</a>
                             <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
                         }
                         </li>
                     }
-                    <li>
-                        @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,1L), 'class -> "form-inline wish-edit noshow"){
-                        <a href="#">blah.blah.com/blah.html</a>
-                            <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
-                        }
-                    </li>
-                    <li>
-                        @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,1L), 'class -> "form-inline wish-edit noshow"){
-                        <a href="#">blah.blah.com/blah.html</a>
-                            <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
-                        }
-                    </li>
                 </ul>
             </div>
             }

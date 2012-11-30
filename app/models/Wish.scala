@@ -11,7 +11,7 @@ case class Wish(
     title:String,
     description:Option[String],
     wishEntries:Set[WishEntry] = Set.empty,
-    links:Seq[Link] = Seq.empty,
+    links:Seq[WishLink] = Seq.empty,
     reservation:Option[Reservation] = None,
     recipient:Recipient
 ) {
@@ -46,7 +46,7 @@ case class Wish(
 
     def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
 
-    def findLinks : Seq[Link] = Wish.findLinks(this)
+    def findLinks : List[WishLink] = WishLink.findWishLinks(this)
 
 }
 
@@ -191,23 +191,49 @@ object Wish {
   }
 
 
-  def findLinks(wish:Wish) = {
+}
+
+
+
+
+
+case class WishLink(
+  linkId : Long,
+  wish : Wish,
+  url : String
+)
+
+
+object WishLink {
+
+  val simple = {
+    get[Long]("linkid") ~
+    get[Long]("wishid") ~
+    get[String]("url") map {
+      case linkid~wishid~url => {
+        WishLink( linkid,  new Wish(wishid), url )
+      }
+    }
+  }
+
+
+  def findWishLinks(wish:Wish): List[WishLink] = {
     DB.withConnection { implicit connection =>
         SQL(
           """
-              SELECT url
+              SELECT *
               FROM wishlink
               where wishid = {wishid}
               ORDER BY linkid
           """
         ).on(
             'wishid -> wish.wishId.get
-        ).as(scalar[String] *)
+        ).as(WishLink.simple *)
     }
   }
 
-
 }
+
 
 
 
