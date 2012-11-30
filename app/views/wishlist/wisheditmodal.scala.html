@@ -1,4 +1,4 @@
-@(wishlist:Wishlist,wish:Wish)(implicit currentRecipient: Option[Recipient])
+@(wishlist:Wishlist,wish:Wish)(implicit currentRecipient: Option[Recipient],wishlist:Seq[Wishlist])
 
 @import helper._
 
@@ -81,6 +81,19 @@
                 }
             </div>
         </div>
+
+        @{ wishlists.length() > 1 ){
+        <div class="modal-footer wish-edit noshow">
+            @form(action = routes.WishController.moveWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline wish-edit nowshow"){
+                <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-small">move wish</button>
+                <select size="1" class="">
+                @{wishlists.map ){ otherWishlist =>
+                    <option value="@otherWishlist.wishlistId.get">@otherWishlist.title</option>
+                }
+                </select>
+            }
+        </div>
+        }
 
         <div class="modal-footer wish-edit noshow">
             <button class="wish-cancel-button wish-edit noshow btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">cancel</button>

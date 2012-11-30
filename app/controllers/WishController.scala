@@ -336,5 +336,6 @@ object WishController extends Controller with Secured {
   }
 
 
+  def moveWishToWishlist(username:String,wishlistId:Long,wishId:Long) = TODO
 
 }

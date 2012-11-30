@@ -74,7 +74,7 @@ ul.vertical li a { }
 #cargo #list-wishlists-page #wishlist-list { max-height: 20em; overflow: auto; }
 
 
-#cargo .modal { width: 30em; margin: -10em 0 0 -15em; }
+#cargo .modal { width: 30em; margin: -15em 0 0 -15em; }
 #cargo .modal-wide { width: 33em; }
 #cargo .modal .well { margin-bottom: 0;}
 #cargo .noshow { display: none; }

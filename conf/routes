@@ -59,6 +59,9 @@ POST		/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/delete		controll
 DELETE		/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/ 		controllers.WishController.deleteLinkFromWish(username, wishlistId:Long, wishId:Long, linkId: Long)
 
 
+POST		/:username/wishlist/:wishlistId/wish/:wishId/move		controllers.WishController.moveWishToWishlist(username, wishlistId:Long, wishId:Long)
+
+
 GET		/recipient/:username/ 		        controllers.RecipientController.showProfile(username)
 GET		/recipient/:username/edit.html 		controllers.RecipientController.showEditRecipient(username)
 POST	/recipient/:username/update 	controllers.RecipientController.updateRecipient(username)
