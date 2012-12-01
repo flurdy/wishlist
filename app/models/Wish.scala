@@ -359,6 +359,11 @@ object WishEntry {
   }
 
   def moveWishToWishlist(wish:Wish,wishlist:Wishlist) = {
+    wish.reservation.map{ reservation =>
+      if(reservation.isReserver(wishlist.recipient) ){
+        Logger.info("Wish unreserved as move target wishlist is reserver and recipient")
+        wish.unreserve
+    } }
     DB.withConnection { implicit connection =>
       SQL(
         """
