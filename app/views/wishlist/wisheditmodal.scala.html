@@ -1,4 +1,4 @@
-@(wishlist:Wishlist,wish:Wish)(implicit currentRecipient: Option[Recipient],wishlist:Seq[Wishlist])
+@(wishlist:Wishlist,wish:Wish,editableWishlists:Seq[Wishlist])(implicit currentRecipient: Option[Recipient])
 
 @import helper._
 
@@ -21,7 +21,7 @@
     </div>
     @if(!wish.links.isEmpty){
     <div class="modal-links wish-read well">
-        <ul class="unstyled">
+        <ul class="read-links unstyled">
             @wish.links.map { link =>
                 <li><a href="@link.url">@if(link.url.length>60){ @link.url.substring(0,59) } else { @link.url }</a></li>
             }
@@ -82,13 +82,13 @@
             </div>
         </div>
 
-        @{ wishlists.length() > 1 ){
+        @if( !editableWishlists.isEmpty ){
         <div class="modal-footer wish-edit noshow">
-            @form(action = routes.WishController.moveWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline wish-edit nowshow"){
-                <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-small">move wish</button>
-                <select size="1" class="">
-                @{wishlists.map ){ otherWishlist =>
-                    <option value="@otherWishlist.wishlistId.get">@otherWishlist.title</option>
+            @form(action = routes.WishController.moveWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline move-wish-form"){
+                <button type="submit" class="btn btn-warning input-small btn-small">move wish</button>
+                <select name="targetwishlistid" size="1" class="">
+                @editableWishlists.map { otherWishlist =>
+                    <option value="@otherWishlist.wishlistId.get">@otherWishlist.recipient.username 's @otherWishlist.title</option>
                 }
                 </select>
             }

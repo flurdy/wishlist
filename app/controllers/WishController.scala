@@ -39,6 +39,11 @@ object WishController extends Controller with Secured {
       "url" -> text(minLength=4,maxLength=100)
     )
 
+
+    val moveWishForm = Form(
+      "targetwishlistid" -> number
+    )
+
     val ValidUrl= """^https?:\/\/[0-9a-zA-Z][^@]+$""".r
 
     val addOrganiserForm = Form {
@@ -132,7 +137,8 @@ object WishController extends Controller with Secured {
       findCurrentRecipient match {
         case Some(recipient) => {
           if( recipient.canEdit(wishlist) ) {
-            Ok(views.html.wishlist.showeditwishlist(wishlist,wishes,simpleAddWishForm,gravatarUrl))
+            val editableWishlists = recipient.findEditableWishlists.filter( _ != wishlist )
+            Ok(views.html.wishlist.showeditwishlist(wishlist,wishes,simpleAddWishForm,gravatarUrl,editableWishlists))
           } else {
             Ok(views.html.wishlist.showwishlist(wishlist,wishes,simpleAddWishForm,gravatarUrl))
           }
@@ -336,6 +342,29 @@ object WishController extends Controller with Secured {
   }
 
 
-  def moveWishToWishlist(username:String,wishlistId:Long,wishId:Long) = TODO
+  def moveWishToWishlist(username:String,wishlistId:Long,wishId:Long) = isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
+    moveWishForm.bindFromRequest.fold(
+      errors => {
+        Logger.warn("move wish failed")
+        Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Wish could not be moved")
+      },
+      targetWishlistId => {
+        Wishlist.findById(targetWishlistId) match {
+          case Some(targetWishlist) => {
+            if( currentRecipient.canEdit(targetWishlist) ) {
+              Logger.info("moving wish to %d".format(targetWishlist.wishlistId.get))
+
+              wish.moveToWishlist(targetWishlist)
+
+              Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("message" -> "Wish moved to other list")
+            } else {
+              Unauthorized(views.html.error.permissiondenied())
+            }
+          }
+          case None => NotFound(views.html.error.notfound())
+        }
+      }
+    )
+  }
 
 }

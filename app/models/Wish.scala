@@ -48,6 +48,8 @@ case class Wish(
 
     def findLinks : List[WishLink] = WishLink.findWishLinks(this)
 
+    def moveToWishlist(targetWishlist:Wishlist) = WishEntry.moveWishToWishlist(this,targetWishlist)
+
 }
 
 
@@ -351,9 +353,25 @@ object WishEntry {
         'wishid -> wishentry.wish.wishId.get,
         'ordinal -> wishentry.ordinal,
         'wishlistid -> wishentry.wishlist.wishlistId.get
-      ).executeInsert()
+      ).execute()
       wishentry
     }
+  }
+
+  def moveWishToWishlist(wish:Wish,wishlist:Wishlist) = {
+    DB.withConnection { implicit connection =>
+      SQL(
+        """
+            update wishentry
+            set wishlistid = {wishlistid}
+            where wishid = {wishid}
+        """
+      ).on(
+        'wishid -> wish.wishId.get,
+        'wishlistid -> wishlist.wishlistId.get
+      ).execute()
+    }
+    Wish.findById(wish.wishId.get).get
   }
 
 }

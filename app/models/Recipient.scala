@@ -32,7 +32,7 @@ case class Recipient (
 
   def resetPassword = Recipient.resetPassword(this)
 
-  def updatePassword(newPassword:String) { 
+  def updatePassword(newPassword:String) {
     Recipient.updatePassword(this.copy(password=Some(newPassword)))
   }
 
@@ -59,6 +59,9 @@ case class Recipient (
   def canEdit(wishlist:Wishlist) = {
       isAdmin || wishlist.recipient == this || wishlist.isOrganiser(this)
   }
+
+  def findEditableWishlists = Wishlist.findEditableWishlists(this)
+
 }
 
 
@@ -101,9 +104,9 @@ object Recipient {
                   val nextRecipientId = SQL("SELECT NEXTVAL('recipient_seq')").as(scalar[Long].single)
                   SQL(
                       """
-                          insert into recipient 
-                          (recipientid,username,fullname,email,password,isadmin) 
-                          values 
+                          insert into recipient
+                          (recipientid,username,fullname,email,password,isadmin)
+                          values
                           ({recipientid},{username},{fullname},{email},{password},false)
                       """
                   ).on(
@@ -176,7 +179,7 @@ object Recipient {
     }
 
     def authenticate(username: String, password: String) : Option[Recipient]  = {
-        findAuthenticationDetailsByUsername(username) match { 
+        findAuthenticationDetailsByUsername(username) match {
             case Some(recipient) =>
                 if(BCrypt.checkpw(password,recipient.password.get)){
                     findByUsername(username)
@@ -190,7 +193,7 @@ object Recipient {
 
   def delete(recipient:Recipient) {
     Logger.debug("Deleting recipient: "+ recipient.username)
-    Wishlist.findByRecipient(recipient).map { wishlist => 
+    Wishlist.findByRecipient(recipient).map { wishlist =>
       wishlist.delete
     }
     DB.withConnection { implicit connection =>

@@ -127,10 +127,12 @@ ul.vertical li a { }
 #cargo .update-wish-form { margin-bottom: 0; }
 
 #cargo #wish-list:last-child,
-#cargo #organiser-list:last-child,
-#cargo .modal-footer .modal-links ul:last-child { border-bottom: 1px solid #dddddd; }
+#cargo #organiser-list:last-child { border-bottom: 1px solid #dddddd; }
 #cargo .list-row-even { background-color: #F9F9F9; }
 #cargo .list-row-hover { background-color: #ffffff; border: 1px dashed #b9b9b9; }
+#cargo .modal .modal-footer .move-wish-form { width: 100%; }
+#cargo .modal .modal-footer .move-wish-form button { float: right; }
+#cargo .modal .modal-footer .move-wish-form select { float: left; }
 
 #cargo .gravatar { float: right; width: 35px; border: 2px inset silver; padding: 0.2em; margin: 0.5em; }
 #cargo .gravatar + h4 + .well { clear: right; }

@@ -227,10 +227,10 @@ object Wishlist {
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                  SELECT * FROM wishlist wi
+                  SELECT wi.* FROM wishlist wi
                   INNER JOIN wishlistorganiser wo on wo.wishlistid = wi.wishlistid
                   WHERE wo.recipientid = {recipientid}
-                  ORDER BY title DESC
+                  ORDER BY wi.recipientid,wi.title DESC
                 """
             ).on(
                 'recipientid -> organiser.recipientId.get
@@ -304,6 +304,12 @@ object Wishlist {
       ).as(scalar[Boolean].single)
     }
   }
+
+
+  def findEditableWishlists(recipient:Recipient) = {
+    findByRecipient(recipient) union findByOrganiser(recipient)
+  }
+
 
 }
 
