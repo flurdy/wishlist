@@ -149,7 +149,7 @@ object Wishlist {
             SQL(
                 """
                   SELECT * FROM wishlist
-                  ORDER BY title DESC
+                  ORDER BY recipientid DESC,title
                 """
             ).as(Wishlist.simple *)
         }
@@ -163,7 +163,7 @@ object Wishlist {
                 """
                   SELECT * FROM wishlist
                   where title like {term}
-                  ORDER BY title DESC
+                  ORDER BY recipientid DESC, title
                 """
             ).on(
                 'term -> searchLikeTerm
@@ -191,21 +191,6 @@ object Wishlist {
             }
         }
     }
-
-//    def findWishlistsByUsername(username:String) : Seq[Wishlist] = {
-//        val recipient = Recipient.findByUsername(username).get
-//        DB.withConnection { implicit connection =>
-//            SQL(
-//                """
-//                  SELECT * FROM wishlist
-//                  where recipientid = {recipientid}
-//                  ORDER BY title DESC
-//                """
-//            ).on(
-//                'recipientid -> recipient.recipientId.get
-//            ).as(Wishlist.simple *)
-//        }
-//    }
 
 
     def findByRecipient(recipient:Recipient) : Seq[Wishlist] = {

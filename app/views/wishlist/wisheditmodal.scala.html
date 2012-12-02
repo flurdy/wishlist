@@ -3,8 +3,8 @@
 @import helper._
 
 @titleCapper(toBeCapped:String) = {
-    @if(toBeCapped.length>30){
-        @toBeCapped.substring(0,30) ...
+    @if(toBeCapped.length>60){
+        @toBeCapped.substring(0,60) ...
     } else {
         @toBeCapped
     }
@@ -88,7 +88,7 @@
                 <button type="submit" class="btn btn-warning input-small btn-small">move wish</button>
                 <select name="targetwishlistid" size="1" class="">
                 @editableWishlists.map { otherWishlist =>
-                    <option value="@otherWishlist.wishlistId.get">@otherWishlist.recipient.username 's @otherWishlist.title</option>
+                    <option value="@otherWishlist.wishlistId.get">@otherWishlist.recipient.username's @otherWishlist.title</option>
                 }
                 </select>
             }

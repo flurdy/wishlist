@@ -3,20 +3,35 @@
 
 @import helper._
 
-@titleCapper(toBeCapped:String) = {
-	@if(toBeCapped.length>30){
-		@toBeCapped.substring(0,30)
-	} else {
-		@toBeCapped
+@titleCapper(title:String,description:Option[String]) = {
+	@description match {
+		case Some(actualDescription) => {
+			@if(title.length>40){
+				@title.substring(0,40) ..
+			} else {
+				@title
+			}
+		}
+		case None => {
+			@if(title.length>50){
+				@title.substring(0,50) ..
+			} else {
+				@title
+			}
+		}
 	}
 }
 
-@descriptionCapper(description:Option[String]) = {
-	@description.map { dstring =>
-		@if(dstring.length>15){
-			@dstring.substring(0,15) ...
+@descriptionCapper(title:String,description:Option[String]) = {
+	@description.map { actualDescription =>
+		@if(title.length + actualDescription.length > 50){
+			@if(title.length>40 && actualDescription.length>10){
+				@actualDescription.substring(0,10) ..
+			} else {
+				@actualDescription.substring(0,50-title.length) ..
+			}
 		} else {
-			@dstring
+			@actualDescription
 		}
 	}
 }
@@ -28,9 +43,9 @@
 		 }
 		@if(currentRecipient.isDefined && wishlist.recipient != currentRecipient.get && wish.reservation.isDefined){
 			<div class="reserved">reserved</div>
-			<s><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title)</a></s> &nbsp;&nbsp; <s><small class="wish-description" class="muted">@descriptionCapper(wish.description)</small></s>
+			<s><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title,wish.description)</a></s> &nbsp;&nbsp; <s><small class="wish-description" class="muted">@descriptionCapper(wish.title,wish.description)</small></s>
 		} else {
-			<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title)</a> &nbsp;&nbsp; <small class="wish-description" class="muted">@descriptionCapper(wish.description)</small>
+			<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title,wish.description)</a> &nbsp;&nbsp; <small class="wish-description" class="muted">@descriptionCapper(wish.title,wish.description)</small>
 		}
 
 
