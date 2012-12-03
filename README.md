@@ -1,10 +1,9 @@
-Website: http://wishlist.sourceforge.net
-Project: http://sourceforge.net/projects/wishlist
-Source: http://github.com/flurdy/wishlist
-Tasks: http://pivotaltracker.com/projects/101944
-Demo: http://wish.flurdy.com
+* Website: http://wishlist.sourceforge.net
+* Project: http://sourceforge.net/projects/wishlist
+* Source: http://github.com/flurdy/wishlist
+* Tasks: http://pivotaltracker.com/projects/101944
+* Demo: http://wish.flurdy.com
 
-License: Lesser AGPL v3 or Apache License 2.0
 
 Summary: 
 ---------
@@ -58,12 +57,15 @@ Such as
 * Analytics Id
 
 The  application is set up to run on Heroku http://www.heroku.com as an example.
-The Procfile is Heroku specific which configures the app via **conf/heroku.conf**.
+The **Procfile** is Heroku specific which configures the app via **conf/heroku.conf**.
 In that file a number of environment properties is configured for the the application.
 
 
 
 
-
+License
+-------
+Lesser AGPL v3 or Apache License 2.0
+https://github.com/flurdy/wishlist/wiki/License
 
 
