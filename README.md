@@ -4,11 +4,12 @@ Source: http://github.com/flurdy/wishlist
 Tasks: http://pivotaltracker.com/projects/101944
 Demo: http://wish.flurdy.com
 
-License: AGPL v3
+License: Lesser AGPL v3 or Apache License 2.0
 
 Summary: 
+---------
 A place to store and share wish lists. 
-* Multiple cross referenced lists
+* multiple cross referenced lists
 * private / public / shielded from recipient(s)
 * wish item reservation
 * wish item collaboration
@@ -16,4 +17,53 @@ A place to store and share wish lists.
 * integrate with shopping plans
 
 ![Build status](https://travis-ci.org/flurdy/wishlist.png)
+(Travis CI can't by default build play 2.0 projects yet)
+
+
+
+Install
+-----------
+
+Install Scala, SBT and the Play Framework 2.0 
+
+http://www.playframework.org/documentation/2.0.4/Installing
+
+or on OSX `brew install play`
+
+**Play! 2.0 + Scala + Heroku by flurdy**
+http://flurdy.com/docs/herokuplay/play2.html
+
+
+Run
+-----
+
+Simple start Play with `play`
+and then perhaps `; clean ; compile ; ~run` 
+to clean the folder, compile all classes and start the web application. 
+The `~` will automatically detect and recompile any changes.
+
+
+Configuration
+-------------
+
+Default values let you run the application locally.
+
+However for staging and production deploys you want to override certain values.
+Such as 
+* Web application port
+* Database details
+* Email server details
+* Default email addresses
+* Hostname of domain
+* Analytics Id
+
+The  application is set up to run on Heroku http://www.heroku.com as an example.
+The Procfile is Heroku specific which configures the app via **conf/heroku.conf**.
+In that file a number of environment properties is configured for the the application.
+
+
+
+
+
+
 
