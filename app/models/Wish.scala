@@ -381,5 +381,3 @@ object WishEntry {
 
 }
 
-case class Link(linkId:Option[Long] = None,url:String,wish:Wish)
-

@@ -249,7 +249,7 @@ object Recipient {
 
 
   def generateRandomPassword = {
-    val source = new BigInteger(130,  new SecureRandom()).toString(32);
+    val source = new BigInteger(130,  new SecureRandom()).toString(32)
     source.substring(0,3)+"-"+source.substring(4,7)+"-"+source.substring(8,11)+"-"+source.substring(12,15)
   }
 
