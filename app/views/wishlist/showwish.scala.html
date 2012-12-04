@@ -43,9 +43,9 @@
 		 }
 		@if(currentRecipient.isDefined && wishlist.recipient != currentRecipient.get && wish.reservation.isDefined){
 			<div class="reserved">reserved</div>
-			<s><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title,wish.description)</a></s> &nbsp;&nbsp; <s><small class="wish-description" class="muted">@descriptionCapper(wish.title,wish.description)</small></s>
+			<s><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title,wish.description)</a></s> &nbsp;&nbsp; <small class="wish-description" class="muted"><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal"><s>@descriptionCapper(wish.title,wish.description)</s></a><small>
 		} else {
-			<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title,wish.description)</a> &nbsp;&nbsp; <small class="wish-description" class="muted">@descriptionCapper(wish.title,wish.description)</small>
+			<a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title,wish.description)</a> &nbsp;&nbsp; <small class="wish-description" class="muted"><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@descriptionCapper(wish.title,wish.description)</a></small>
 		}
 
 

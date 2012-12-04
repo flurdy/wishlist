@@ -147,6 +147,7 @@ ul.vertical li a { }
 
 #cargo .capthca { width: 7em; height: 3.5em; border: 2px inset silver; padding: 0.2em; margin: 0.5em; }
 
-
+#cargo small a,
+#cargo small a:visited { color: black; }
 
 
