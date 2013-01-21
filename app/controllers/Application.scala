@@ -100,7 +100,7 @@ object Application extends Controller with Secured{
             Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
               """
                 Welcome, you have successfully registered.<br/>
-                Please click on the link sent to your email address to verify it
+                Please click on the link in the email we just sent to you
               """)
           } else {
             Redirect(routes.Application.index()).withSession(
