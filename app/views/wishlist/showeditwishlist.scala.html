@@ -59,7 +59,7 @@
 
 		<div class="well" >
 			@form(action = routes.WishController.addWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
-				<input type="text" class="input-large" name="title" placeholder="New wish title" value="@addWishForm("title").value" maxlength="50"/>
+				<input type="text" class="input-large" name="title" placeholder="New wish title" value="@addWishForm("title").value" maxlength="50" required />
 				<button class="btn btn-success input-medium" type="submit">add wish</button>
 			}
 		</div>
