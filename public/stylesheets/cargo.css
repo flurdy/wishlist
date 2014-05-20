@@ -85,10 +85,7 @@ ul.vertical li a { }
 #cargo .form-search input { margin-top: 0.1em; }
 #cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; }
 
-#cargo #wish-list {
-	max-height: 30em;
-	overflow-x: auto;
-}
+
 #cargo #wish-list,
 #cargo #organiser-list { margin: 0 1em 1em 1em; font-size: 1.1em;  }
 #cargo #wish-list li,
