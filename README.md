@@ -5,14 +5,14 @@
 * Demo: http://wish.flurdy.com
 
 
-Summary: 
+Summary:
 ---------
-A place to store and share wish lists. 
+A place to store and share wish lists.
 * multiple cross referenced lists
 * private / public / shielded from recipient(s)
 * wish item reservation
 * wish item collaboration
-* integrate with gift registry 
+* integrate with gift registry
 * integrate with shopping plans
 
 ![Build status](https://travis-ci.org/flurdy/wishlist.png)
@@ -23,7 +23,7 @@ A place to store and share wish lists.
 Install
 -----------
 
-Install Scala, SBT and the Play Framework 2.0 
+Install Scala, SBT and the Play Framework 2.x
 
 http://www.playframework.org/documentation/2.0.4/Installing
 
@@ -37,8 +37,8 @@ Run
 -----
 
 Simple start Play with `play`
-and then perhaps `; clean ; compile ; ~run` 
-to clean the folder, compile all classes and start the web application. 
+and then perhaps `; clean ; compile ; ~run`
+to clean the folder, compile all classes and start the web application.
 The `~` will automatically detect and recompile any changes.
 
 
@@ -48,7 +48,7 @@ Configuration
 Default values let you run the application locally.
 
 However for staging and production deploys you want to override certain values.
-Such as 
+Such as
 * Web application port
 * Database details
 * Email server details

@@ -16,7 +16,7 @@ object EmailConfiguration {
 
 }
 
-trait EmailDispatcher {  
+trait EmailDispatcher {
 
   def sendEmail(recipient:String,subjectAndBody:(String,String))
 
@@ -27,7 +27,7 @@ trait EmailDispatcher {
 }
 
 object MockEmailDispatcher extends EmailDispatcher {
-  
+
   override def sendEmail(recipient:String,subjectAndBody:(String,String)) {
     Logger.info("Email sent (mock): [%s] to [%s]" .format(subjectAndBody._1,recipient))
     Logger.info("%s" .format(subjectAndBody._2))
@@ -41,8 +41,9 @@ object SmtpEmailDispatcher extends EmailDispatcher {
   override def sendEmail(recipient:String, subjectAndBody:(String,String)) {
     val mail = use[MailerPlugin].email
     mail.setSubject(EmailTemplate.subjectPrefix + subjectAndBody._1)
-    mail.addFrom(EmailConfiguration.emailFrom)
-    mail.addRecipient(recipient)
+    mail.setFrom(EmailConfiguration.emailFrom)
+    // mail.addRecipient(recipient)
+    mail.setRecipient(recipient)
     mail.send(subjectAndBody._2 + EmailTemplate.footer)
     Logger.info("Email sent: [%s] to [%s]" .format(subjectAndBody._1,recipient))
   }
@@ -91,7 +92,7 @@ object EmailNotifier extends EmailService {
     dispatcher.sendEmail(recipient.email, EmailTemplate.emailVerificationText(recipient.username, verificationUrl))
   }
 
-} 
+}
 
 
 
@@ -99,11 +100,11 @@ object EmailNotifier extends EmailService {
 object EmailAlerter extends EmailService {
 
   def sendNewRegistrationAlert(recipient: Recipient) {
-    dispatcher.sendAlertEmail(EmailTemplate.registrationText(recipient))  
+    dispatcher.sendAlertEmail(EmailTemplate.registrationText(recipient))
   }
-  
+
   def sendRecipientDeletedAlert(recipient: Recipient) {
-    dispatcher.sendAlertEmail(EmailTemplate.deleteRecipientAlertText(recipient))  
+    dispatcher.sendAlertEmail(EmailTemplate.deleteRecipientAlertText(recipient))
   }
 
   def sendContactMessage(name:String,email:String,username:Option[String],subject:Option[String],message:String,currentRecipient:Option[Recipient]) {

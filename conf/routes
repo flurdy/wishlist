@@ -3,85 +3,71 @@
 GET		/									controllers.Application.index
 
 
-GET		/login.html						controllers.Application.showLoginForm
-GET		/login/							controllers.Application.showLoginForm
-POST	/login/							controllers.Application.login
-GET		/register.html					controllers.Application.showRegisterForm
-POST	/register/						controllers.Application.register
-GET		/register/						controllers.Application.showRegisterForm
-POST	/register.html					controllers.Application.redirectToRegisterForm
-GET		/logout							controllers.Application.logout
+GET	/login/  				controllers.Application.showLoginForm
+POST  /login/					controllers.Application.login
+GET   /register/           controllers.Application.showRegisterForm
+GET   /register.html       controllers.Application.redirectToRegisterForm
+POST	/register/				controllers.Application.register
+GET	/logout					controllers.Application.logout
 
-GET		/about.html						controllers.Application.about
-GET		/contact.html					controllers.Application.contact
-POST		/contact						controllers.Application.sendContact
+GET	/about.html					controllers.Application.about
+GET	/contact.html				controllers.Application.contact
+POST	/contact						controllers.Application.sendContact
 
 
-GET		/search						controllers.WishController.search
+GET	/search						controllers.WishController.search
 
 
 POST	/:username/wishlist 		controllers.WishController.createWishlist(username)
 
-GET		/:username/wishlist/:wishlistId/ 		controllers.WishController.showWishlist(username,wishlistId:Long)
+GET	/:username/wishlist/:wishlistId/ 		controllers.WishController.showWishlist(username,wishlistId:Long)
 
-GET		/:username/wishlist/:wishlistId/edit.html 		controllers.WishController.showEditWishlist(username,wishlistId:Long)
+GET	/:username/wishlist/:wishlistId/edit.html 	controllers.WishController.showEditWishlist(username,wishlistId:Long)
 POST	/:username/wishlist/:wishlistId/update 		controllers.WishController.updateWishlist(username,wishlistId:Long)
-PUT		/:username/wishlist/:wishlistId/ 		controllers.WishController.updateWishlist(username,wishlistId:Long)
 
-GET		/:username/wishlist/:wishlistId/delete.html 		controllers.WishController.showConfirmDeleteWishlist(username,wishlistId:Long)
+GET	/:username/wishlist/:wishlistId/delete.html 	controllers.WishController.showConfirmDeleteWishlist(username,wishlistId:Long)
 POST	/:username/wishlist/:wishlistId/delete 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
-DELETE	/:username/wishlist/:wishlistId/ 		controllers.WishController.deleteWishlist(username,wishlistId:Long)
 
 POST	/:username/wishlist/:wishlistId/order 		controllers.WishController.updateWishlistOrder(username,wishlistId:Long)
-PUT		/:username/wishlist/:wishlistId/order 		controllers.WishController.updateWishlistOrder(username,wishlistId:Long)
 
 
-POST		/:username/wishlist/:wishlistId/wish/ 		controllers.WishController.addWishToWishlist(username,wishlistId:Long)
-POST		/:username/wishlist/:wishlistId/wish/:wishId/delete 		controllers.WishController.removeWishFromWishlist(username,wishlistId:Long,wishId:Long)
-DELETE	/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.removeWishFromWishlist(username,wishlistId:Long,wishId:Long)
-POST		/:username/wishlist/:wishlistId/wish/:wishId/update 		controllers.WishController.updateWish(username,wishlistId:Long, wishId:Long)
-PUT		/:username/wishlist/:wishlistId/wish/:wishId/ 		controllers.WishController.updateWish(username,wishlistId:Long,wishId:Long)
+POST	/:username/wishlist/:wishlistId/wish/ 		           controllers.WishController.addWishToWishlist(username,wishlistId:Long)
+POST	/:username/wishlist/:wishlistId/wish/:wishId/delete  controllers.WishController.removeWishFromWishlist(username,wishlistId:Long,wishId:Long)
+POST	/:username/wishlist/:wishlistId/wish/:wishId/update  controllers.WishController.updateWish(username,wishlistId:Long, wishId:Long)
 
-POST		/:username/wishlist/:wishlistId/wish/:wishId/reserve 		controllers.WishController.reserveWish(username, wishlistId:Long, wishId:Long)
-POST		/:username/wishlist/:wishlistId/wish/:wishId/unreserve 		controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
-DELETE		/:username/wishlist/:wishlistId/wish/:wishId/unreserve 		controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
-POST		/:username/wish/:wishId/unreserve 		controllers.WishController.unreserveWishFromProfile(username, wishId:Long)
-DELETE		/:username/wish/:wishId/unreserve 		controllers.WishController.unreserveWishFromProfile(username, wishId:Long)
+POST	 /:username/wishlist/:wishlistId/wish/:wishId/reserve 		   controllers.WishController.reserveWish(username, wishlistId:Long, wishId:Long)
+POST	 /:username/wishlist/:wishlistId/wish/:wishId/unreserve 		controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
+POST	 /:username/wish/:wishId/unreserve 		controllers.WishController.unreserveWishFromProfile(username, wishId:Long)
 
 
-POST		/:username/wishlist/:wishlistId/organiser/ 		controllers.WishController.addOrganiserToWishlist(username,wishlistId:Long)
-POST		/:username/wishlist/:wishlistId/organiser/:organiser/delete 		controllers.WishController.removeOrganiserFromWishlist(username,wishlistId:Long,organiser:String)
-DELETE		/:username/wishlist/:wishlistId/organiser/:organiser/ 		controllers.WishController.removeOrganiserFromWishlist(username,wishlistId:Long,organiser:String)
+POST		/:username/wishlist/:wishlistId/organiser/ 		            controllers.WishController.addOrganiserToWishlist(username,wishlistId:Long)
+POST		/:username/wishlist/:wishlistId/organiser/:organiser/delete controllers.WishController.removeOrganiserFromWishlist(username,wishlistId:Long,organiser:String)
 
 
-POST		/:username/wishlist/:wishlistId/wish/:wishId/link/ 		controllers.WishController.addLinkToWish(username, wishlistId:Long, wishId:Long)
-POST		/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/delete		controllers.WishController.deleteLinkFromWish(username, wishlistId:Long, wishId:Long, linkId: Long)
-DELETE		/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/ 		controllers.WishController.deleteLinkFromWish(username, wishlistId:Long, wishId:Long, linkId: Long)
+POST		/:username/wishlist/:wishlistId/wish/:wishId/link/ 		         controllers.WishController.addLinkToWish(username, wishlistId:Long, wishId:Long)
+POST		/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/delete	controllers.WishController.deleteLinkFromWish(username, wishlistId:Long, wishId:Long, linkId: Long)
 
 
 POST		/:username/wishlist/:wishlistId/wish/:wishId/move		controllers.WishController.moveWishToWishlist(username, wishlistId:Long, wishId:Long)
 
 
-GET		/recipient/:username/ 		        controllers.RecipientController.showProfile(username)
-GET		/recipient/:username/edit.html 		controllers.RecipientController.showEditRecipient(username)
-POST	/recipient/:username/update 	controllers.RecipientController.updateRecipient(username)
-PUT		/recipient/:username/ 	            controllers.RecipientController.updateRecipient(username)
-GET		/recipient/:username/delete.html 	controllers.RecipientController.showDeleteRecipient(username)
-POST	/recipient/:username/delete 	controllers.RecipientController.deleteRecipient(username)
-DELETE	/recipient/:username/           controllers.RecipientController.deleteRecipient(username)
+GET	/recipient/:username/ 		      controllers.RecipientController.showProfile(username)
+GET	/recipient/:username/edit.html 	controllers.RecipientController.showEditRecipient(username)
+POST	/recipient/:username/update 	   controllers.RecipientController.updateRecipient(username)
+GET	/recipient/:username/delete.html controllers.RecipientController.showDeleteRecipient(username)
+POST	/recipient/:username/delete 	   controllers.RecipientController.deleteRecipient(username)
 
-GET		/password.html					controllers.RecipientController.showResetPassword
+GET	/password.html					controllers.RecipientController.showResetPassword
 POST	/password						controllers.RecipientController.resetPassword
-GET		/recipient/:username/password.html		controllers.RecipientController.showChangePassword(username)
+GET	/recipient/:username/password.html	controllers.RecipientController.showChangePassword(username)
 POST	/recipient/:username/password			controllers.RecipientController.updatePassword(username)
-PUT		/recipient/:username/password			controllers.RecipientController.updatePassword(username)
 
-GET		/recipient/:username/verify/:verificationHash/      controllers.RecipientController.verifyEmail(username,verificationHash)
-GET		/recipient/verify.html					controllers.RecipientController.showResendVerification
+GET	/recipient/:username/verify/:verificationHash/      controllers.RecipientController.verifyEmail(username,verificationHash)
+GET	/recipient/verify.html		 controllers.RecipientController.showResendVerification
 POST	/recipient/verify           controllers.RecipientController.resendVerification
 
 
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET   /assets/*file               controllers.Assets.at(path="/public", file)
 
 
 
