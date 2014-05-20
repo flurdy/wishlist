@@ -49,7 +49,7 @@ ul.vertical li a { }
 #jib ul.horizontal li { padding: 0 0.1em;}
 #jib #logout-box { float: right}
 
-#jib { color: black; height: 0.5em; }
+#jib { color: black; }
 
 #cargo .well-header {  font-size: 1.2em; font-weight: bold; }
 #cargo a { text-decoration: underline; }
