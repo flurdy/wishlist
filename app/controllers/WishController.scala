@@ -36,7 +36,7 @@ object WishController extends Controller with Secured {
     )
 
     val addLinkToWishForm = Form(
-      "url" -> text(minLength=4,maxLength=100)
+      "url" -> text(minLength=4,maxLength=250)
     )
 
 

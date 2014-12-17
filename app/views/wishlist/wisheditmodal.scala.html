@@ -77,7 +77,7 @@
             <div class="add-link wish-edit noshow">
                 @form(action = routes.WishController.addLinkToWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline wish-edit noshow"){
                     <button type="submit" class="wish-edit noshow btn btn-success input-small btn-small">add link</button>
-                    <input type="text" name="url" class="wish-edit noshow input-xlarge" placeholder="Enter link url e.g. http://www.example.com/someinfo/index.html" maxlength="100" />
+                    <input type="text" name="url" class="wish-edit noshow input-xlarge" placeholder="Enter link url e.g. http://www.example.com/someinfo/index.html" maxlength="250" />
                 }
             </div>
         </div>
