@@ -1,0 +1,8 @@
+[repositories]
+activator-local: file:///opt/typesafe/activator-1.2.10/repository, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+local
+maven-local
+maven-central
+# scala-tools-releases
+typesafe-releases: http://typesafe.artifactoryonline.com/typesafe/releases
+typesafe-ivy-releases: http://typesafe.artifactoryonline.com/typesafe/ivy-releases, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
