@@ -16,7 +16,7 @@ A place to store and share wish lists.
 * integrate with shopping plans
 
 ![Build status](https://travis-ci.org/flurdy/wishlist.png)
-(Travis CI can't by default build play 2.0 projects yet)
+
 
 
 
@@ -25,7 +25,7 @@ Install
 
 Install Scala, SBT and the Play Framework 2.x
 
-http://www.playframework.org/documentation/2.0.4/Installing
+http://www.playframework.org/documentation/2.2.x/Installing
 
 or on OSX `brew install play`
 
@@ -60,6 +60,7 @@ The  application is set up to run on Heroku http://www.heroku.com as an example.
 The **Procfile** is Heroku specific which configures the app via **conf/heroku.conf**.
 In that file a number of environment properties is configured for the the application.
 
+The application is also configured to be run with Docker and Fig.
 
 
 
