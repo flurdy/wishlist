@@ -8,7 +8,7 @@ ENV APPDIR /var/local/application
 
 ADD repositories /root/.sbt/
 
-ADD . /var/local/application
+COPY . /var/local/application
 
 WORKDIR /var/local/application
 

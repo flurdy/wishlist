@@ -1,0 +1,23 @@
+application:
+   build: .
+   command: -Dconfig.file=/etc/opt/application/docker.conf
+   links:
+      - database
+   ports:
+      - "49900:9000"
+   volumes:
+      - ./conf:/etc/opt/application:ro
+   volumes_from:
+      - maven
+database:
+   image: postgres:9.4
+   ports:
+      - "49532:5432"
+   expose:
+      - "5432"
+maven:
+   image: debian:wheezy
+   volumes:
+      - ~/.m2:/root/.m2:rw
+      - ~/.ivy2:/root/.ivy2:rw
+      - ./repositories:/root/.sbt/repositories:ro
