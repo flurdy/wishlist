@@ -9,9 +9,9 @@ import models._
 import notifiers._
 import java.math.BigInteger
 import java.security.SecureRandom
-import dispatch._
+// import dispatch._
 
-object Application extends Controller with Secured{
+class Application extends Controller with Secured{
 
 	val simpleRegisterForm = Form {
 		"email" -> optional(text(maxLength = 99))

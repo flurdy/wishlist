@@ -67,7 +67,4 @@ GET	/recipient/verify.html		 controllers.RecipientController.showResendVerificat
 POST	/recipient/verify           controllers.RecipientController.resendVerification
 
 
-GET   /assets/*file               controllers.Assets.at(path="/public", file)
-
-
-
+GET   /assets/*file               controllers.Assets.versioned(path="/public", file)

@@ -6,7 +6,7 @@ import play.api.data._
 import play.api.data.Forms._
 import models._
 
-object WishController extends Controller with Secured {
+object WishController {
 
 
     val editWishlistForm = Form(
@@ -73,6 +73,10 @@ object WishController extends Controller with Secured {
         }
       })
     }
+}
+
+class WishController extends Controller with Secured {
+  import WishController._
 
     def createWishlist(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
         editWishlistForm.bindFromRequest.fold(

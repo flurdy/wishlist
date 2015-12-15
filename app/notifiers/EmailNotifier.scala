@@ -1,6 +1,8 @@
 package notifiers
 
-import com.typesafe.plugin._
+// import com.typesafe.plugin._
+import play.api.libs.mailer._
+// import play.libs.mailer._
 import models._
 import play.api.Play.current
 import play.Logger
@@ -36,15 +38,21 @@ object MockEmailDispatcher extends EmailDispatcher {
 }
 
 
-object SmtpEmailDispatcher extends EmailDispatcher {
+trait MailerComponent {
+
+  val mailerClient = new CommonsMailer(Play.configuration)
+}
+
+
+object SmtpEmailDispatcher extends EmailDispatcher with MailerComponent{
 
   override def sendEmail(recipient:String, subjectAndBody:(String,String)) {
-    val mail = use[MailerPlugin].email
-    mail.setSubject(EmailTemplate.subjectPrefix + subjectAndBody._1)
-    mail.setFrom(EmailConfiguration.emailFrom)
-    // mail.addRecipient(recipient)
-    mail.setRecipient(recipient)
-    mail.send(subjectAndBody._2 + EmailTemplate.footer)
+    val mail = Email(
+                    EmailTemplate.subjectPrefix + subjectAndBody._1,
+                    EmailConfiguration.emailFrom,
+                    Seq(recipient),
+                    bodyText = Some(subjectAndBody._2 + EmailTemplate.footer) )
+    mailerClient.send(mail)
     Logger.info("Email sent: [%s] to [%s]" .format(subjectAndBody._1,recipient))
   }
 
@@ -63,9 +71,7 @@ trait EmailService {
         case Some("mock") => MockEmailDispatcher
         case _ => SmtpEmailDispatcher
       }
-    } else {
-      MockEmailDispatcher
-    }
+    } else MockEmailDispatcher
   }
 
 }

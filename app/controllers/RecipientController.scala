@@ -9,7 +9,7 @@ import notifiers._
 import scravatar._
 
 
-object RecipientController extends Controller with Secured {
+object RecipientController {
 
   val ValidEmailAddress = """^[0-9a-zA-Z]([+-_\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9}$""".r
 
@@ -49,8 +49,16 @@ object RecipientController extends Controller with Secured {
       }
     }) verifying("Current password is invalid", fields => fields match {
       case (password, newpassword, confirmPassword) =>  Recipient.authenticate(username, password).isDefined
-    })  
+    })
   )
+
+
+  def gravatarUrl(recipient:Recipient) = Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
+
+}
+
+class RecipientController extends Controller with Secured {
+  import RecipientController._
 
 
   val emailVerificationForm = Form(
@@ -89,16 +97,13 @@ object RecipientController extends Controller with Secured {
           true
         }
       }
-    }) 
+    })
   )
-
-
-  def gravatarUrl(recipient:Recipient) = Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
 
 
 	def showProfile(username:String) = Action {  implicit request =>
     Recipient.findByUsername(username) match {
-      case Some(recipient) => {        
+      case Some(recipient) => {
         val wishlists = recipient.findWishlists
         val organisedWishlists = recipient.findOrganisedWishlists
         val reservations = recipient.findReservations
@@ -116,12 +121,12 @@ object RecipientController extends Controller with Secured {
 
 
   def showDeleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
-    Ok(views.html.recipient.deleterecipient(profileRecipient))    
+    Ok(views.html.recipient.deleterecipient(profileRecipient))
   }
 
 
   def deleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
-    
+
     profileRecipient.delete
 
     Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
@@ -149,7 +154,7 @@ object RecipientController extends Controller with Secured {
 
    def showResetPassword = Action { implicit request =>
     Ok(views.html.recipient.passwordreset(resetPasswordForm))
-  } 
+  }
 
 
   def resetPassword = Action { implicit request =>
@@ -158,18 +163,18 @@ object RecipientController extends Controller with Secured {
         BadRequest(views.html.recipient.passwordreset(errors))
       },
       resetForm => {
-        Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match { 
+        Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match {
           case Some(recipient) => {
             Logger.info("Password reset requested for: " + recipient.recipientId)
 
             val newPassword = recipient.resetPassword
-            
+
             EmailNotifier.sendPasswordResetEmail(recipient,newPassword)
 
             Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset and sent by email")
           }
           case None => {
-            NotFound(views.html.error.notfound())   
+            NotFound(views.html.error.notfound())
           }
         }
       }
@@ -180,7 +185,7 @@ object RecipientController extends Controller with Secured {
 
    def showChangePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     Ok(views.html.recipient.passwordchange(changePasswordForm(username)))
-  } 
+  }
 
 
   def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
@@ -193,14 +198,14 @@ object RecipientController extends Controller with Secured {
         Logger.info("Password change requested for: " + profileRecipient.username)
 
         profileRecipient.updatePassword(resetForm._3)
-        
+
         EmailNotifier.sendPasswordChangeEmail(profileRecipient)
 
         Redirect(routes.Application.showLoginForm)
             .withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
       }
     )
-  } 
+  }
 
 
   def verifyEmail(username:String,verificationHash:String) = Action { implicit request =>
@@ -262,12 +267,4 @@ object RecipientController extends Controller with Secured {
       }
     )
   }
-
-
-
 }
-
-
-
-
-
