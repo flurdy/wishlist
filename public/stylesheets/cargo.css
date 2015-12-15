@@ -83,7 +83,7 @@ ul.vertical li a { }
 #cargo .modal .modal-footer form { float: right; }
 
 #cargo .form-search input { margin-top: 0.1em; }
-#cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; }
+#cargo .form-search button { padding-bottom: 0.3em; margin-left: 0; float: none;}
 
 
 #cargo #wish-list,
