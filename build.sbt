@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
   "org.mindrot" % "jbcrypt" % "0.3m",
   "com.andersen-gott" %% "scravatar" % "1.0.3",
   "com.typesafe.play" %% "play-mailer" % "3.0.1",
-  // "net.databinder.dispatch" %% "dispatch-core" % "0.9.2",
   specs2 % Test
 )
 

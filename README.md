@@ -1,8 +1,8 @@
-* Website: http://wishlist.sourceforge.net
-* Project: http://sourceforge.net/projects/wishlist
+* ~~Website: http://wishlist.sourceforge.net~~
+* ~~Project: http://sourceforge.net/projects/wishlist~~
 * Source: http://github.com/flurdy/wishlist
-* Tasks: http://pivotaltracker.com/projects/101944
-* Demo: http://wish.flurdy.com
+* ~~Tasks: http://pivotaltracker.com/projects/101944~~
+* Live: http://wish.flurdy.com
 
 
 Summary:
@@ -11,9 +11,9 @@ A place to store and share wish lists.
 * multiple cross referenced lists
 * private / public / shielded from recipient(s)
 * wish item reservation
-* wish item collaboration
-* integrate with gift registry
-* integrate with shopping plans
+* ~~wish item collaboration~~
+* ~~integrate with gift registry~~
+* ~~integrate with shopping plans~~
 
 ![Build status](https://travis-ci.org/flurdy/wishlist.png)
 
@@ -23,9 +23,9 @@ A place to store and share wish lists.
 Install
 -----------
 
-Install Scala, SBT and the Play Framework 2.x
+Install Scala, SBT and the Play Framework
 
-http://www.playframework.org/documentation/2.2.x/Installing
+http://www.playframework.org/documentation/2.4.x/Installing
 
 or on OSX `brew install play`
 
@@ -36,8 +36,8 @@ http://flurdy.com/docs/herokuplay/play2.html
 Run
 -----
 
-Simple start Play with `play`
-and then perhaps `; clean ; compile ; ~run`
+Simple start Play with `play`, `activator` or `sbt`.
+Then perhaps `; clean ; compile ; ~run`
 to clean the folder, compile all classes and start the web application.
 The `~` will automatically detect and recompile any changes.
 
@@ -60,8 +60,4 @@ The  application is set up to run on Heroku http://www.heroku.com as an example.
 The **Procfile** is Heroku specific which configures the app via **conf/heroku.conf**.
 In that file a number of environment properties is configured for the the application.
 
-The application is also configured to be run with Docker and Fig.
-
-
-
-
+The application is also configured to be run with Docker and Fig/Compose.

@@ -1,8 +1,6 @@
 package notifiers
 
-// import com.typesafe.plugin._
 import play.api.libs.mailer._
-// import play.libs.mailer._
 import models._
 import play.api.Play.current
 import play.Logger
