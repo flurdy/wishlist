@@ -13,6 +13,7 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
+  "com.heroku.sdk" % "heroku-jdbc" % "0.1.1",
   "org.mindrot" % "jbcrypt" % "0.3m",
   "com.andersen-gott" %% "scravatar" % "1.0.3",
   "com.typesafe.play" %% "play-mailer" % "3.0.1",
