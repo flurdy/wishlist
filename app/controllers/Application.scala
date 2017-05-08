@@ -1,17 +1,27 @@
 package controllers
 
-import play.api.Play.current
+import javax.inject.{Inject, Singleton}
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
-import notifiers._
 import java.math.BigInteger
 import java.security.SecureRandom
 
 
-class Application extends Controller with Secured{
+trait WithAnalytics {
+
+   def configuration: Configuration
+
+   implicit def analyticsDetails: Option[String] = configuration.getString("analytics.id")
+
+}
+
+@Singleton
+class Application @Inject() (val configuration: Configuration)
+extends Controller with Secured with WithAnalytics {
+
 
 	val simpleRegisterForm = Form {
 		"email" -> optional(text(maxLength = 99))
@@ -30,15 +40,18 @@ class Application extends Controller with Secured{
      }
     })  verifying("Email address is not valid", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
-        RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+         false
+      //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
       }
     }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
-        RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
+         false
+      //   RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
       }
     }) verifying("Username is already taken", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
-        !Recipient.findByUsername(username.trim).isDefined
+         false
+      //   !Recipient.findByUsername(username.trim).isDefined
       }
     })
   )
@@ -49,12 +62,13 @@ class Application extends Controller with Secured{
 	      "password" -> nonEmptyText(maxLength = 99),
       	"source" -> optional(text)
 	    ) verifying("Log in failed. Username does not exist or password is invalid", fields => fields match {
-       case (username, password, source) => Recipient.authenticate(username, password).isDefined
+       case (username, password, source) => false
+      //  case (username, password, source) => Recipient.authenticate(username, password).isDefined
       }) verifying("Your email address not yet been verified", fields => fields match {
-       case (username, password, source) => Recipient.isEmailVerifiedOrNotRequired(username, password).isDefined
+       case (username, password, source) => false
+      //  case (username, password, source) => Recipient.isEmailVerifiedOrNotRequired(username, password).isDefined
       })
-	)	
-
+	)
 
   val contactForm = Form(
     tuple(
@@ -65,17 +79,18 @@ class Application extends Controller with Secured{
       "message" -> nonEmptyText(maxLength = 2000)
     ) verifying("Email address is not valid", fields => fields match {
       case (name, email, username, subject, message) => {
-        RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+         false
+      //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
       }
-    }) 
+    })
   )
-
 
 	def index = Action { implicit request =>
     findCurrentRecipient match {
       case Some(recipient) => {
-        val wishlists = Wishlist.findByRecipient(recipient)
-        Ok(views.html.indexrecipient(WishController.editWishlistForm,wishlists))
+      //   val wishlists = Wishlist.findByRecipient(recipient)
+        Ok
+      //   Ok(views.html.indexrecipient(WishController.editWishlistForm,wishlists))
       }
       case None => Ok(views.html.indexanon())
     }
@@ -111,22 +126,22 @@ class Application extends Controller with Secured{
       )
   }
 
-  def redirectToRegisterForm = Action { implicit request =>
-    simpleRegisterForm.bindFromRequest.fold(
-      errors => {
+   def redirectToRegisterForm = Action { implicit request =>
+      simpleRegisterForm.bindFromRequest.fold(
+         errors => {
         BadRequest(views.html.register(registerForm))
-      },
-     emailInForm => {
-      emailInForm match {
-        case None => Ok(views.html.register(registerForm))
-        case Some(email) => {
-            Ok(views.html.register(
-                registerForm.fill( email, None, email, "", "") ) )
-        }
-      }
-      }
-    )
-  }
+         },
+         emailInForm => {
+            emailInForm match {
+               case None => Ok(views.html.register(registerForm))
+               case Some(email) =>
+                  Ok(views.html.register(
+                     registerForm.fill( email, None, email, "", "") ) )
+            }
+         }
+      )
+   }
+
 
 	def showRegisterForm = Action { implicit request =>
 		Ok(views.html.register(registerForm))
@@ -140,27 +155,26 @@ class Application extends Controller with Secured{
 		loginForm.bindFromRequest.fold(
 			errors => {
 				Logger.info("Log in failed:"+ errors)
-				BadRequest(views.html.login(errors))
+				BadRequest
+				// BadRequest(views.html.login(errors))
 			},
 			loggedInForm => {
 				Logger.debug("Logging in: " + loggedInForm._1)
-        Redirect(routes.Application.index()).withSession(
-          "username" -> loggedInForm._1).flashing("message"->"You have logged in")
-      }
-		)		
+            Redirect(routes.Application.index()).withSession(
+               "username" -> loggedInForm._1).flashing("message"->"You have logged in")
+         }
+		)
 	}
     
 
    def about = Action { implicit request =>
-    Ok(views.html.about())
-  }
+      Ok(views.html.about())
+   }
 
-   
-  def contact = Action { implicit request =>
-    Ok(views.html.contact(contactForm))
-  }
+   def contact = Action { implicit request =>
+      Ok(views.html.contact(contactForm))
+   }
 
-  
   def sendContact =  Action { implicit request =>
     contactForm.bindFromRequest.fold(
       errors => {
@@ -168,8 +182,8 @@ class Application extends Controller with Secured{
           BadRequest(views.html.contact(errors))
       },
       contactFields => {
-    
-        EmailAlerter.sendContactMessage(contactFields._1, contactFields._2, contactFields._3, contactFields._4, contactFields._5, findCurrentRecipient)
+
+      //   EmailAl erter.sendContactMessage(contactFields._1, contactFields._2, contactFields._3, contactFields._4, contactFields._5, findCurrentRecipient)
 
         Redirect(routes.Application.index()).flashing("message"->"Your message was sent")
 
@@ -177,20 +191,12 @@ class Application extends Controller with Secured{
     )
   }
 
+  /*
+
 
    def logout = Action {
       Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")
    }
-  
+
+   */
 }
-
-
-
-
-
-
-
-
-
-
-

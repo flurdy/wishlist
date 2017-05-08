@@ -1,14 +1,16 @@
 package controllers
 
+import javax.inject.{Inject, Singleton}
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import models._
-import notifiers._
 import scravatar._
 
 
+@Singleton
+class RecipientController @Inject() (val configuration: Configuration)
+extends Controller with Secured with WithAnalytics {
 object RecipientController {
 
   val ValidEmailAddress = """^[0-9a-zA-Z]([+-_\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9}$""".r
@@ -82,20 +84,23 @@ class RecipientController extends Controller with Secured {
     "email" -> nonEmptyText(maxLength = 99)
     ) verifying("Email address is not valid", fields => fields match {
       case (username, email) => {
-        RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+         false
+      //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
       }
     }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
       case (username, email) => {
-        RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
+         false
+      //   RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
       }
     }) verifying("Username and email does match or exist", fields => fields match {
       case (username, email) => {
-        if(RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined &&
-            RecipientController.ValidUsername.findFirstIn(username.trim).isDefined) {
-          Recipient.findByUsernameAndEmail(username.trim,email.trim).isDefined
-        } else {
-          true
-        }
+         false
+      //   if(RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined &&
+            // RecipientController.ValidUsername.findFirstIn(username.trim).isDefined) {
+         //  Recipient.findByUsernameAndEmail(username.trim,email.trim).isDefined
+      //   } else {
+         //  true
+      //   }
       }
     })
   )
@@ -153,8 +158,8 @@ class RecipientController extends Controller with Secured {
 
 
    def showResetPassword = Action { implicit request =>
-    Ok(views.html.recipient.passwordreset(resetPasswordForm))
-  }
+      Ok(views.html.recipient.passwordreset(resetPasswordForm))
+   }
 
 
   def resetPassword = Action { implicit request =>

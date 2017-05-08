@@ -24,7 +24,7 @@ trait Secured {
   implicit def findCurrentRecipient(implicit session: Session): Option[Recipient] = {
     session.get(Security.username) match {
       case None => None
-      case Some(sessionUsername) => Recipient.findByUsername( sessionUsername )
+      case Some(sessionUsername) => None // Recipient.findByUsername( sessionUsername )
     }
   }
 
@@ -114,9 +114,6 @@ trait Secured {
       case None => Results.NotFound(views.html.error.notfound()(request.flash,Some(currentRecipient),analyticsDetails))
     }
   }
-
-  implicit def analyticsDetails: Option[String] = Play.configuration.getString("analytics.id")
-
 
   def withWish(username:String,wishlistId:Long,wishId:Long)(f: => (Wish,Wishlist) => Request[AnyContent] => Result) = withWishlist(username,wishlistId) { wishlist => implicit request =>
     WishEntry.findByIds(wishId,wishlistId) match {

@@ -1,8 +1,8 @@
 * ~~Website: http://wishlist.sourceforge.net~~
 * ~~Project: http://sourceforge.net/projects/wishlist~~
-* Source: http://github.com/flurdy/wishlist
+* Source: https://github.com/flurdy/wishlist
 * ~~Tasks: http://pivotaltracker.com/projects/101944~~
-* Live: http://wish.flurdy.com
+* Live: https://wish.flurdy.io
 
 
 Summary:

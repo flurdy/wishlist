@@ -12,6 +12,8 @@
 }
 #bow img { float: right; height: 0.8em; padding: 0.1em 0.2em 0.3em 0; }
 #bow h2 { font-size: 1em; font-weight: bold; margin: 0 0 0 0; padding: 0 0 0 0; text-align: center}
+#bow h2 a,
+#bow h2 a:visited { color: black; text-decoration: none; }
 #bow #tagline { display: none; font-size: 0.4em; float: left; margin: 0 1em 0 0.5em; padding: 0 0 0 0; }
 
 #aft { text-align: right; }
@@ -146,5 +148,3 @@ ul.vertical li a { }
 
 #cargo small a,
 #cargo small a:visited { color: black; }
-
-

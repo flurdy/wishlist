@@ -10,13 +10,17 @@ GET   /register.html       controllers.Application.redirectToRegisterForm
 POST	/register/				controllers.Application.register
 GET	/logout					controllers.Application.logout
 
+GET	/								controllers.Application.index
 GET	/about.html					controllers.Application.about
 GET	/contact.html				controllers.Application.contact
 POST	/contact						controllers.Application.sendContact
 
+GET   /register.html          controllers.Application.redirectToRegisterForm
+POST  /login/					   controllers.Application.login
 
 GET	/search						controllers.WishController.search
 
+GET	/password.html				controllers.RecipientController.showResetPassword
 
 POST	/:username/wishlist 		controllers.WishController.createWishlist(username)
 

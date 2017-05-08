@@ -1,10 +1,15 @@
 package controllers
 
+import javax.inject.{Inject, Singleton}
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
+
+@Singleton
+class WishController @Inject() (val configuration: Configuration)
+extends Controller with Secured with WithAnalytics {
 
 object WishController {
 
@@ -156,6 +161,9 @@ class WishController extends Controller with Secured {
         Ok(views.html.wishlist.deletewishlist(wishlist))
     }
 
+
+    def search = TODO
+    
 
     def search = Action { implicit request =>
         searchForm.bindFromRequest.fold(

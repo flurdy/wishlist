@@ -1,4 +1,5 @@
-@(title:String)(breadcrumb:Html)(cargo:Html)(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[String] = None)
+@(title:String)(breadcrumb:Html)(cargo:Html)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String] = None)
+
 
 <!DOCTYPE html>
 
@@ -25,10 +26,10 @@
                         <div id="hull" class="structure">
                             <div id="vaka" class="structure">
                                 <div id="bow" class="compartment">
-                                    <img src="@routes.Assets.versioned("images/wish.gif")"/>
+                                    <a href="@routes.Application.index"><img src="@routes.Assets.versioned("images/wish.gif")"/></a>
                                     <div id="tagline" class="muted">share wishlist online</div>
                                     <h2>
-                                        Wish
+                                        <a href="@routes.Application.index">Wish</a>
                                     </h2>
                                 </div>
                                 <div id="lookout" class="compartment">
@@ -103,7 +104,7 @@
                                         src="@routes.Assets.versioned("images/flurdy_warped_dual_small.png")"/></a>
                                     <ul class="horizontal">
                                         <li><a href="@routes.Application.about">About</a></li>
-                                        <li><a href="http://wishlist.sourceforge.net">Project</a></li>
+                                        <li><a href="https://github.com/flurdy/wishlist">Project</a></li>
                                         <li><a href="@routes.Application.contact">Contact</a></li>
                                     </ul>
                                 </div>
