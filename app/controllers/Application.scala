@@ -40,17 +40,17 @@ extends Controller with Secured with WithAnalytics {
      }
     })  verifying("Email address is not valid", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
-         false
+         true
       //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
       }
     }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
-         false
+         true
       //   RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
       }
     }) verifying("Username is already taken", fields => fields match {
       case (username, fullname, email, password, confirmPassword) => {
-         false
+         true
       //   !Recipient.findByUsername(username.trim).isDefined
       }
     })
@@ -62,10 +62,10 @@ extends Controller with Secured with WithAnalytics {
 	      "password" -> nonEmptyText(maxLength = 99),
       	"source" -> optional(text)
 	    ) verifying("Log in failed. Username does not exist or password is invalid", fields => fields match {
-       case (username, password, source) => false
+       case (username, password, source) => true
       //  case (username, password, source) => Recipient.authenticate(username, password).isDefined
       }) verifying("Your email address not yet been verified", fields => fields match {
-       case (username, password, source) => false
+       case (username, password, source) => true
       //  case (username, password, source) => Recipient.isEmailVerifiedOrNotRequired(username, password).isDefined
       })
 	)
