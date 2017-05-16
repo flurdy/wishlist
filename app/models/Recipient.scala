@@ -1,8 +1,8 @@
 package models
 
 
-import play.api.Play.current
-import org.mindrot.jbcrypt.BCrypt
+// import play.api.Play.current
+// import org.mindrot.jbcrypt.BCrypt
 import play.api.db.DB
 import anorm._
 import anorm.SqlParser._
@@ -19,7 +19,7 @@ case class Recipient (
     password: Option[String],
     isAdmin: Boolean=false
 ){
-
+   /*
   def this(recipientId:Long) = this(Some(recipientId),"",None,"",None,false)
 
   def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)
@@ -61,13 +61,13 @@ case class Recipient (
   }
 
   def findEditableWishlists = Wishlist.findEditableWishlists(this)
-
+  */
 }
 
 
 
 object Recipient {
-
+ /*
 
   val emailVerificationRequired = Play.configuration.getString("mail.verification").getOrElse("false") == "true"
 
@@ -349,6 +349,5 @@ object Recipient {
       ).as(scalar[String].singleOpt)
     }
   }
-
+ */
 }
-

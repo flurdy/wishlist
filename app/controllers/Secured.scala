@@ -8,6 +8,8 @@ import play.api.Play.current
 
 trait Secured {
 
+   /*
+
   def username(request: RequestHeader) = request.session.get(Security.username)
 
   def isAuthenticated(f: => String => Request[AnyContent] => Result) = {
@@ -20,14 +22,18 @@ trait Secured {
     Results.Redirect(routes.Application.showLoginForm)
   }
 
+*/
 
   implicit def findCurrentRecipient(implicit session: Session): Option[Recipient] = {
     session.get(Security.username) match {
       case None => None
-      case Some(sessionUsername) => None // Recipient.findByUsername( sessionUsername )
+      case Some(sessionUsername) =>
+         Some( Recipient(Some(123), sessionUsername, None, "", None, false) )
+         // Recipient.findByUsername( sessionUsername )
     }
   }
 
+/*
 
   def withCurrentRecipient(f: Recipient => Request[AnyContent] => Result) = isAuthenticated {
     username => implicit request =>
@@ -181,6 +187,6 @@ trait Secured {
     }
   }
 
-
+*/
 
 }

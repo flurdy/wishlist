@@ -5,12 +5,17 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import scravatar._
+// import models._
+// import notifiers._
+// import scravatar._
 
 
 @Singleton
 class RecipientController @Inject() (val configuration: Configuration)
 extends Controller with Secured with WithAnalytics {
+
+/*
+
 object RecipientController {
 
   val ValidEmailAddress = """^[0-9a-zA-Z]([+-_\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9}$""".r
@@ -76,7 +81,7 @@ class RecipientController extends Controller with Secured {
       case (username, email, password) =>  Recipient.findByUsernameAndEmail(username,email).isDefined && Recipient.authenticate(username, password).isDefined
     })
   )
-
+*/
 
   val resetPasswordForm = Form(
     tuple(
@@ -105,7 +110,9 @@ class RecipientController extends Controller with Secured {
     })
   )
 
+  def showProfile(username:String) = TODO
 
+/*
 	def showProfile(username:String) = Action {  implicit request =>
     Recipient.findByUsername(username) match {
       case Some(recipient) => {
@@ -156,11 +163,13 @@ class RecipientController extends Controller with Secured {
     )
   }
 
+*/
 
    def showResetPassword = Action { implicit request =>
       Ok(views.html.recipient.passwordreset(resetPasswordForm))
    }
 
+/*
 
   def resetPassword = Action { implicit request =>
     resetPasswordForm.bindFromRequest.fold(
@@ -236,7 +245,11 @@ class RecipientController extends Controller with Secured {
     }
   }
 
+*/
 
+   def showResendVerification = TODO
+
+/*
 
   def showResendVerification = Action { implicit request =>
     Ok(views.html.recipient.emailverification(emailVerificationForm))
@@ -272,4 +285,5 @@ class RecipientController extends Controller with Secured {
       }
     )
   }
+  */
 }

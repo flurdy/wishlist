@@ -1,22 +1,56 @@
 <configuration>
-    
-  <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
+
+  <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>DEBUG</level>
+    </filter>
     <encoder>
-      <pattern>%coloredLevel - %logger - %message%n%xException</pattern>
+      <pattern>%d{HH:mm:ss} %highlight(%-5level) %cyan(%logger{35}): - %msg%n</pattern>
     </encoder>
   </appender>
 
-  <!--
-    The logger name is typically the Java/Scala package name.
-    This configures the log level to log at for a package and its children packages.
-  -->
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>ERROR</level>
+    </filter>
+    <target>System.err</target>
+    <encoder>
+      <pattern>%d{HH:mm:ss} %highlight(%-5level) %cyan(%logger{35}): - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="STDOUT" />
+  </appender>
+
+  <appender name="ASYNCSTDERR" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="STDERR" />
+  </appender>
+
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
+  <logger name="com.flurdy" level="INFO" />
+  <logger name="com.flurdy.wishlist" level="DEBUG" />
 
-  <root level="ERROR">
-    <appender-ref ref="STDOUT" />
+  <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
+  <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
+  <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
+  <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+
+  <logger name="org.jdbcdslog" level="WARN" />
+  <logger name="com.zaxxer.hikari" level="WARN" />
+  <logger name="com.google.inject" level="WARN" />
+
+  <logger name="net.sf.ehcache" level="WARN" />
+  <logger name="io.netty" level="WARN" />
+  <logger name="org.asynchttpclient.netty" level="WARN" />
+
+  <root>
+    <appender-ref ref="ASYNCSTDOUT" />
+    <appender-ref ref="ASYNCSTDERR" />
   </root>
 
 </configuration>

@@ -32,3 +32,13 @@ trait StartAndStopServer extends Suite with BeforeAndAfterAll with WithTestServe
    override def afterAll = stopServer()
 
 }
+
+trait IntegrationHelper {
+   def baseUrl: String
+   def getWsClient(): WSClient
+
+   def wsWithSession(url: String, session: Option[String]) =
+      session.fold( getWsClient().url(url) ){ s =>
+         getWsClient().url(url).withHeaders("cookie" -> s"PLAY_SESSION=$s")
+      }
+}

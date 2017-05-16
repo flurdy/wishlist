@@ -1,13 +1,16 @@
 package controllers
 
+// import play.api.Play.current
+// import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models._
-import java.math.BigInteger
-import java.security.SecureRandom
+// import notifiers._
+// import java.math.BigInteger
+// import java.security.SecureRandom
 
 
 trait WithAnalytics {
@@ -20,12 +23,12 @@ trait WithAnalytics {
 
 @Singleton
 class Application @Inject() (val configuration: Configuration)
-extends Controller with Secured with WithAnalytics {
+extends Controller with Secured with WithAnalytics with WishForm {
 
 
 	val simpleRegisterForm = Form {
 		"email" -> optional(text(maxLength = 99))
- 	}	
+ 	}
 
  	val registerForm = Form(
     tuple(
@@ -85,16 +88,20 @@ extends Controller with Secured with WithAnalytics {
     })
   )
 
-	def index = Action { implicit request =>
-    findCurrentRecipient match {
-      case Some(recipient) => {
-      //   val wishlists = Wishlist.findByRecipient(recipient)
-        Ok
-      //   Ok(views.html.indexrecipient(WishController.editWishlistForm,wishlists))
+   def index = Action { implicit request =>
+      findCurrentRecipient match {
+         case Some(recipient) => {
+            Logger.debug("yay already logged in")
+            val wishlists: Seq[Wishlist] = Seq.empty // Wishlist.findByRecipient(recipient)
+            // Ok(views.html.indexanon()).withSession( request.session )
+            Ok(views.html.indexrecipient(
+               editWishlistForm, wishlists)).withSession( request.session )
+         }
+         case None =>
+            Logger.debug("not logged in")
+            Ok(views.html.indexanon())
       }
-      case None => Ok(views.html.indexanon())
-    }
-	}
+   }
 
   	def register = Action { implicit request =>
   		registerForm.bindFromRequest.fold(
@@ -105,13 +112,16 @@ extends Controller with Secured with WithAnalytics {
    	   registeredForm => {
 	      	Logger.info("New registration: " + registeredForm._1)
 
-	      	val recipient = Recipient(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4)).save
+	      	// val recipient: Recipient = ???
+	      	// val recipient = Recipient(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4)).save
 
-          EmailAlerter.sendNewRegistrationAlert(recipient)
+         //  EmailAlerter.sendNewRegistrationAlert(recipient)
 
-          if(Recipient.emailVerificationRequired){
-            val verificationHash = recipient.findVerificationHash.getOrElse(recipient.generateVerificationHash)
-            EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
+          if(true){
+         //  if(Recipient.emailVerificationRequired){
+            val verificationHash = "hash"
+            // val verificationHash = recipient.findVerificationHash.getOrElse(recipient.generateVerificationHash)
+            // EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
             Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
               """
                 Welcome, you have successfully registered.<br/>
@@ -147,6 +157,10 @@ extends Controller with Secured with WithAnalytics {
 		Ok(views.html.register(registerForm))
 	}
 
+   def redirectToLoginForm = Action { implicit request =>
+      Redirect(routes.Application.index())
+   }
+
 	def showLoginForm = Action { implicit request =>
 		Ok(views.html.login(loginForm))
 	}
@@ -155,8 +169,7 @@ extends Controller with Secured with WithAnalytics {
 		loginForm.bindFromRequest.fold(
 			errors => {
 				Logger.info("Log in failed:"+ errors)
-				BadRequest
-				// BadRequest(views.html.login(errors))
+				BadRequest(views.html.login(errors))
 			},
 			loggedInForm => {
 				Logger.debug("Logging in: " + loggedInForm._1)
@@ -165,7 +178,7 @@ extends Controller with Secured with WithAnalytics {
          }
 		)
 	}
-    
+
 
    def about = Action { implicit request =>
       Ok(views.html.about())
@@ -191,12 +204,8 @@ extends Controller with Secured with WithAnalytics {
     )
   }
 
-  /*
-
-
    def logout = Action {
       Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")
    }
 
-   */
 }

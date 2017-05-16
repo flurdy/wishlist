@@ -6,16 +6,11 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
 import org.scalatestplus.play._
 import play.api.http._
-import play.api.libs.ws.WSClient
 import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.test._
 import scala.concurrent.Await._
 
-trait IntegrationHelper {
-   def baseUrl: String
-   def getWsClient(): WSClient
-}
 
 trait RegistrationIntegrationHelper extends IntegrationHelper {
 

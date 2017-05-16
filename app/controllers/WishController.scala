@@ -5,21 +5,24 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import models._
+// import models._
+
+trait WishForm {
+
+   val editWishlistForm = Form(
+      tuple(
+         "title" -> nonEmptyText(maxLength = 50,minLength = 2 ),
+         "description" -> optional(text(maxLength = 2000))
+      )
+   )
+
+}
 
 @Singleton
 class WishController @Inject() (val configuration: Configuration)
-extends Controller with Secured with WithAnalytics {
+extends Controller with Secured with WithAnalytics with WishForm {
 
-object WishController {
-
-
-    val editWishlistForm = Form(
-        tuple(
-          "title" -> nonEmptyText(maxLength = 50,minLength = 2 ),
-          "description" -> optional(text(maxLength = 2000))
-        )
-    )
+    /*
 
     val searchForm = Form {
         "term" -> optional(text(maxLength = 99))
@@ -82,6 +85,12 @@ object WishController {
 
 class WishController extends Controller with Secured {
   import WishController._
+*/
+
+
+   def createWishlist(username: String) = TODO
+
+/*
 
     def createWishlist(username:String) = withCurrentRecipient { currentRecipient => implicit request =>
         editWishlistForm.bindFromRequest.fold(
@@ -138,7 +147,11 @@ class WishController extends Controller with Secured {
 
         Redirect(routes.Application.index()).flashing("messageWarning" -> "Wishlist deleted")
     }
+*/
 
+    def showWishlist(username: String, wishlistId: Long) = TODO
+
+    /*
 
     def showWishlist(username:String,wishlistId:Long) =  withWishlist(username,wishlistId) { wishlist => implicit request =>
       val wishes = Wishlist.findWishesForWishlist(wishlist)
@@ -161,9 +174,11 @@ class WishController extends Controller with Secured {
         Ok(views.html.wishlist.deletewishlist(wishlist))
     }
 
+    */
 
     def search = TODO
-    
+
+/*
 
     def search = Action { implicit request =>
         searchForm.bindFromRequest.fold(
@@ -379,4 +394,5 @@ class WishController extends Controller with Secured {
     )
   }
 
+  */
 }

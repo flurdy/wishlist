@@ -1,15 +1,13 @@
 @(loginForm:Form[(String,String,Option[String])])(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[String])
 
-@import helper._ 
+@import helper._
 
 @nautical("login") {
 	<li><a href="@routes.Application.showLoginForm">login</a></li>
 }{
 	<div id="login-page">
-	    
+
 		<h2>Log in</h2>
-
-
 
 	    @if(loginForm.errors){
 	    <p class="alert alert-error">
@@ -18,18 +16,18 @@
 	    </p>
 	    }
 
-		<div class="well">	
+		<div class="well">
 			@form(action = routes.Application.login(), 'class -> "form-horizontal") {
-				<input type="hidden" name="source" value="@loginForm("source").value"/>	
+				<input type="hidden" name="source" value="@loginForm("source").value"/>
 				<div class="control-group" id="username-row">
     				<label class="control-label" for="inputUsername">Username</label>
-					<div class="controls"> 
+					<div class="controls">
 						<input type="text" class="input-xlarge" id="inputUsername" name="username" placeholder="Your username" value="@loginForm("username").value"/>
 					</div>
 				</div>
 				<div class="control-group">
    				<label class="control-label" for="inputPassword">Password</label>
-					<div class="controls"> 
+					<div class="controls">
 						<input type="password" class="input-xlarge" id="inputPassword" name="password" placeholder="Your password"/>
 					</div>
 				</div>
@@ -53,9 +51,6 @@
             }
 		</div>
 
-	
 	</div>
 
-
-    
 }

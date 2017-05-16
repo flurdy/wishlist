@@ -3,13 +3,13 @@ package com.flurdy.wishlist
 import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
-import org.scalatestplus.play._
-import play.api.http._
-import play.api.libs.ws.WSClient
-import play.api.mvc._
-import play.api.mvc.Results._
-import play.api.test._
-import scala.concurrent.Await._
+// import org.scalatestplus.play._
+// import play.api.http._
+import play.api.libs.ws.WSResponse
+// import play.api.mvc._
+// import play.api.mvc.Results._
+// import play.api.test._
+// import scala.concurrent.Await._
 
 trait LoginIntegrationHelper extends IntegrationHelper {
 
@@ -24,41 +24,64 @@ trait LoginIntegrationHelper extends IntegrationHelper {
       getWsClient().url(loginUrl).withFollowRedirects(false).post(loginFormData)
    }
 
-   def logout() = getWsClient().url(logoutUrl).withFollowRedirects(false).get()
+   def logout(session: Option[String]) =
+      wsWithSession(logoutUrl, session).withFollowRedirects(false).get()
+}
+
+trait CookieIntegrationHelper {
+
+  def findCookie(response: WSResponse, cookieName: String) =
+      response.cookies.find(_.name.exists(_ == cookieName)).flatMap(_.value)
+
+   def printCookies(response: WSResponse) = {
+
+      response.cookies.foreach( c => println( s"cookie is $c" ))
+   }
+
+  def findSessionCookie(response: WSResponse) = findCookie(response, "PLAY_SESSION")
+
+  def findFlashCookie(response: WSResponse)   = findCookie(response, "PLAY_FLASH")
+
 }
 
 class WishLoginIntegrationSpec extends AsyncFeatureSpec
    with GivenWhenThen with ScalaFutures with Matchers
    with IntegrationPatience with StartAndStopServer
    with RegistrationIntegrationHelper
-   with LoginIntegrationHelper {
+   with LoginIntegrationHelper
+   with CookieIntegrationHelper {
 
    info("As a wish recipient")
    info("I want to login to the Wish application")
    info("so that I can list my wishes")
 
-   feature("Login flow") {
 
-      val frontUrl = s"$baseUrl/"
+   val frontUrl = s"$baseUrl/"
+   def frontpage() = getWsClient().url(frontUrl).get()
+   def frontpageWithSession(session: Option[String]) = wsWithSession(frontUrl, session).get()
+
+   feature("Login flow") {
 
       scenario("Registration and log in") {
 
          val flow = for {
-            _           <- register("Testerson")
-            frontBefore <- getWsClient().url(frontUrl).get()
-            login       <- login("Testerson")
-            frontAfter  <- getWsClient().url(frontUrl).get()
-         } yield(frontBefore, login, frontAfter)
+            _             <- register("Testerson")
+            frontBefore   <- frontpage()
+            loginResponse <- login("Testerson")
+            session       =  findSessionCookie(loginResponse)
+            frontAfter    <- frontpageWithSession(session)
+         } yield(frontBefore, loginResponse, frontAfter)
 
-         flow map { case(frontBefore, login, frontAfter) =>
+         flow map { case(frontBefore, loginResponse, frontAfter) =>
             Given("Registered as a member of Wish")
             And("not logged in")
             val loginFormBefore = ScalaSoup.parse(frontBefore.body).select("#login-box input").headOption
             loginFormBefore shouldBe defined
 
             When("submitting the login form")
-            login.status shouldBe 303
-            login.header("Location").headOption.value shouldBe "/"
+            loginResponse.status shouldBe 303
+            loginResponse.header("Location").headOption.value shouldBe "/"
+            findFlashCookie(loginResponse).value shouldBe "message=You+have+logged+in"
 
             Then("should be logged in")
             val loginFormAfter = ScalaSoup.parse(frontAfter.body).select("#login-box input").headOption
@@ -72,23 +95,29 @@ class WishLoginIntegrationSpec extends AsyncFeatureSpec
 
          val flow = for {
             _              <- register("Testerson")
-            _              <- login("Testerson")
-            frontLogin    <- getWsClient().url(frontUrl).get()
-            logoutResponse <- logout()
-            frontLogout     <- getWsClient().url(frontUrl).get()
-         }  yield(frontLogin, logoutResponse, frontLogout)
+            loginResponse  <- login("Testerson")
+            session        =  findSessionCookie(loginResponse)
+            frontLogin     <- frontpageWithSession(session)
+            logoutResponse <- logout(session)
+            frontLogout    <- frontpage()
+         }  yield(session, frontLogin, logoutResponse, frontLogout)
 
-         flow map { case(frontLogin, logoutResponse, frontLogout) =>
+         flow map { case(session, frontLogin, logoutResponse, frontLogout) =>
+
             Given("a logged in user")
             val logoutLink = ScalaSoup.parse(frontLogin.body).select("#logout-box li a").headOption
             logoutLink.value.text shouldBe "Testerson"
+            session shouldBe defined
+            session.value.length should be > 5
 
             When("logging out")
             logoutResponse.status shouldBe 303
             logoutResponse.header("Location").headOption.value shouldBe "/"
+            findFlashCookie(logoutResponse).value shouldBe "message=You+have+been+logged+out"
 
             Then("should be logged out")
             val loggedOutLink = ScalaSoup.parse(frontLogout.body).select("#logout-box li a").headOption
+            loggedOutLink.value.attr("href") shouldBe "/login.html"
             loggedOutLink.value.text shouldBe "log in"
          }
       }
@@ -96,13 +125,15 @@ class WishLoginIntegrationSpec extends AsyncFeatureSpec
       scenario("Logged in, out and in again"){
          val flow = for {
             _              <- register("Testerson")
-            _              <- login("Testerson")
-            frontBefore    <- getWsClient().url(frontUrl).get()
-            _              <- logout()
-            frontLogout    <- getWsClient().url(frontUrl).get()
-            loginResponse  <- login("Testerson")
-            frontAfter     <- getWsClient().url(frontUrl).get()
-         } yield (frontBefore, frontLogout, loginResponse, frontAfter)
+            loginResponse1 <- login("Testerson")
+            session1       =  findSessionCookie(loginResponse1)
+            frontBefore    <- frontpageWithSession(session1)
+            _              <- logout(session1)
+            frontLogout    <- frontpage()
+            loginResponse2 <- login("Testerson")
+            session2       =  findSessionCookie(loginResponse2)
+            frontAfter     <- frontpageWithSession(session2)
+         } yield (frontBefore, frontLogout, loginResponse2, frontAfter)
 
          flow map { case(frontBefore, frontLogout, loginResponse, frontAfter) =>
 

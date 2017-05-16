@@ -7,15 +7,15 @@ import anorm.SqlParser._
 import play.Logger
 
 case class Wishlist(
-    wishlistId:Option[Long],
-    title:String,
-    description:Option[String],
-    recipient:Recipient,
-    organisers:Seq[Recipient] = Seq.empty
+    wishlistId: Option[Long],
+    title: String,
+    description: Option[String],
+    recipient: Recipient,
+    organisers: Seq[Recipient] = Seq.empty
 ) {
 
     def this(wishlistId:Long) = this(Some(wishlistId),"",None,null)
-
+/*
     def save = Wishlist.save(this)
 
     def delete = Wishlist.delete(this)
@@ -33,10 +33,10 @@ case class Wishlist(
     def removeOrganiser(organiser:Recipient) = Wishlist.removeOrganiserFromWishlist(organiser,this)
 
     def isOrganiser(organiser:Recipient) = Wishlist.isOrganiserOfWishlist(organiser,this)
-
+*/
 
 }
-
+/*
 object Wishlist {
 
 
@@ -298,3 +298,4 @@ object Wishlist {
 
 }
 
+*/

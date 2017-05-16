@@ -1,8 +1,6 @@
 @(title:String)(breadcrumb:Html)(cargo:Html)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String] = None)
 
-
 <!DOCTYPE html>
-
 <html>
     <head>
         <title>Wish @title</title>
@@ -16,7 +14,7 @@
         <script src="@routes.Assets.versioned("javascripts/jquery-1.8.2.js")"></script>
         <script src="@routes.Assets.versioned("javascripts/jquery-ui-1.9.0.js")"></script>
         <script src="@routes.Assets.versioned("javascripts/bootstrap.min.js")" type="text/javascript"></script>
-        @analytics(analyticsDetails)
+        @**  analytics(analyticsDetails) **@
     </head>
     <body>
         <div id="ocean" class="structure">
@@ -39,7 +37,7 @@
                                 </div>
                                  <div id="keel" class="structure">
                                     <div id="innerhull" class="structure">
-                                        <div id="jib" class="compartment">  
+                                        <div id="jib" class="compartment">
                                             <div id="logout-box">
                                                 <ul class="breadcrumb">
                                                 @currentRecipient.map{ recipient =>
@@ -49,15 +47,15 @@
                                                     <li><a href="@routes.Application.logout">log out</a></li>
                                                 }.getOrElse{
                                                     <li><a href="@routes.Application.showLoginForm">log in</a>
-                                                   <span class="divider">/</span></li> 
+                                                   <span class="divider">/</span></li>
                                                     <li><a href="@routes.Application.showRegisterForm">register</a></li>
                                                 }
                                                 </ul>
-                                            </div>  
+                                            </div>
                                             <ul class="breadcrumb" id="breadcrumb">
                                                 <li><a href="@routes.Application.index">home </a><span class="divider">/</span></li>
                                                 @breadcrumb
-                                            </ul>    
+                                            </ul>
                                         </div>
                                         <div id="bulkhead" class="structure">
                                             <div id="ballast" class="structure">
@@ -90,7 +88,6 @@
                                                         @Html(message)
                                                     </p>
                                                     }
-
 
                                                     @cargo
 

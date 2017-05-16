@@ -3,12 +3,10 @@
 @import helper._
 
 @nautical("") {
-	
+
 }{
 	<style>#jib ul { display: none; }</style>
 	<div id="index-page">
-
-
 
         <div class="well">
 			<p>
@@ -16,50 +14,48 @@
 				&nbsp;&nbsp;&nbsp;&nbsp;
 				to easily share wishes with family and friends, <br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;
-				and for others to quickly find potential gifts for the recipient.  
+				and for others to quickly find potential gifts for the recipient.
 			</p>
 			<p>
-				Read more <a href="http://wishlist.sourceforge.net">about the <em>wishlist</em> project</a>
+				Read more <a href="@routes.Application.about">about the <em>wishlist</em> project</a>
 			</p>
 		</div>
 
 
-		<div class="well" id="search-box">	
+		<div class="well" id="search-box">
 			@form(action = routes.WishController.search(), 'class -> "form-search", 'method -> "get"){
 				<div class="input-append">
 					<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient" name="term"/>
-					<button type="submit" class="btn btn-primary input-small">search</button> 
+					<button type="submit" class="btn btn-primary input-small">search</button>
 				</div>
 			}
 		</div>
-		
 
-		<div class="well" id="register-box">	
+
+		<div class="well" id="register-box">
 			@form(action = routes.Application.redirectToRegisterForm(), 'class -> "form-inline"){
 				<input type="text" class="input-xlarge span4" placeholder="Your email address or desired username" name="email"/>
-				<button type="submit" class="btn btn-success input-small">register</button> 
+				<button type="submit" class="btn btn-success input-small">register</button>
 			}
 		</div>
 
 
 		<div class="well" id="login-box">
-			@form(action = routes.Application.login(), 'class -> "form-horizontal"){	
+			@form(action = routes.Application.login(), 'class -> "form-horizontal"){
 				<button type="submit" class="btn btn-info input-small">log in</button>
 				<div class="control-group">
-					<div class="controls"> 
+					<div class="controls">
 						<input type="text" class="input-xlarge span4" placeholder="Your username" name="username" />
 					</div>
 				</div>
 				<div class="control-group">
-					<div class="controls"> 
+					<div class="controls">
 						<input type="password" class="input-xlarge span4" placeholder="Your password" name="password"/>
 					</div>
 				</div>
 			}
 		</div>
-	
+
 	</div>
 
-
-    
 }
