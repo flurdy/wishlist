@@ -2,49 +2,76 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import play.api.mvc.Results.{NotFound, Unauthorized}
 import models._
 import play.api.Play.current
+import scala.concurrent.Future
+
+
+class UsernameRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
+
+class MaybeCurrentRecipientRequest[A](val currentRecipient: Option[Recipient], request: Request[A]) extends WrappedRequest[A](request){
+   lazy val username = request.session.get(Security.username)
+}
+
+object UsernameAction extends
+    ActionBuilder[UsernameRequest] with ActionTransformer[Request, UsernameRequest] {
+  def transform[A](request: Request[A]) = Future.successful {
+    new UsernameRequest(request.session.get(Security.username), request)
+  }
+}
+
+object MaybeCurrentRecipientAction extends
+    ActionBuilder[MaybeCurrentRecipientRequest] with ActionTransformer[Request, MaybeCurrentRecipientRequest] {
+  def transform[A](request: Request[A]) = Future.successful {
+    new MaybeCurrentRecipientRequest(request.session.get(Security.username).map(new Recipient(_)), request)
+  }
+}
+
+object IsAuthenticatedAction extends ActionFilter[UsernameRequest] {
+  def filter[A](input: UsernameRequest[A]) = Future.successful {
+     if(input.username.isEmpty) Some(Unauthorized)
+     else None
+  }
+}
 
 
 trait Secured {
 
-   /*
+   implicit def requestToCurrentRecipient(implicit request: MaybeCurrentRecipientRequest[_]): Option[Recipient] = request.currentRecipient
 
-  def username(request: RequestHeader) = request.session.get(Security.username)
+   def CurrentRecipientAction = new ActionRefiner[UsernameRequest, MaybeCurrentRecipientRequest] {
+      def refine[A](input: UsernameRequest[A]) = Future.successful {
+         input.username.map( username =>
+                  new MaybeCurrentRecipientRequest(Some(new Recipient(username)), input))
+              .toRight(NotFound)
+      }
+   }
 
-  def isAuthenticated(f: => String => Request[AnyContent] => Result) = {
-    Security.Authenticated(username, onUnauthenticated) { username =>
-      Action(request => f(username)(request))
-    }
-  }
-
-  private def onUnauthenticated(request: RequestHeader) = {
-    Results.Redirect(routes.Application.showLoginForm)
-  }
-
-*/
-
-  implicit def findCurrentRecipient(implicit session: Session): Option[Recipient] = {
+  implicit def findCurrentRecipient(implicit session: Session): Future[Option[Recipient]] = {
     session.get(Security.username) match {
-      case None => None
+      case None => Future.successful(None)
       case Some(sessionUsername) =>
-         Some( Recipient(Some(123), sessionUsername, None, "", None, false) )
+         Future.successful( Some( new Recipient( sessionUsername )))
          // Recipient.findByUsername( sessionUsername )
     }
   }
 
+  // def withCurrentRecipient(f: Recipient => Request[AnyContent] => Result) = { //} isAuthenticated {
+  //  //  username => implicit request =>
+  //  implicit request =>
+  //     val recipient: Option[Recipient] = None
+  //     // Recipient.findByUsername(username).map { recipient =>
+  //     recipient.map { recipient =>
+  //
+  //       f(recipient)(request)
+  //
+  //     }.getOrElse(onUnauthenticated(request))
+  //     // }.getOrElse(onUnauthenticated(request))
+  // }
+
+
 /*
-
-  def withCurrentRecipient(f: Recipient => Request[AnyContent] => Result) = isAuthenticated {
-    username => implicit request =>
-      Recipient.findByUsername(username).map { recipient =>
-
-        f(recipient)(request)
-
-      }.getOrElse(onUnauthenticated(request))
-  }
-
-
 
   def isProfileRecipient(profileUsername:String)(f: (Recipient) => Request[AnyContent] => Result) = withCurrentRecipient {
     currentRecipient => implicit request =>

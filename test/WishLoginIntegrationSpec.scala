@@ -3,13 +3,7 @@ package com.flurdy.wishlist
 import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
-// import org.scalatestplus.play._
-// import play.api.http._
 import play.api.libs.ws.WSResponse
-// import play.api.mvc._
-// import play.api.mvc.Results._
-// import play.api.test._
-// import scala.concurrent.Await._
 
 trait LoginIntegrationHelper extends IntegrationHelper {
 
@@ -33,10 +27,8 @@ trait CookieIntegrationHelper {
   def findCookie(response: WSResponse, cookieName: String) =
       response.cookies.find(_.name.exists(_ == cookieName)).flatMap(_.value)
 
-   def printCookies(response: WSResponse) = {
-
+   def printCookies(response: WSResponse) =
       response.cookies.foreach( c => println( s"cookie is $c" ))
-   }
 
   def findSessionCookie(response: WSResponse) = findCookie(response, "PLAY_SESSION")
 
@@ -45,11 +37,11 @@ trait CookieIntegrationHelper {
 }
 
 class WishLoginIntegrationSpec extends AsyncFeatureSpec
-   with GivenWhenThen with ScalaFutures with Matchers
-   with IntegrationPatience with StartAndStopServer
-   with RegistrationIntegrationHelper
-   with LoginIntegrationHelper
-   with CookieIntegrationHelper {
+      with GivenWhenThen with ScalaFutures with Matchers
+      with IntegrationPatience with StartAndStopServer
+      with RegistrationIntegrationHelper
+      with LoginIntegrationHelper
+      with CookieIntegrationHelper {
 
    info("As a wish recipient")
    info("I want to login to the Wish application")

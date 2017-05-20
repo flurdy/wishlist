@@ -19,8 +19,12 @@ case class Recipient (
     password: Option[String],
     isAdmin: Boolean=false
 ){
-   /*
-  def this(recipientId:Long) = this(Some(recipientId),"",None,"",None,false)
+
+  def this(recipientId: Long) = this(Some(recipientId), "", None, "", None, false)
+
+  def this(username: String) = this(None, username, None, "", None, false)
+
+  /*
 
   def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)
 
@@ -55,11 +59,11 @@ case class Recipient (
   def isEmailVerified = Recipient.isEmailVerified(this)
 
   def setEmailAsVerified = Recipient.setEmailAsVerified(this)
-
+*/
   def canEdit(wishlist:Wishlist) = {
       isAdmin || wishlist.recipient == this || wishlist.isOrganiser(this)
   }
-
+/*
   def findEditableWishlists = Wishlist.findEditableWishlists(this)
   */
 }

@@ -98,5 +98,7 @@ class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
          }
       }
 
+      scenario("Unregister") (pending)
+
    }
 }

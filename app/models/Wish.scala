@@ -1,21 +1,38 @@
 package models
 
-import play.api.Play.current
-import play.api.db.DB
-import anorm._
-import anorm.SqlParser._
-import play.Logger
+// import anorm._
+// import anorm.SqlParser._
+// import play.api.Play.current
+// import play.api.db.DB
+// import play.Logger
+import scala.concurrent.Future
 
 case class Wish(
     wishId:Option[Long],
     title:String,
     description:Option[String],
-    wishEntries:Set[WishEntry] = Set.empty,
+   //  wishEntries:Set[WishEntry] = Set.empty,
     links:Seq[WishLink] = Seq.empty,
     reservation:Option[Reservation] = None,
     recipient:Recipient
 ) {
 
+   def this(title: String, recipient: Recipient) = this(None, title, None, Seq.empty, None, recipient)
+
+   def this(wishId: Long, recipient: Recipient) = this(Some(wishId), "", None, Seq.empty, None, recipient)
+
+   def this(wishId: Long, title: String, recipient: Recipient) = this(Some(wishId), title, None, Seq.empty, None, recipient)
+
+   def save = Future.successful(this) // Wish.save(this)
+
+   def addToWishlist(wishlist: Wishlist) = Future.successful(this) // WishEntry.addWishToWishlist(this,wishlist)
+
+   def reserve(recipient:Recipient) = new Reservation(recipient,this).save
+
+   def unreserve: Future[Either[_,Reservation]] = ???
+      // reservation map ( realReservation => realReservation.copy(wish=this).cancel )
+
+   /*
     def this(wishId:Long,
         title:String,
         description:Option[String],
@@ -23,22 +40,16 @@ case class Wish(
           this(Some(wishId), title, description, Set.empty, Seq.empty, reservation, recipient)
 
     def this(wishId:Long) = this(Some(wishId),"",None, Set.empty, Seq.empty, None , null)
-
     def this(wishId:Long,title:String,description:Option[String],recipient:Recipient) = this(Some(wishId),title,description, Set.empty, Seq.empty, None, recipient:Recipient)
 
-    def this(title:String,description:Option[String],recipient:Recipient) = this(None,title,description, Set.empty, Seq.empty, None, recipient:Recipient)
 
-    def save = Wish.save(this)
 
     def delete = Wish.delete(this)
 
     def update = Wish.update(this)
 
-    def reserve(recipient:Recipient) = new Reservation(recipient,this).save
 
-    def unreserve = reservation map ( realReservation => realReservation.copy(wish=this).cancel )
 
-    def addToWishlist(wishlist:Wishlist) = WishEntry.addWishToWishlist(this,wishlist)
 
     def addLink(url:String) = Wish.addLinkToWish(this,url)
 
@@ -49,9 +60,9 @@ case class Wish(
     def findLinks : List[WishLink] = WishLink.findWishLinks(this)
 
     def moveToWishlist(targetWishlist:Wishlist) = WishEntry.moveWishToWishlist(this,targetWishlist)
-
+*/
 }
-
+/*
 
 object Wish {
 
@@ -196,7 +207,7 @@ object Wish {
 }
 
 
-
+*/
 
 
 case class WishLink(
@@ -205,6 +216,7 @@ case class WishLink(
   url : String
 )
 
+/*
 
 object WishLink {
 
@@ -237,7 +249,7 @@ object WishLink {
 }
 
 
-
+*/
 
 
 case class WishEntry(
@@ -246,10 +258,11 @@ case class WishEntry(
         ordinal: Option[Int]
 ) {
 
- def update = WishEntry.update(this)
+ // def update = WishEntry.update(this)
 
 }
 
+/*
 
 object WishEntry {
 
@@ -381,3 +394,4 @@ object WishEntry {
 
 }
 
+*/

@@ -1,11 +1,12 @@
 package models
 
 
-import play.api.Play.current
-import play.api.db.DB
-import anorm._
-import anorm.SqlParser._
-import play.Logger
+// import play.api.Play.current
+// import play.api.db.DB
+// import anorm._
+// import anorm.SqlParser._
+// import play.Logger
+import scala.concurrent.Future
 
 case class Reservation(
 	reservationId: Option[Long],
@@ -13,22 +14,22 @@ case class Reservation(
 	wish: Wish
 ) {
 
-	def this(reservationId: Long) = this(Some(reservationId),null,null)
+   def this(reservationId: Long) = this(Some(reservationId),null,null)
 
-  def this(recipient: Recipient, wish: Wish) = this(None,recipient,wish)
+   def this(recipient: Recipient, wish: Wish) = this(None,recipient,wish)
 
-	def save = Reservation.save(this)
+   def save: Future[Either[_,Reservation]] = Future.successful(Right(this)) // Reservation.save(this)
 
-  def cancel = Reservation.cancel(this)
+   def cancel = Future.successful(Right(this)) // Reservation.cancel(this)
 
-  def isReserver(recipient:Recipient) = Reservation.findReserver(this).get == recipient
-	
+   def isReserver(recipient:Recipient) = false // Reservation.findReserver(this).get == recipient
+
 }
 
-
+/*
 
 object Reservation {
-	
+
 	val simple = {
    	  get[Long]("reservationid") ~
       get[Long]("recipientid") ~
@@ -59,9 +60,9 @@ object Reservation {
          val nextId = SQL("SELECT NEXTVAL('reservation_seq')").as(scalar[Long].single)
       	SQL(
              """
-					insert into reservation 
-						(reservationid,recipientid,wishid) 
-					values 
+					insert into reservation
+						(reservationid,recipientid,wishid)
+					values
 						({reservationid},{recipientid},{wishid})
              """
          ).on(
@@ -89,7 +90,7 @@ object Reservation {
     DB.withConnection { implicit connection =>
       SQL(
         """
-					SELECT * FROM reservation 
+					SELECT * FROM reservation
 		 			WHERE wishid = {wishid}
         				"""
       ).on(
@@ -160,3 +161,5 @@ object Reservation {
   }
 
 }
+
+*/

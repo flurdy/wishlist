@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "anorm" % "2.5.0",
   evolutions,
   cache,
+  filters,
   ws exclude("commons-logging","commons-logging"),
   // "commons-logging" % "commons-logging" % "1.1.3",
   // "postgresql" % "postgresql" % "9.1-901-1.jdbc4",

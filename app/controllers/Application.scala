@@ -7,10 +7,12 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+import play.api.libs.concurrent.Execution.Implicits._
 import models._
 // import notifiers._
 // import java.math.BigInteger
 // import java.security.SecureRandom
+import scala.concurrent.Future
 
 
 trait WithAnalytics {
@@ -88,8 +90,9 @@ extends Controller with Secured with WithAnalytics with WishForm {
     })
   )
 
-   def index = Action { implicit request =>
-      findCurrentRecipient match {
+   def index = Action.async { implicit request =>
+      findCurrentRecipient map { implicit currentRecipient =>
+         currentRecipient match {
          case Some(recipient) => {
             Logger.debug("yay already logged in")
             val wishlists: Seq[Wishlist] = Seq.empty // Wishlist.findByRecipient(recipient)
@@ -101,13 +104,15 @@ extends Controller with Secured with WithAnalytics with WishForm {
             Logger.debug("not logged in")
             Ok(views.html.indexanon())
       }
-   }
+   } }
 
-  	def register = Action { implicit request =>
+  	def register =
+     (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+      //   Action.async { implicit request =>
   		registerForm.bindFromRequest.fold(
         errors => {
           Logger.warn("Registration failed: " + errors)
-          BadRequest(views.html.register(errors))
+          Future.successful(BadRequest(views.html.register(errors)))
         },
    	   registeredForm => {
 	      	Logger.info("New registration: " + registeredForm._1)
@@ -122,21 +127,22 @@ extends Controller with Secured with WithAnalytics with WishForm {
             val verificationHash = "hash"
             // val verificationHash = recipient.findVerificationHash.getOrElse(recipient.generateVerificationHash)
             // EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
-            Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
+            Future.successful( Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
               """
                 Welcome, you have successfully registered.<br/>
                 Please click on the link in the email we just sent to you
-              """)
+              """) )
           } else {
-            Redirect(routes.Application.index()).withSession(
-              "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered")
+            Future.successful( Redirect(routes.Application.index()).withSession(
+              "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered"))
           }
 
       	}
       )
   }
 
-   def redirectToRegisterForm = Action { implicit request =>
+   def redirectToRegisterForm =
+     (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       simpleRegisterForm.bindFromRequest.fold(
          errors => {
         BadRequest(views.html.register(registerForm))
@@ -153,19 +159,19 @@ extends Controller with Secured with WithAnalytics with WishForm {
    }
 
 
-	def showRegisterForm = Action { implicit request =>
-		Ok(views.html.register(registerForm))
-	}
+   def showRegisterForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+      Ok(views.html.register(registerForm))
+   }
 
    def redirectToLoginForm = Action { implicit request =>
       Redirect(routes.Application.index())
    }
 
-	def showLoginForm = Action { implicit request =>
+	def showLoginForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
 		Ok(views.html.login(loginForm))
 	}
 
-	def login = Action { implicit request =>
+	def login = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
 		loginForm.bindFromRequest.fold(
 			errors => {
 				Logger.info("Log in failed:"+ errors)
@@ -180,15 +186,15 @@ extends Controller with Secured with WithAnalytics with WishForm {
 	}
 
 
-   def about = Action { implicit request =>
+   def about = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.about())
    }
 
-   def contact = Action { implicit request =>
+   def contact = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.contact(contactForm))
    }
 
-  def sendContact =  Action { implicit request =>
+  def sendContact =  (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
     contactForm.bindFromRequest.fold(
       errors => {
           Logger.warn("Contact failed: " + errors)

@@ -165,7 +165,7 @@ class RecipientController extends Controller with Secured {
 
 */
 
-   def showResetPassword = Action { implicit request =>
+   def showResetPassword = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.recipient.passwordreset(resetPasswordForm))
    }
 

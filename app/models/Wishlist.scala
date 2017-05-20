@@ -1,10 +1,11 @@
 package models
 
-import play.api.Play.current
-import play.api.db.DB
-import anorm._
-import anorm.SqlParser._
-import play.Logger
+// import anorm._
+// import anorm.SqlParser._
+// import play.api.Play.current
+// import play.api.db.DB
+// import play.Logger
+import scala.concurrent.Future
 
 case class Wishlist(
     wishlistId: Option[Long],
@@ -14,17 +15,21 @@ case class Wishlist(
     organisers: Seq[Recipient] = Seq.empty
 ) {
 
-    def this(wishlistId:Long) = this(Some(wishlistId),"",None,null)
-/*
-    def save = Wishlist.save(this)
+    def this(wishlistId: Long, recipient: Recipient) = this(Some(wishlistId),"",None, recipient)
 
-    def delete = Wishlist.delete(this)
+    def this(title: String, recipient: Recipient) = this(None, title, None, recipient, Seq.empty)
 
+    def save: Future[Option[Wishlist]] = Future.successful(Some(this.copy(wishlistId = Some(123)))) //Wishlist.save(this)
+
+    def delete: Future[Boolean] = Future.successful(true) // Wishlist.delete(this)
+
+    def findWishes: Future[Seq[Wish]] = Future.successful(Seq[Wish]()) // Wishlist.findWishesForWishlist(this)
+
+    /*
     def update = Wishlist.update(this)
 
     def removeWish(wish:Wish) = WishEntry.removeWishFromWishlist(wish,this)
 
-    def findWishes = Wishlist.findWishesForWishlist(this)
 
     def findOrganisers = Wishlist.findOrganisers(this)
 
@@ -32,9 +37,10 @@ case class Wishlist(
 
     def removeOrganiser(organiser:Recipient) = Wishlist.removeOrganiserFromWishlist(organiser,this)
 
-    def isOrganiser(organiser:Recipient) = Wishlist.isOrganiserOfWishlist(organiser,this)
-*/
+    */
+    def isOrganiser(organiser:Recipient) = false // Wishlist.isOrganiserOfWishlist(organiser,this)
 
+    require(recipient != null)
 }
 /*
 object Wishlist {
