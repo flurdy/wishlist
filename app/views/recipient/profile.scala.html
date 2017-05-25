@@ -1,4 +1,4 @@
-@(recipient:Recipient,wishlists:Seq[Wishlist],organisedWishlists:Seq[Wishlist],reservations:Seq[Reservation],createWishlistForm:Form[(String,Option[String])],gravatarUrl:String)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(recipient: Recipient, wishlists: Seq[Wishlist], organisedWishlists: Seq[Wishlist], reservations: Seq[Reservation], createWishlistForm: Form[(String,Option[String])], gravatarUrl: String)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -19,7 +19,7 @@
 				<h4>Full name: @recipient.fullname</h4>
 			}
 		}
-		
+
 
 		<div class="well" id="wishlist-list">
 
@@ -45,7 +45,7 @@
 
 			@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-inline"){
 				<input type="text" class="input-xlarge" maxlength="50" placeholder="Title of new wishlist" name="title" value="@createWishlistForm("title").value"/>
-				<button type="submit" class="btn btn-info input-small">create</button> 	
+				<button type="submit" class="btn btn-info input-small">create</button>
 			}
 
 		</div>

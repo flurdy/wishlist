@@ -179,6 +179,7 @@ extends Controller with Secured with WithAnalytics with WishForm {
 			},
 			loggedInForm => {
 				Logger.debug("Logging in: " + loggedInForm._1)
+            // huh
             Redirect(routes.Application.index()).withSession(
                "username" -> loggedInForm._1).flashing("message"->"You have logged in")
          }

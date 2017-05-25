@@ -5,7 +5,7 @@
 @nautical("search") {
 	<li>search</li>
 }{
-	
+
 	<div id="list-wishlists-page">
 
 		<h4>@wishlists.size wishlists found:</h4>
@@ -26,7 +26,7 @@
 							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
 						</td>
 						<td>
-                            <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a>
+                      <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a>
 						</td>
 					</tr>
 				}
@@ -36,11 +36,11 @@
 
 
 
-		<div class="well" id="search-box">	
+		<div class="well" id="search-box">
 			@form(action = routes.WishController.search(), 'class -> "form-search", 'method -> "get"){
 			<div class="input-append">
 				<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient" name="term" value="@searchForm("term").value"/>
-				<button type="submit" class="btn btn-primary input-small">search</button> 
+				<button type="submit" class="btn btn-primary input-small">search</button>
 			</div>
 			}
 		</div>
@@ -52,13 +52,13 @@
 
 				@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-horizontal"){
 					<input type="text" class="input-xlarge" placeholder="Title of new wishlist" name="title" maxlength="50" value="@createWishlistForm("title").value"/>
-					<button type="submit" class="btn btn-info input-small">create</button> 	
+					<button type="submit" class="btn btn-info input-small">create</button>
 				}
 
 			</div>
 
 		}
-	
+
 	</div>
 
 }

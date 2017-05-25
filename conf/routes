@@ -20,11 +20,13 @@ GET	 /:username/wishlist/:wishlistId/                 controllers.WishController
 POST	 /recipient/:username/wishlist/:wishlistId/delete controllers.WishController.alsoDeleteWishlist(username, wishlistId: Long)
 DELETE /recipient/:username/wishlist/:wishlistId        controllers.WishController.deleteWishlist(username, wishlistId: Long)
 
-POST	 /recipient/:username/wishlist/:wishlistId/wish   controllers.WishController.addWishToWishlist(username,wishlistId:Long)
-POST	 /recipient/:username/wishlist/:wishlistId/wish/:wishId/reserve   controllers.WishController.reserveWish(username, wishlistId:Long, wishId:Long)
-POST	 /recipient/:username/wishlist/:wishlistId/wish/:wishId/unreserve controllers.WishController.unreserveWish(username, wishlistId:Long, wishId:Long)
+POST	 /recipient/:username/wishlist/:wishlistId/wish                   controllers.WishController.addWishToWishlist(username,wishlistId: Long)
+POST	 /recipient/:username/wishlist/:wishlistId/wish/:wishId/reserve   controllers.WishController.reserveWish(username, wishlistId:Long, wishId: Long)
+POST	 /recipient/:username/wishlist/:wishlistId/wish/:wishId/unreserve controllers.WishController.unreserveWish(username, wishlistId:Long, wishId: Long)
+POST	 /recipient/:username/reservations/wish/:wishId/unreserve         controllers.WishController.unreserveWishFromProfile(username, wishId: Long)
 
-GET	 /recipient/:username/   controllers.RecipientController.showProfile(username)
+GET	 /recipient/:username/           controllers.RecipientController.showProfile(username)
+GET	 /recipient/:username/edit.html  controllers.RecipientController.showEditRecipient(username)
 
 GET	 /password.html			 controllers.RecipientController.showResetPassword
 GET	 /recipient/verify.html  controllers.RecipientController.showResendVerification

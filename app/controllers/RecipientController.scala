@@ -5,14 +5,16 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-// import models._
+import play.api.libs.concurrent.Execution.Implicits._
+import models._
 // import notifiers._
 // import scravatar._
+import scala.concurrent.Future
 
 
 @Singleton
 class RecipientController @Inject() (val configuration: Configuration)
-extends Controller with Secured with WithAnalytics {
+extends Controller with Secured with WithAnalytics with WishForm {
 
 /*
 
@@ -110,21 +112,26 @@ class RecipientController extends Controller with Secured {
     })
   )
 
-  def showProfile(username:String) = TODO
 
-/*
-	def showProfile(username:String) = Action {  implicit request =>
-    Recipient.findByUsername(username) match {
-      case Some(recipient) => {
-        val wishlists = recipient.findWishlists
-        val organisedWishlists = recipient.findOrganisedWishlists
-        val reservations = recipient.findReservations
-        Ok(views.html.recipient.profile(recipient,wishlists,organisedWishlists,reservations,WishController.editWishlistForm,gravatarUrl(recipient)))
+   def showProfile(username:String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+      Future.successful( Some( new Recipient(123)) ).map {
+      // Recipient.findByUsername(username) match {
+         case Some(recipient) =>
+      //       val wishlists = recipient.findWishlists
+      //       val organisedWishlists = recipient.findOrganisedWishlists
+      //       val reservations = recipient.findReservations
+            val wishlists = Nil
+            val organisedWishlists = Nil
+            val reservations = Nil
+            val gravatarUrl = "" // recipientGravatarUrl(request.wishlist)
+            Ok(views.html.recipient.profile(recipient, wishlists, organisedWishlists, reservations, editWishlistForm, gravatarUrl )) // gravatarUrl(recipient)))
+         case _ => NotFound // (views.html.error.notfound())
       }
-      case None => NotFound(views.html.error.notfound())
-    }
-  }
+   }
 
+   def showEditRecipient(username:String) = TODO
+
+   /*
 
   def showEditRecipient(username:String) = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     val editForm = editRecipientForm.fill(profileRecipient.username,profileRecipient.username,profileRecipient.fullname,profileRecipient.email)

@@ -3,13 +3,13 @@ package models
 
 // import play.api.Play.current
 // import org.mindrot.jbcrypt.BCrypt
-import play.api.db.DB
-import anorm._
-import anorm.SqlParser._
+// import play.api.db.DB
+// import anorm._
+// import anorm.SqlParser._
 import play.Logger
-import java.math.BigInteger
-import java.security.{SecureRandom, MessageDigest}
-import play.api.Play
+// import java.math.BigInteger
+// import java.security.{SecureRandom, MessageDigest}
+// import play.api.Play
 
 case class Recipient (
     recipientId: Option[Long],

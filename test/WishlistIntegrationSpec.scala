@@ -142,5 +142,7 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
          }
       }
 
+      scenario("find wishlists")(pending)
+
    }
 }
