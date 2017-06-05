@@ -23,10 +23,7 @@ trait WithAnalytics {
 
 }
 
-@Singleton
-class Application @Inject() (val configuration: Configuration)
-extends Controller with Secured with WithAnalytics with WishForm {
-
+trait RegisterForm {
 
 	val simpleRegisterForm = Form {
 		"email" -> optional(text(maxLength = 99))
@@ -60,20 +57,28 @@ extends Controller with Secured with WithAnalytics with WishForm {
       }
     })
   )
+}
+
+trait LoginForm {
+
+   // def recipientLookup: RecipientLookup
+
+   val ValidUsernamePattern = """^[a-zA-Z0-9\-_]{3,99}$""".r
 
 	val loginForm = Form(
 	   tuple(
-	      "username" -> nonEmptyText(maxLength = 99),
-	      "password" -> nonEmptyText(maxLength = 99),
+	      "username" -> nonEmptyText(minLength = 4, maxLength = 99),
+	      "password" -> nonEmptyText(minLength = 4, maxLength = 99),
       	"source" -> optional(text)
-	    ) verifying("Log in failed. Username does not exist or password is invalid", fields => fields match {
-       case (username, password, source) => true
-      //  case (username, password, source) => Recipient.authenticate(username, password).isDefined
-      }) verifying("Your email address not yet been verified", fields => fields match {
-       case (username, password, source) => true
-      //  case (username, password, source) => Recipient.isEmailVerifiedOrNotRequired(username, password).isDefined
+      ) verifying("Log in failed. Username invalid", fields => fields match {
+           case (username, _, _) =>  ValidUsernamePattern.unapplySeq(username).isDefined
       })
 	)
+}
+
+@Singleton
+class Application @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup)
+extends Controller with Secured with WithAnalytics with WishForm with RegisterForm {
 
   val contactForm = Form(
     tuple(
@@ -106,86 +111,9 @@ extends Controller with Secured with WithAnalytics with WishForm {
       }
    } }
 
-  	def register =
-     (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
-      //   Action.async { implicit request =>
-  		registerForm.bindFromRequest.fold(
-        errors => {
-          Logger.warn("Registration failed: " + errors)
-          Future.successful(BadRequest(views.html.register(errors)))
-        },
-   	   registeredForm => {
-	      	Logger.info("New registration: " + registeredForm._1)
-
-	      	// val recipient: Recipient = ???
-	      	// val recipient = Recipient(None,registeredForm._1,registeredForm._2,registeredForm._3,Some(registeredForm._4)).save
-
-         //  EmailAlerter.sendNewRegistrationAlert(recipient)
-
-          if(true){
-         //  if(Recipient.emailVerificationRequired){
-            val verificationHash = "hash"
-            // val verificationHash = recipient.findVerificationHash.getOrElse(recipient.generateVerificationHash)
-            // EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
-            Future.successful( Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
-              """
-                Welcome, you have successfully registered.<br/>
-                Please click on the link in the email we just sent to you
-              """) )
-          } else {
-            Future.successful( Redirect(routes.Application.index()).withSession(
-              "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered"))
-          }
-
-      	}
-      )
-  }
-
-   def redirectToRegisterForm =
-     (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
-      simpleRegisterForm.bindFromRequest.fold(
-         errors => {
-        BadRequest(views.html.register(registerForm))
-         },
-         emailInForm => {
-            emailInForm match {
-               case None => Ok(views.html.register(registerForm))
-               case Some(email) =>
-                  Ok(views.html.register(
-                     registerForm.fill( email, None, email, "", "") ) )
-            }
-         }
-      )
-   }
-
-
-   def showRegisterForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
-      Ok(views.html.register(registerForm))
-   }
-
-   def redirectToLoginForm = Action { implicit request =>
+   def redirectToIndex = Action { implicit request =>
       Redirect(routes.Application.index())
    }
-
-	def showLoginForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
-		Ok(views.html.login(loginForm))
-	}
-
-	def login = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
-		loginForm.bindFromRequest.fold(
-			errors => {
-				Logger.info("Log in failed:"+ errors)
-				BadRequest(views.html.login(errors))
-			},
-			loggedInForm => {
-				Logger.debug("Logging in: " + loggedInForm._1)
-            // huh
-            Redirect(routes.Application.index()).withSession(
-               "username" -> loggedInForm._1).flashing("message"->"You have logged in")
-         }
-		)
-	}
-
 
    def about = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.about())
@@ -193,6 +121,10 @@ extends Controller with Secured with WithAnalytics with WishForm {
 
    def contact = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.contact(contactForm))
+   }
+
+   def redirectToContact = Action { implicit request =>
+      Redirect(routes.Application.contact())
    }
 
   def sendContact =  (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
@@ -215,4 +147,128 @@ extends Controller with Secured with WithAnalytics with WishForm {
       Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")
    }
 
+}
+
+
+@Singleton
+class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup)
+extends Controller with Secured with WithAnalytics with RegisterForm {
+
+  	def register =
+     (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+  		registerForm.bindFromRequest.fold(
+        errors => {
+          Logger.warn("Registration failed: " + errors)
+          Future.successful(BadRequest(views.html.register(errors)))
+        },
+   	   registeredForm => {
+	      	Logger.info("New registration: " + registeredForm)
+            recipientFactory.newRecipient( registeredForm ).save.map {
+               case Right(recipient) =>
+            //  EmailAlerter.sendNewRegistrationAlert(recipient)
+
+                  if(true){
+                     //  if(Recipient.emailVerificationRequired){
+                     val verificationHash = "hash"
+                     // val verificationHash = recipient.findVerificationHash.getOrElse(recipient.generateVerificationHash)
+                     // EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
+                     Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
+                        """
+                        Welcome, you have successfully registered.<br/>
+                        Please click on the link in the email we just sent to you
+                        """)
+                  } else {
+                     Redirect(routes.Application.index()).withSession(
+                        "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered")
+                  }
+               case Left(e) =>
+                  throw new IllegalStateException("Not able to save new registration")
+            }
+      	}
+      )
+  }
+
+   def redirectToRegisterForm =
+     (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+      simpleRegisterForm.bindFromRequest.fold(
+         errors => {
+        BadRequest(views.html.register(registerForm))
+         },
+         emailInForm => {
+            emailInForm match {
+               case None => Ok(views.html.register(registerForm))
+               case Some(email) =>
+                  Ok(views.html.register(
+                     registerForm.fill( email, None, email, "", "") ) )
+            }
+         }
+      )
+   }
+
+   def showRegisterForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+      Ok(views.html.register(registerForm))
+   }
+}
+
+
+@Singleton
+class LoginController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup)
+extends Controller with Secured with WithAnalytics with LoginForm {
+
+   def redirectToLoginForm = Action { implicit request =>
+      Redirect(routes.LoginController.showLoginForm())
+   }
+
+   def showLoginForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+      Ok(views.html.login(loginForm))
+   }
+
+   def login = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+
+      def badLogin(username: String, errorMessage: String) =
+         BadRequest(views.html.login(
+               loginForm.fill((username, "", None))))
+            .flashing("messageError" -> errorMessage)
+
+      def loginFailed(username: String) =
+         Future.successful(
+            badLogin(username, "Log in failed. Username does not exist or password is invalid") )
+
+      def notVerified(username: String) =
+         badLogin(username, "Log in failed. Email not verified. Please check your email")
+
+      def loginSuccess(username: String) =
+         Redirect(routes.Application.index())
+            .withSession("username" -> username)
+            .flashing("message"->"You have logged in")
+
+      loginForm.bindFromRequest.fold(
+         errors => {
+            Logger.info("Log in failed:"+ errors)
+            Future.successful( BadRequest(views.html.login(errors)) )
+         },{
+         case (username, password, source) =>
+            recipientLookup.findRecipient(username) flatMap {
+               case Some(recipient) =>
+                  recipient.authenticate(password) flatMap {
+                     case true =>
+                        recipient.isVerified map {
+                           case true  =>
+                              Logger.debug("Login success: " + username)
+                              loginSuccess(username)
+                           case false =>
+                              Logger.warn("Login failed. Not verified: " + username)
+                              notVerified(username)
+                        }
+                     case false =>
+                        Logger.warn("Login failed. Credentials not correct: " + username)
+                        loginFailed(username)
+                  }
+               case _ =>
+                  Logger.warn("Login failed. Recipient not found: " + username)
+                  loginFailed(username)
+            }
+         }
+      )
+   }
 }

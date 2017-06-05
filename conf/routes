@@ -1,15 +1,19 @@
 
 GET	 /								controllers.Application.index
+GET 	 /index.html				controllers.Application.redirectToIndex
 GET	 /about.html				controllers.Application.about
 GET	 /contact.html				controllers.Application.contact
 POST	 /contact					controllers.Application.sendContact
+GET 	 /contact					controllers.Application.redirectToContact
 
-GET    /register.html         controllers.Application.redirectToRegisterForm
-GET    /register/             controllers.Application.showRegisterForm
-POST	 /register/				   controllers.Application.register
-POST   /login/					   controllers.Application.login
-GET	 /login/      				controllers.Application.redirectToLoginForm
-GET	 /login.html   			controllers.Application.showLoginForm
+GET    /register.html         controllers.RegisterController.redirectToRegisterForm
+GET    /register              controllers.RegisterController.showRegisterForm
+POST	 /register				   controllers.RegisterController.register
+
+POST   /login					   controllers.LoginController.login
+GET	 /login      				controllers.LoginController.redirectToLoginForm
+GET	 /login.html   			controllers.LoginController.showLoginForm
+
 GET    /logout  				   controllers.Application.logout
 
 GET	 /search						controllers.WishController.search
@@ -20,7 +24,7 @@ GET	 /:username/wishlist/:wishlistId/                 controllers.WishController
 POST	 /recipient/:username/wishlist/:wishlistId/delete controllers.WishController.alsoDeleteWishlist(username, wishlistId: Long)
 DELETE /recipient/:username/wishlist/:wishlistId        controllers.WishController.deleteWishlist(username, wishlistId: Long)
 
-POST	 /recipient/:username/wishlist/:wishlistId/wish                   controllers.WishController.addWishToWishlist(username,wishlistId: Long)
+POST	 /recipient/:username/wishlist/:wishlistId/wish                   controllers.WishController.addWishToWishlist(username, wishlistId: Long)
 POST	 /recipient/:username/wishlist/:wishlistId/wish/:wishId/reserve   controllers.WishController.reserveWish(username, wishlistId:Long, wishId: Long)
 POST	 /recipient/:username/wishlist/:wishlistId/wish/:wishId/unreserve controllers.WishController.unreserveWish(username, wishlistId:Long, wishId: Long)
 POST	 /recipient/:username/reservations/wish/:wishId/unreserve         controllers.WishController.unreserveWishFromProfile(username, wishId: Long)

@@ -3,7 +3,7 @@
 @import helper._
 
 @nautical("login") {
-	<li><a href="@routes.Application.showLoginForm">login</a></li>
+	<li><a href="@routes.LoginController.showLoginForm">login</a></li>
 }{
 	<div id="login-page">
 
@@ -17,7 +17,7 @@
 	    }
 
 		<div class="well">
-			@form(action = routes.Application.login(), 'class -> "form-horizontal") {
+			@form(action = routes.LoginController.login(), 'class -> "form-horizontal") {
 				<input type="hidden" name="source" value="@loginForm("source").value"/>
 				<div class="control-group" id="username-row">
     				<label class="control-label" for="inputUsername">Username</label>
@@ -35,14 +35,14 @@
                 <div class="controls" id="buttons-row">
                     <button type="submit" class="btn btn-primary input-small">log in</button>
                     @if(!loginForm.errors){
-                        <a href="@routes.Application.showRegisterForm" class="btn btn-inverse">register</a>
+                        <a href="@routes.RegisterController.showRegisterForm" class="btn btn-inverse">register</a>
                     }
                 </div>
             </div>
             @if(loginForm.errors){
             <div class="control-group">
                 <div class="controls" id="buttons-row">
-                    <a href="@routes.Application.showRegisterForm" class="btn btn-inverse">register</a>
+                    <a href="@routes.RegisterController.showRegisterForm" class="btn btn-inverse">register</a>
                     <a href="@routes.RecipientController.showResendVerification" class="btn btn-inverse">resend verfication</a>
                     <a href="@routes.RecipientController.showResetPassword" class="btn btn-warning">reset password</a>
                 </div>

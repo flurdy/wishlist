@@ -10,6 +10,8 @@ import play.Logger
 // import java.math.BigInteger
 // import java.security.{SecureRandom, MessageDigest}
 // import play.api.Play
+import scala.concurrent.Future
+
 
 case class Recipient (
     recipientId: Option[Long],
@@ -24,11 +26,16 @@ case class Recipient (
 
   def this(username: String) = this(None, username, None, "", None, false)
 
+  def save(): Future[Either[_,Recipient]] = Future.successful( Right(this) ) // Recipient.save(this)
+
+  def authenticate(possiblePassword: String): Future[Boolean] = ???
+
+  def isVerified: Future[Boolean] = ??? 
+
   /*
 
   def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)
 
-  def save = Recipient.save(this)
 
   def delete = Recipient.delete(this)
 

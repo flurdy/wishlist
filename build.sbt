@@ -20,5 +20,6 @@ libraryDependencies ++= Seq(
   // "com.andersen-gott" %% "scravatar" % "1.0.3",
   // "com.typesafe.play" %% "play-mailer" % "3.0.1",
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test,
-  "org.jsoup" % "jsoup" % "1.10.2"
+  "org.jsoup" % "jsoup" % "1.10.2" % Test,
+  "org.mockito" % "mockito-core" % "2.8.9" % Test
 )

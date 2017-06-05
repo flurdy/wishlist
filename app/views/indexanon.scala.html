@@ -33,7 +33,7 @@
 
 
 		<div class="well" id="register-box">
-			@form(action = routes.Application.redirectToRegisterForm(), 'class -> "form-inline"){
+			@form(action = routes.RegisterController.redirectToRegisterForm(), 'class -> "form-inline"){
 				<input type="text" class="input-xlarge span4" placeholder="Your email address or desired username" name="email"/>
 				<button type="submit" class="btn btn-success input-small">register</button>
 			}
@@ -41,7 +41,7 @@
 
 
 		<div class="well" id="login-box">
-			@form(action = routes.Application.login(), 'class -> "form-horizontal"){
+			@form(action = routes.LoginController.login(), 'class -> "form-horizontal"){
 				<button type="submit" class="btn btn-info input-small">log in</button>
 				<div class="control-group">
 					<div class="controls">

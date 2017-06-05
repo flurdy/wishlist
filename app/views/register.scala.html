@@ -3,7 +3,7 @@
 @import helper._
 
 @nautical("register") {
-	<li><a href="@routes.Application.showRegisterForm">register</a></li>
+	<li><a href="@routes.RegisterController.showRegisterForm">register</a></li>
 } {
 	<div id="register-page">
 
@@ -18,7 +18,7 @@
 	    }
 
 		<div class="well">
-			@form(action = routes.Application.register(), 'class -> "form-horizontal") {
+			@form(action = routes.RegisterController.register(), 'class -> "form-horizontal") {
 				<div class="control-group">
     				<label class="control-label" for="inputFullName">Your name</label>
 					<div class="controls">
