@@ -13,22 +13,13 @@ import models._
 // import java.math.BigInteger
 // import java.security.SecureRandom
 import scala.concurrent.Future
+import scala.util.matching.Regex
 
 
 trait RegisterForm {
 
-   // val ValidEmailAddress = """^([0-9a-zA-Z_]+[-_\.0-9a-zA-Z]*\+?[-_\.0-9a-zA-Z]*)@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9}$""".r
-   val ValidEmailAddresses =
-      List(
-         // """^[-\._A-Za-z0-9]+(\+[-\._A-Za-z0-9]+)?@[A-Za-z0-9][-\.A-Za-z0-9]+[A-Za-z0-9]$""".r,
-         """^[\+\-\._A-Za-z0-9]+@[-\.A-Za-z0-9]{2,}$""".r,  // expected characters
-         """^.+(\+.+)?@.+$""".r,                            // can have plus in local alias
-         """^.+@[^\-].*[^\-]$""".r                          // domain does not end or start with -
-      )
-
-   val InvalidEmailAddress =
-         """\.\.""".r                                       // no double dotting
-
+   def ValidEmailAddresses: List[Regex]
+   def InvalidEmailAddress: Regex
 
    val ValidUsername = """^[a-zA-Z0-9\-_]{3,99}$""".r
 
@@ -61,7 +52,7 @@ trait RegisterForm {
 
 @Singleton
 class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup)
-extends Controller with Secured with WithAnalytics with RegisterForm {
+extends Controller with Secured with WithAnalytics with RegisterForm with EmailAddressChecks {
 
   	def register =
      (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>

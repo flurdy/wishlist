@@ -29,9 +29,10 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
          ("john.example.com", "no @"),
          ("example@-example.com", "invalid start of domain"),
          ("example@", "no domain or tld"),
-         ("&*@c.com", "invalid characters"),
+         ("&*@c.com", "invalid characters"), // technically valid but too fragile
          ("example@c", "too short domain"),
-         ("example@example@example.com", "too many @s"),
+         ("example@example@example.com", "too many @"),
+         ("john+smith+jones@example.com", "too many +"),
          ("john..smith@example.com", "no double dotting")
       )
 
@@ -133,7 +134,6 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                header("Location", result).value mustBe "/"
 
                verify ( recipientMock ).save()
-
             }
 
             "sends a verification email" in new RegisterSetup {

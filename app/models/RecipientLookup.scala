@@ -7,7 +7,6 @@ import scala.concurrent.Future
 @ImplementedBy(classOf[DefaultRecipientLookup])
 trait RecipientLookup {
 
-   // def authenticate(username: String, password: String): Future[Option[Boolean]] = ???
    def findRecipient(username: String): Future[Option[Recipient]] = ???
 
 }

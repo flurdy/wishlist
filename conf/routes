@@ -2,9 +2,10 @@
 GET	 /								controllers.Application.index
 GET 	 /index.html				controllers.Application.redirectToIndex
 GET	 /about.html				controllers.Application.about
-GET	 /contact.html				controllers.Application.contact
-POST	 /contact					controllers.Application.sendContact
-GET 	 /contact					controllers.Application.redirectToContact
+
+GET	 /contact.html				controllers.ContactController.contact
+POST	 /contact					controllers.ContactController.sendContact
+GET 	 /contact					controllers.ContactController.redirectToContact
 
 GET    /register.html         controllers.RegisterController.redirectToRegisterForm
 GET    /register              controllers.RegisterController.showRegisterForm

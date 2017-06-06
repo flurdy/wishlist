@@ -1,12 +1,26 @@
 package notifiers
 
-import play.api.libs.mailer._
-import models._
-import play.api.Play.current
-import play.Logger
-import play.api.{Mode, Play}
-import play.core.Router
+import com.google.inject.ImplementedBy
+import javax.inject.Singleton
+import scala.concurrent.Future
+import models.Recipient
+// import play.api.libs.mailer._
+// import play.api.{Mode, Play}
+// import play.core.Router
 
+
+@ImplementedBy(classOf[DefaultEmailNotifier])
+trait EmailNotifier {
+
+   def sendContactEmail(name: String, email: String, username: Option[String],
+                     subject: Option[String], message: String, currentRecipient: Option[Recipient]): Future[Unit] = ???
+
+}
+
+@Singleton
+class DefaultEmailNotifier extends EmailNotifier
+
+/*
 
 object EmailConfiguration {
 
@@ -116,3 +130,4 @@ object EmailAlerter extends EmailService {
   }
 
 }
+*/

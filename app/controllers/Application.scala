@@ -25,22 +25,7 @@ trait WithAnalytics {
 
 @Singleton
 class Application @Inject() (val configuration: Configuration)
-extends Controller with Secured with WithAnalytics with WishForm with RegisterForm {
-
-  val contactForm = Form(
-    tuple(
-      "name" -> nonEmptyText(maxLength = 99),
-      "email" -> nonEmptyText(maxLength = 99),
-      "username" -> optional(text(maxLength = 99)),
-      "subject" -> optional(text(maxLength = 200)),
-      "message" -> nonEmptyText(maxLength = 2000)
-    ) verifying("Email address is not valid", fields => fields match {
-      case (name, email, username, subject, message) => {
-         false
-      //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
-      }
-    })
-  )
+extends Controller with Secured with WithAnalytics with WishForm {
 
    def index = Action.async { implicit request =>
       findCurrentRecipient map { implicit currentRecipient =>
@@ -65,30 +50,6 @@ extends Controller with Secured with WithAnalytics with WishForm with RegisterFo
    def about = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.about())
    }
-
-   def contact = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
-      Ok(views.html.contact(contactForm))
-   }
-
-   def redirectToContact = Action { implicit request =>
-      Redirect(routes.Application.contact())
-   }
-
-  def sendContact =  (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
-    contactForm.bindFromRequest.fold(
-      errors => {
-          Logger.warn("Contact failed: " + errors)
-          BadRequest(views.html.contact(errors))
-      },
-      contactFields => {
-
-      //   EmailAl erter.sendContactMessage(contactFields._1, contactFields._2, contactFields._3, contactFields._4, contactFields._5, findCurrentRecipient)
-
-        Redirect(routes.Application.index()).flashing("message"->"Your message was sent")
-
-      }
-    )
-  }
 
    def logout = Action {
       Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")

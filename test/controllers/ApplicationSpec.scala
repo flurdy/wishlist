@@ -72,32 +72,5 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
             bodyDom.select(s"#about-page").headOption mustBe defined
          }
       }
-
-      "[GET] /contact.html" should {
-         "show contact page" in new Setup {
-
-            val result = controller.contact().apply(FakeRequest())
-
-            status(result) mustBe 200
-            val bodyDom = ScalaSoup.parse(contentAsString(result))
-            bodyDom.select(s"#contact-page").headOption mustBe defined
-         }
-      }
-
-      "[GET] /contact/" should {
-         "redirect to contact page" in new Setup {
-
-            val result = controller.redirectToContact().apply(FakeRequest())
-
-            status(result) mustBe 303
-            header("Location", result).value mustBe "/contact.html"
-         }
-      }
-
-      "[POST] /contact" should {
-         "send message" ignore { // in new Setup {
-            pending
-         }
-      }
    }
 }

@@ -3,7 +3,7 @@
 @import helper._
 
 @nautical("contact") {
-	<li><a href="@routes.Application.contact">contact</a></li>
+	<li><a href="@routes.ContactController.contact">contact</a></li>
 }{
 
 	<div id="contact-page">
@@ -53,7 +53,7 @@
     </p>
     }
 
-	@form(action = routes.Application.sendContact, 'class -> "form-horizontal"){
+	@form(action = routes.ContactController.sendContact, 'class -> "form-horizontal"){
 
 		<div class="well">
 			<h4>Contact form</h4>

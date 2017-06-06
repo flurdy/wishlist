@@ -30,12 +30,11 @@ case class Recipient (
 
   def authenticate(possiblePassword: String): Future[Boolean] = ???
 
-  def isVerified: Future[Boolean] = ??? 
+  def isVerified: Future[Boolean] = ???
 
   /*
 
   def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)
-
 
   def delete = Recipient.delete(this)
 

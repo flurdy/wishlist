@@ -119,6 +119,8 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
 
             verify( recipientMock ).isVerified
          }
+
+         "log in in a new session if already logged in" in new LoginSetup { pending }
       }
 
    }

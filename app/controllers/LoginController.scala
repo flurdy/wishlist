@@ -34,7 +34,7 @@ trait LoginForm {
 
 @Singleton
 class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
-extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm {
+extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks {
 
    def redirectToLoginForm = Action { implicit request =>
       Redirect(routes.LoginController.showLoginForm())
