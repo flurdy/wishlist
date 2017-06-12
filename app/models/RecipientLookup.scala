@@ -7,7 +7,9 @@ import scala.concurrent.Future
 @ImplementedBy(classOf[DefaultRecipientLookup])
 trait RecipientLookup {
 
-   def findRecipient(username: String): Future[Option[Recipient]] = ???
+   def findRecipient(username: String): Future[Option[Recipient]] =
+      Future.successful( None )
+      //Future.failed(new RuntimeException("Not yet implemeted"))
 
 }
 

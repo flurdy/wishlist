@@ -32,6 +32,8 @@ case class Recipient (
 
   def isVerified: Future[Boolean] = ???
 
+  def findWishlists: Future[List[Wishlist]] = ???
+
   /*
 
   def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)

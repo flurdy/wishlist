@@ -29,7 +29,7 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
 
    trait Setup {
       val configurationMock = mock[Configuration]
-      val controller = new Application(configurationMock)
+      val controller = new Application(configurationMock, mock[RecipientLookup])
    }
 
    "Application controller" when requesting {

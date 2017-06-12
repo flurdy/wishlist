@@ -1,11 +1,12 @@
 package controllers
 
 import play.api._
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc._
 import play.api.mvc.Results.{NotFound, Unauthorized}
-import models._
 import play.api.Play.current
 import scala.concurrent.Future
+import models._
 
 
 class UsernameRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
@@ -38,22 +39,24 @@ object IsAuthenticatedAction extends ActionFilter[UsernameRequest] {
 
 trait Secured {
 
+   def recipientLookup: RecipientLookup
+
    implicit def requestToCurrentRecipient(implicit request: MaybeCurrentRecipientRequest[_]): Option[Recipient] = request.currentRecipient
 
    def CurrentRecipientAction = new ActionRefiner[UsernameRequest, MaybeCurrentRecipientRequest] {
-      def refine[A](input: UsernameRequest[A]) = Future.successful {
-         input.username.map( username =>
-                  new MaybeCurrentRecipientRequest(Some(new Recipient(username)), input))
-              .toRight(NotFound)
-      }
+      def refine[A](input: UsernameRequest[A]) =
+         input.username match {
+            case Some(username) =>
+               recipientLookup.findRecipient(username).map( recipient =>
+                  Right( new MaybeCurrentRecipientRequest(recipient, input) ) )
+            case None => Future.successful( Left(NotFound) )
+         }
    }
 
   implicit def findCurrentRecipient(implicit session: Session): Future[Option[Recipient]] = {
     session.get(Security.username) match {
+      case Some(sessionUsername) => recipientLookup.findRecipient(sessionUsername)
       case None => Future.successful(None)
-      case Some(sessionUsername) =>
-         Future.successful( Some( new Recipient( sessionUsername )))
-         // Recipient.findByUsername( sessionUsername )
     }
   }
 

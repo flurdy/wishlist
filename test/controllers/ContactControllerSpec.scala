@@ -24,7 +24,7 @@ class ContactControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPe
       val configurationMock = mock[Configuration]
       val notifierMock      = mock[EmailNotifier]
       val recipientMock     = mock[Recipient]
-      val controller = new ContactController(configurationMock, notifierMock)
+      val controller = new ContactController(configurationMock, mock[RecipientLookup], notifierMock)
    }
 
    "Contact controller" when requesting {

@@ -7,8 +7,8 @@ import play.api.mvc.Results.{Forbidden, NotFound}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
-import models._
 import scala.concurrent.Future
+import models._
 
 trait WishForm {
 
@@ -61,7 +61,7 @@ class WishlistAccessRequest[A](val wishlist: Wishlist, currentRecipient: Recipie
 
 
 @Singleton
-class WishController @Inject() (val configuration: Configuration)
+class WishController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
 extends Controller with Secured with WithAnalytics with WishForm {
 
    implicit def wishlistRequestToCurrentRecipient(implicit request: WishlistRequest[_]): Option[Recipient] = request.currentRecipient

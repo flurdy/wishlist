@@ -6,14 +6,14 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.Future
 import models._
 // import notifiers._
 // import scravatar._
-import scala.concurrent.Future
 
 
 @Singleton
-class RecipientController @Inject() (val configuration: Configuration)
+class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
 extends Controller with Secured with WithAnalytics with WishForm {
 
 /*

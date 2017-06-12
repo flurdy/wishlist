@@ -14,7 +14,7 @@ import scala.concurrent.Await._
 
 trait RegistrationIntegrationHelper extends IntegrationHelper {
 
-   val registerUrl = s"$baseUrl/register/"
+   val registerUrl = s"$baseUrl/register"
 
    def register(username: String) = {
       val registerFormData = Map(
@@ -81,7 +81,8 @@ class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
 
       scenario("Submit full registration form") {
          val registerUrl = s"$baseUrl/register/"
-         Given("A filled in registration form")
+
+         Given("a filled in registration form")
          getWsClient().url(registerUrl).get() map { r =>
             r.status shouldBe 200
             val h2 = ScalaSoup.parse(r.body).select("#register-page h2").headOption

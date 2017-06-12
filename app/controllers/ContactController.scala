@@ -50,7 +50,7 @@ trait ContactForm {
 }
 
 @Singleton
-class ContactController @Inject() (val configuration: Configuration, val emailNotifier: EmailNotifier)
+class ContactController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier)
 extends Controller with Secured with WithAnalytics with RegisterForm with ContactForm with EmailAddressChecks {
 
    def contact = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
