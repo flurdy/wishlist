@@ -16,6 +16,7 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 import com.flurdy.wishlist.ScalaSoup
 import models._
+import repositories._
 
 
 class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite with TableDrivenPropertyChecks {
@@ -71,7 +72,9 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
       val configurationMock = mock[Configuration]
       val recipientFactoryMock = mock[RecipientFactory]
       val recipientLookupMock = mock[RecipientLookup]
-      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock)
+      val recipientRepositoryMock = mock[RecipientRepository]
+      val featureTogglesMock = mock[FeatureToggles]
+      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock)(recipientRepositoryMock, featureTogglesMock)
    }
 
    trait RegisterSetup extends Setup {
@@ -126,14 +129,14 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                when ( recipientLookupMock.findRecipient( "some-username" ) )
                   .thenReturn( Future.successful( None ) )
                when ( recipientFactoryMock.newRecipient( registerForm ) ).thenReturn( recipientMock )
-               when ( recipientMock.save() ).thenReturn( Future.successful( Right(recipientMock) ) )
+               when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( Right(recipientMock) ) )
 
                val result = controller.register().apply(registerRequest)
 
                status(result) mustBe 303
                header("Location", result).value mustBe "/"
 
-               verify ( recipientMock ).save()
+               verify ( recipientMock ).save()(recipientRepositoryMock)
             }
 
             "sends a verification email" in new RegisterSetup {
@@ -141,29 +144,34 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                when ( recipientLookupMock.findRecipient( "some-username" ) )
                   .thenReturn( Future.successful( None ) )
                when ( recipientFactoryMock.newRecipient( registerForm ) ).thenReturn( recipientMock )
-               when ( recipientMock.save() ).thenReturn( Future.successful( Right(recipientMock) ) )
+               when ( recipientMock.save()(recipientRepositoryMock) )
+                  .thenReturn( Future.successful( Right(recipientMock) ) )
+               when ( recipientMock.findOrGenerateVerificationHash )
+                  .thenReturn( Future.successful( "some-verification-hash" ) )
+               when( featureTogglesMock.isEnabled(FeatureToggle.EmailVerification) )
+                  .thenReturn( true )
 
                val result = controller.register().apply(registerRequest)
 
                status(result) mustBe 303
 
-               verify ( recipientMock ).save()
-               // verify(email notifier mock, times(1)).send
+               verify ( recipientMock ).save()(recipientRepositoryMock)
+               verify( featureTogglesMock ).isEnabled(FeatureToggle.EmailVerification)
 
-               pending
             }
+
             "sends new registration alert" in new RegisterSetup {
 
                when ( recipientLookupMock.findRecipient( "some-username" ) )
                   .thenReturn( Future.successful( None ) )
                when ( recipientFactoryMock.newRecipient( registerForm ) ).thenReturn( recipientMock )
-               when ( recipientMock.save() ).thenReturn( Future.successful( Right(recipientMock) ) )
+               when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( Right(recipientMock) ) )
 
                val result = controller.register().apply(registerRequest)
 
                status(result) mustBe 303
 
-               verify ( recipientMock ).save()
+               verify ( recipientMock ).save()(recipientRepositoryMock)
                // verify(email notifier mock, times(1)).send
 
                pending
@@ -178,7 +186,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                   when ( recipientLookupMock.findRecipient( "some-username" ) )
                         .thenReturn( Future.successful( None ) )
                   when ( recipientFactoryMock.newRecipient( validRegisterForm ) ).thenReturn( recipientMock )
-                  when ( recipientMock.save() ).thenReturn( Future.successful( Right(recipientMock) ) )
+                  when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( Right(recipientMock) ) )
 
                   val validRegisterRequest = FakeRequest().withFormUrlEncodedBody(
                      "fullname" -> "some name",
@@ -191,7 +199,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
 
                   status(result) mustBe 303
 
-                  verify ( recipientMock ).save()
+                  verify ( recipientMock ).save()(recipientRepositoryMock)
 
                }
             }
@@ -205,7 +213,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                   when ( recipientLookupMock.findRecipient( username.trim ) )
                         .thenReturn( Future.successful( None ) )
                   when ( recipientFactoryMock.newRecipient( validRegisterForm ) ).thenReturn( recipientMock )
-                  when ( recipientMock.save() ).thenReturn( Future.successful( Right(recipientMock) ) )
+                  when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( Right(recipientMock) ) )
 
                   val validRegisterRequest = FakeRequest().withFormUrlEncodedBody(
                      "fullname" -> "some name",
@@ -218,7 +226,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
 
                   status(result) mustBe 303
 
-                  verify ( recipientMock ).save()
+                  verify ( recipientMock ).save()(recipientRepositoryMock)
 
                }
             }

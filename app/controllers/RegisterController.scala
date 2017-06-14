@@ -9,6 +9,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import scala.util.matching.Regex
 import models._
+import repositories._
 // import notifiers._
 
 
@@ -47,7 +48,7 @@ trait RegisterForm {
 
 
 @Singleton
-class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup)
+class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with RegisterForm with EmailAddressChecks {
 
   	def register =
@@ -60,24 +61,24 @@ extends Controller with Secured with WithAnalytics with RegisterForm with EmailA
    	   registeredForm => {
             recipientLookup.findRecipient(registeredForm._1.trim.toLowerCase()) flatMap {
                case None =>
-                  recipientFactory.newRecipient( registeredForm ).save.map {
+                  recipientFactory.newRecipient( registeredForm ).save.flatMap {
                      case Right(recipient) =>
                         Logger.info("New registration: " + registeredForm._1)
                   //  EmailAlerter.sendNewRegistrationAlert(recipient)
 
-                        if(true){
-                           //  if(Recipient.emailVerificationRequired){
-                           val verificationHash = "hash"
-                           // val verificationHash = recipient.findVerificationHash.getOrElse(recipient.generateVerificationHash)
-                           // EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
-                           Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
-                              """
-                              Welcome, you have successfully registered.<br/>
-                              Please click on the verification link in the email we just sent to you
-                              """)
+                        if(FeatureToggle.EmailVerification.isEnabled()){
+                           recipient.findOrGenerateVerificationHash.map { verificationHash => // .getOrElse(recipient.generateVerificationHash)
+                              // EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
+                              Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
+                                 """
+                                 Welcome, you have successfully registered.<br/>
+                                 Please click on the verification link in the email we just sent to you
+                                 """)
+                           }
                         } else {
-                           Redirect(routes.Application.index()).withSession(
-                              "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered")
+                           Future.successful(
+                              Redirect(routes.Application.index()).withSession(
+                                 "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered"))
                         }
                      case Left(e) =>
                         throw new IllegalStateException("Not able to save new registration")

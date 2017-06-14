@@ -1,38 +1,56 @@
 package models
 
-
-// import play.api.Play.current
-// import org.mindrot.jbcrypt.BCrypt
-// import play.api.db.DB
-// import anorm._
-// import anorm.SqlParser._
+import com.github.t3hnar.bcrypt._
 import play.Logger
+import play.api.libs.concurrent.Execution.Implicits._
 // import java.math.BigInteger
 // import java.security.{SecureRandom, MessageDigest}
-// import play.api.Play
 import scala.concurrent.Future
+import repositories._
 
 
 case class Recipient (
-    recipientId: Option[Long],
-    username: String,
-    fullname: Option[String],
-    email: String,
-    password: Option[String],
-    isAdmin: Boolean=false
+      recipientId: Option[Long],
+      username: String,
+      fullname: Option[String],
+      email: String,
+      password: Option[String],
+      isAdmin: Boolean=false
 ){
 
-  def this(recipientId: Long) = this(Some(recipientId), "", None, "", None, false)
+   def this(recipientId: Long) = this(Some(recipientId), "", None, "", None, false)
 
-  def this(username: String) = this(None, username, None, "", None, false)
+   def this(username: String) = this(None, username, None, "", None, false)
 
-  def save(): Future[Either[_,Recipient]] = Future.successful( Right(this) ) // Recipient.save(this)
+   def save()(implicit recipientRepository: RecipientRepository) =
+      recipientRepository.saveRecipient(this)
 
-  def authenticate(possiblePassword: String): Future[Boolean] = ???
+   def authenticate(possiblePassword: String)(implicit recipientRepository: RecipientRepository) =
+      recipientRepository.findCredentials(this).map {
+         case Some(passwordFound) => possiblePassword.isBcrypted(passwordFound)
+         case _ => false
+      }
 
-  def isVerified: Future[Boolean] = ???
+   def isVerified(implicit recipientRepository: RecipientRepository) =
+      recipientRepository.isEmailVerified(this)
 
-  def findWishlists: Future[List[Wishlist]] = ???
+   def findWishlists: Future[List[Wishlist]] = // ???
+      Future.successful( Nil )
+
+   def findOrGenerateVerificationHash: Future[String] = findVerificationHash.flatMap {
+      case Some(verificationHash) => Future.successful( verificationHash )
+      case _ => generateVerificationHash
+   }
+
+   private def findVerificationHash: Future[Option[String]] = ??? //Recipient.findVerificationHash(this)
+
+   private def generateVerificationHash: Future[String] =  ???
+   //   def generateVerificationHash = new BigInteger(130,  new SecureRandom()).toString(32)
+      //  val verificationHash = Recipient.generateVerificationHash
+      //  Recipient.saveVerification(this,verificationHash)
+      //  verificationHash
+
+
 
   /*
 
@@ -53,14 +71,6 @@ case class Recipient (
   def findOrganisedWishlists = Wishlist.findByOrganiser(this)
 
   def findReservations : Seq[Reservation] = Reservation.findByRecipient(this)
-
-  def generateVerificationHash = {
-    val verificationHash = Recipient.generateVerificationHash
-    Recipient.saveVerification(this,verificationHash)
-    verificationHash
-  }
-
-  def findVerificationHash = Recipient.findVerificationHash(this)
 
   def doesVerificationMatch(verificationHash:String) = Recipient.doesVerificationMatch(this,verificationHash)
 
@@ -190,17 +200,6 @@ object Recipient {
         }
     }
 
-    def authenticate(username: String, password: String) : Option[Recipient]  = {
-        findAuthenticationDetailsByUsername(username) match {
-            case Some(recipient) =>
-                if(BCrypt.checkpw(password,recipient.password.get)){
-                    findByUsername(username)
-                } else {
-                    None
-                }
-            case None => None
-        }
-    }
 
 
   def delete(recipient:Recipient) {
@@ -282,19 +281,6 @@ object Recipient {
     return None
   }
 
-  def isEmailVerified(recipient:Recipient) : Boolean = {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-              SELECT count(*) = 1 FROM emailverification
-              WHERE recipientid = {recipientid}
-              AND verified = true
-        """
-      ).on(
-        'recipientid -> recipient.recipientId
-      ).as(scalar[Boolean].single)
-    }
-  }
 
 
   def generateVerificationHash = new BigInteger(130,  new SecureRandom()).toString(32)

@@ -9,6 +9,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import scala.util.matching.Regex
 import models._
+import repositories._
 
 
 trait LoginForm {
@@ -28,7 +29,7 @@ trait LoginForm {
 
 
 @Singleton
-class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
+class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)(implicit recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks {
 
    def redirectToLoginForm = Action { implicit request =>
@@ -64,17 +65,18 @@ extends Controller with Secured with WithAnalytics with LoginForm with RegisterF
             Future.successful( BadRequest(views.html.login(errors)) )
          },{
          case (username, password, source) =>
-            recipientLookup.findRecipient(username) flatMap {
+            recipientLookup.findRecipient(username.trim.toLowerCase) flatMap {
                case Some(recipient) =>
-                  recipient.authenticate(password) flatMap {
+                  recipient.authenticate(password.trim) flatMap {
                      case true =>
-                        recipient.isVerified map {
-                           case true  =>
+                        recipient.isVerified map { isVerified =>
+                           if(isVerified || FeatureToggle.EmailVerification.isDisabled()) {
                               Logger.debug("Login success: " + username)
                               loginSuccess(username)
-                           case false =>
+                           } else {
                               Logger.warn("Login failed. Not verified: " + username)
                               notVerified(username)
+                           }
                         }
                      case false =>
                         Logger.warn("Login failed. Credentials not correct: " + username)

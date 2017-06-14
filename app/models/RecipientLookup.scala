@@ -1,17 +1,18 @@
 package models
 
 import com.google.inject.ImplementedBy
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
+import repositories._
 
 @ImplementedBy(classOf[DefaultRecipientLookup])
 trait RecipientLookup {
 
-   def findRecipient(username: String): Future[Option[Recipient]] =
-      Future.successful( None )
-      //Future.failed(new RuntimeException("Not yet implemeted"))
+   def recipientRepository: RecipientRepository
+
+   def findRecipient(username: String) = recipientRepository.findRecipient(username)
 
 }
 
 @Singleton
-class DefaultRecipientLookup extends RecipientLookup
+class DefaultRecipientLookup @Inject() (val recipientRepository: RecipientRepository) extends RecipientLookup

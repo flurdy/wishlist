@@ -14,7 +14,9 @@ trait WithTestServer {
    lazy val baseUrl: String = s"http://localhost:$port"
 
    def startServer() = {
-      app = new  GuiceApplicationBuilder().build()
+      app = new  GuiceApplicationBuilder()
+         .configure("com.flurdy.wishlist.feature.email.verification.enabled" -> false)
+         .build()
       server = new TestServer(port, app)
       server.start()
    }

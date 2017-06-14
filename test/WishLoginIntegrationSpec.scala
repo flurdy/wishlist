@@ -7,7 +7,7 @@ import play.api.libs.ws.WSResponse
 
 trait LoginIntegrationHelper extends IntegrationHelper {
 
-   val loginUrl  = s"$baseUrl/login/"
+   val loginUrl  = s"$baseUrl/login"
    val logoutUrl = s"$baseUrl/logout"
 
    def login(username: String) = {

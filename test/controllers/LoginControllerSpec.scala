@@ -15,6 +15,7 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 import com.flurdy.wishlist.ScalaSoup
 import models._
+import repositories._
 
 
 class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
@@ -22,7 +23,9 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
    trait Setup {
       val configurationMock = mock[Configuration]
       val recipientLookupMock = mock[RecipientLookup]
-      val controller = new LoginController(configurationMock, recipientLookupMock)
+      val recipientRepositoryMock = mock[RecipientRepository]
+      val featureTogglesMock = mock[FeatureToggles]
+      val controller = new LoginController(configurationMock, recipientLookupMock)(recipientRepositoryMock, featureTogglesMock)
    }
 
    trait LoginSetup extends Setup {
@@ -59,9 +62,9 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
 
             when( recipientLookupMock.findRecipient("some-username") )
                   .thenReturn( Future.successful( Some(recipientMock) ) )
-            when( recipientMock.authenticate("some-password") )
+            when( recipientMock.authenticate("some-password")(recipientRepositoryMock) )
                   .thenReturn( Future.successful( true ) )
-            when( recipientMock.isVerified )
+            when( recipientMock.isVerified(recipientRepositoryMock) )
                   .thenReturn( Future.successful( true ) )
 
             val result = controller.login().apply(loginRequest)
@@ -71,15 +74,15 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
             session(result).get("username").value mustBe "some-username"
 
             verify( recipientLookupMock ).findRecipient("some-username")
-            verify( recipientMock ).authenticate("some-password")
-            verify( recipientMock ).isVerified
+            verify( recipientMock ).authenticate("some-password")(recipientRepositoryMock)
+            verify( recipientMock ).isVerified(recipientRepositoryMock)
          }
 
          "not log in recipient given incorrect credentials" in new LoginSetup {
 
             when( recipientLookupMock.findRecipient("some-username") )
                   .thenReturn( Future.successful( Some(recipientMock) ) )
-            when( recipientMock.authenticate("some-password") )
+            when( recipientMock.authenticate("some-password")(recipientRepositoryMock) )
                   .thenReturn( Future.successful( false ) )
 
             val result = controller.login().apply(loginRequest)
@@ -87,7 +90,7 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
             status(result) mustBe 400
             session(result).get("username") mustBe None
 
-            verify( recipientMock, never ).isVerified
+            verify( recipientMock, never ).isVerified(recipientRepositoryMock)
          }
 
          "not log in recipient given unknown username" in new LoginSetup {
@@ -107,9 +110,11 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
 
             when( recipientLookupMock.findRecipient("some-username") )
                   .thenReturn( Future.successful( Some(recipientMock) ) )
-            when( recipientMock.authenticate("some-password") )
+            when( recipientMock.authenticate("some-password")(recipientRepositoryMock) )
                   .thenReturn( Future.successful( true ) )
-            when( recipientMock.isVerified )
+            when( featureTogglesMock.isEnabled(FeatureToggle.EmailVerification))
+                  .thenReturn ( true )
+            when( recipientMock.isVerified(recipientRepositoryMock) )
                   .thenReturn( Future.successful( false ) )
 
             val result = controller.login().apply(loginRequest)
@@ -117,7 +122,7 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
             status(result) mustBe 400
             session(result).get("username") mustBe None
 
-            verify( recipientMock ).isVerified
+            verify( recipientMock ).isVerified(recipientRepositoryMock)
          }
 
          "log in in a new session if already logged in" in new LoginSetup { pending }
