@@ -56,7 +56,7 @@ extends Controller with Secured with WithAnalytics with LoginForm with RegisterF
 
       def loginSuccess(username: String) =
          Redirect(routes.Application.index())
-            .withSession("username" -> username)
+            .withSession("username" -> username.trim.toLowerCase)
             .flashing("message"->"You have logged in")
 
       loginForm.bindFromRequest.fold(

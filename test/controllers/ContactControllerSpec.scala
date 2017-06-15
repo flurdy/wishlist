@@ -16,6 +16,7 @@ import scala.concurrent.Future
 import com.flurdy.wishlist.ScalaSoup
 import models._
 import notifiers._
+import repositories._
 
 
 class ContactControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {

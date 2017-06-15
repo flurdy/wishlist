@@ -7,7 +7,7 @@ import play.api.libs.ws.WSResponse
 
 trait WishlistIntegrationHelper extends IntegrationHelper {
 
-   def wishlistRootUrl(username: String)  = s"$baseUrl/recipient/$username/wishlist"
+   def wishlistRootUrl(username: String)  = s"$baseUrl/recipient/${username.trim.toLowerCase}/wishlist"
 
    def createWishlist(username: String, session: Option[String]) = {
       val createData = Map(
@@ -70,7 +70,7 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
             findFlashCookie(createWishlistResponse).value shouldBe "messageSuccess=Wishlist+created"
 
             Then("should create wishlist")
-            wishlistLocation shouldBe s"/Testerson/wishlist/$wishlistId/"
+            wishlistLocation shouldBe s"/testerson/wishlist/$wishlistId/"
             showWishlistResponse.status shouldBe 200
          }
       }
@@ -97,7 +97,7 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
             session.value.length should be > 5
 
             And("a wishlist")
-            wishlistLocation shouldBe s"/Testerson/wishlist/$wishlistId/"
+            wishlistLocation shouldBe s"/testerson/wishlist/$wishlistId/"
             showWishlistResponse1.status shouldBe 200
 
             When("adding a wish to the wishlist")
@@ -130,7 +130,7 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
             session.value.length should be > 5
 
             And("a wishlist")
-            wishlistLocation shouldBe s"/Testerson/wishlist/$wishlistId/"
+            wishlistLocation shouldBe s"/testerson/wishlist/$wishlistId/"
             showWishlistResponse1.status shouldBe 200
 
             When("deleting wishlist")

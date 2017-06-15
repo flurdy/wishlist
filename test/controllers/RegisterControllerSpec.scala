@@ -146,7 +146,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                when ( recipientFactoryMock.newRecipient( registerForm ) ).thenReturn( recipientMock )
                when ( recipientMock.save()(recipientRepositoryMock) )
                   .thenReturn( Future.successful( Right(recipientMock) ) )
-               when ( recipientMock.findOrGenerateVerificationHash )
+               when ( recipientMock.findOrGenerateVerificationHash(recipientRepositoryMock) )
                   .thenReturn( Future.successful( "some-verification-hash" ) )
                when( featureTogglesMock.isEnabled(FeatureToggle.EmailVerification) )
                   .thenReturn( true )

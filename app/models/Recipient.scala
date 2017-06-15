@@ -3,8 +3,8 @@ package models
 import com.github.t3hnar.bcrypt._
 import play.Logger
 import play.api.libs.concurrent.Execution.Implicits._
-// import java.math.BigInteger
-// import java.security.{SecureRandom, MessageDigest}
+import java.math.BigInteger
+import java.security.SecureRandom
 import scala.concurrent.Future
 import repositories._
 
@@ -34,21 +34,23 @@ case class Recipient (
    def isVerified(implicit recipientRepository: RecipientRepository) =
       recipientRepository.isEmailVerified(this)
 
-   def findWishlists: Future[List[Wishlist]] = // ???
-      Future.successful( Nil )
+   def findWishlists(implicit wishlistRepository: WishlistRepository): Future[List[Wishlist]] =
+      wishlistRepository.findRecipientWishlists(this)
 
-   def findOrGenerateVerificationHash: Future[String] = findVerificationHash.flatMap {
+   def findOrGenerateVerificationHash(implicit recipientRepository: RecipientRepository): Future[String] = findVerificationHash.flatMap {
       case Some(verificationHash) => Future.successful( verificationHash )
       case _ => generateVerificationHash
    }
 
-   private def findVerificationHash: Future[Option[String]] = ??? //Recipient.findVerificationHash(this)
+   private def findVerificationHash(implicit recipientRepository: RecipientRepository): Future[Option[String]] = recipientRepository.findVerification(this)
 
-   private def generateVerificationHash: Future[String] =  ???
-   //   def generateVerificationHash = new BigInteger(130,  new SecureRandom()).toString(32)
-      //  val verificationHash = Recipient.generateVerificationHash
-      //  Recipient.saveVerification(this,verificationHash)
-      //  verificationHash
+   private def generateVerificationHash(implicit recipientRepository: RecipientRepository): Future[String] = {
+      val verificationHash = new BigInteger(130,  new SecureRandom()).toString(32)
+      recipientRepository.saveVerification(this, verificationHash).map{
+         case Right(_) => verificationHash
+         case Left(_)  => throw new IllegalStateException("Could not save verification")
+      }
+   }
 
 
 
@@ -78,9 +80,12 @@ case class Recipient (
 
   def setEmailAsVerified = Recipient.setEmailAsVerified(this)
 */
-  def canEdit(wishlist:Wishlist) = {
-      isAdmin || wishlist.recipient == this || wishlist.isOrganiser(this)
-  }
+
+  def isSame(other: Recipient) = recipientId.fold(false)( _ => recipientId == other.recipientId )
+
+  def canEdit(wishlist:Wishlist) =
+      isAdmin || wishlist.recipient.isSame(this) || wishlist.isOrganiser(this)
+      
 /*
   def findEditableWishlists = Wishlist.findEditableWishlists(this)
   */

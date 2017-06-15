@@ -6,6 +6,7 @@ package models
 // import play.api.db.DB
 // import play.Logger
 import scala.concurrent.Future
+import repositories._
 
 case class Wishlist(
     wishlistId: Option[Long],
@@ -19,9 +20,9 @@ case class Wishlist(
 
     def this(title: String, recipient: Recipient) = this(None, title, None, recipient, Seq.empty)
 
-    def save: Future[Option[Wishlist]] = Future.successful(Some(this.copy(wishlistId = Some(123)))) //Wishlist.save(this)
+    def save(implicit wishlistRepository: WishlistRepository) = wishlistRepository.saveWishlist(this)
 
-    def delete: Future[Boolean] = Future.successful(true) // Wishlist.delete(this)
+    def delete(implicit wishlistRepository: WishlistRepository) = wishlistRepository.deleteWishlist(this)
 
     def findWishes: Future[Seq[Wish]] = Future.successful(Seq[Wish]()) // Wishlist.findWishesForWishlist(this)
 

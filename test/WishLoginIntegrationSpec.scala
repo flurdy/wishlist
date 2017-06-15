@@ -79,7 +79,7 @@ class WishLoginIntegrationSpec extends AsyncFeatureSpec
             val loginFormAfter = ScalaSoup.parse(frontAfter.body).select("#login-box input").headOption
             loginFormAfter shouldBe None
             val logoutLink = ScalaSoup.parse(frontAfter.body).select("#logout-box li a").headOption
-            logoutLink.value.text shouldBe "Testerson"
+            logoutLink.value.text shouldBe "testerson"
          }
       }
 
@@ -98,7 +98,7 @@ class WishLoginIntegrationSpec extends AsyncFeatureSpec
 
             Given("a logged in user")
             val logoutLink = ScalaSoup.parse(frontLogin.body).select("#logout-box li a").headOption
-            logoutLink.value.text shouldBe "Testerson"
+            logoutLink.value.text shouldBe "testerson"
             session shouldBe defined
             session.value.length should be > 5
 
@@ -131,7 +131,7 @@ class WishLoginIntegrationSpec extends AsyncFeatureSpec
 
             Given("a logged in user")
             val logoutLink = ScalaSoup.parse(frontBefore.body).select("#logout-box li a").headOption
-            logoutLink.value.text shouldBe "Testerson"
+            logoutLink.value.text shouldBe "testerson"
 
             When("logging out")
             val loggedOutLink = ScalaSoup.parse(frontLogout.body).select("#logout-box li a").headOption
@@ -143,7 +143,7 @@ class WishLoginIntegrationSpec extends AsyncFeatureSpec
 
             Then("should be logged in")
             val logout2Link = ScalaSoup.parse(frontAfter.body).select("#logout-box li a").headOption
-            logout2Link.value.text shouldBe "Testerson"
+            logout2Link.value.text shouldBe "testerson"
 
          }
       }

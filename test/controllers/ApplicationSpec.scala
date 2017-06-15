@@ -15,6 +15,8 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 import com.flurdy.wishlist.ScalaSoup
 import models._
+import repositories._
+
 
 trait BaseUnitSpec extends PlaySpec with MockitoSugar with ScalaFutures {
      def is = afterWord("is")
@@ -29,7 +31,8 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
 
    trait Setup {
       val configurationMock = mock[Configuration]
-      val controller = new Application(configurationMock, mock[RecipientLookup])
+      val wishlistRepositoryMock = mock[WishlistRepository]
+      val controller = new Application(configurationMock, mock[RecipientLookup])(wishlistRepositoryMock)
    }
 
    "Application controller" when requesting {

@@ -8,12 +8,11 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
-import models._
-import notifiers._
-// import java.math.BigInteger
-// import java.security.SecureRandom
 import scala.concurrent.Future
 import scala.util.matching.Regex
+import models._
+import notifiers._
+import repositories._
 
 trait EmailAddressChecks {
 

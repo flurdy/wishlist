@@ -8,6 +8,7 @@ import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import models._
+import repositories._
 
 
 trait WithAnalytics {
@@ -20,6 +21,7 @@ trait WithAnalytics {
 
 @Singleton
 class Application @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
+(implicit val wishlistRepository: WishlistRepository)
 extends Controller with Secured with WithAnalytics with WishForm {
 
    def index = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>

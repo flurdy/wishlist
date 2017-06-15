@@ -21,6 +21,19 @@ trait Repository {
 }
 
 
+@ImplementedBy(classOf[DefaultRecipientLookup])
+trait RecipientLookup {
+
+   def recipientRepository: RecipientRepository
+
+   def findRecipient(username: String) = recipientRepository.findRecipient(username)
+
+}
+
+@Singleton
+class DefaultRecipientLookup @Inject() (val recipientRepository: RecipientRepository) extends RecipientLookup
+
+
 @ImplementedBy(classOf[DefaultRecipientRepository])
 trait RecipientRepository extends Repository {
 
@@ -61,7 +74,8 @@ trait RecipientRepository extends Repository {
                   values ($nextRecipientId, ${recipient.username}, ${recipient.fullname},
                           ${recipient.email}, ${recipient.password}, false)
                """
-            .executeInsert().map{ recipientId =>
+            .executeInsert()
+            .map{ recipientId =>
                recipient.copy(recipientId = Some(recipientId))
             }.toRight(new IllegalStateException("Saving recipient failed"))
          }
@@ -108,6 +122,10 @@ trait RecipientRepository extends Repository {
             }
          }
       }
+
+   def saveVerification(recipient: Recipient, verificationHash: String): Future[Either[_,String]] = ???
+
+   def findVerification(recipient: Recipient): Future[Option[String]] = ???
 }
 
 @Singleton

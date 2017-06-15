@@ -7,6 +7,7 @@ import play.api.mvc.Results.{NotFound, Unauthorized}
 import play.api.Play.current
 import scala.concurrent.Future
 import models._
+import repositories._
 
 
 class UsernameRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
