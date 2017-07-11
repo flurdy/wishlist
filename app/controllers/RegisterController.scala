@@ -10,7 +10,7 @@ import scala.concurrent.Future
 import scala.util.matching.Regex
 import models._
 import repositories._
-// import notifiers._
+import notifiers._
 
 
 trait RegisterForm {
@@ -48,14 +48,16 @@ trait RegisterForm {
 
 
 @Singleton
-class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
-extends Controller with Secured with WithAnalytics with RegisterForm with EmailAddressChecks {
+class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
+extends Controller with Secured with WithAnalytics with RegisterForm
+with EmailAddressChecks with WithLogging {
 
   	def register =
      (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+      logger.info("registration start")
   		registerForm.bindFromRequest.fold(
         errors => {
-          Logger.warn("Registration failed: " + errors.errors.headOption.map( e => s"${e.key}: ${e.message}").getOrElse(""))
+          logger.warn("Registration failed: " + errors.errors.headOption.map( e => s"${e.key}: ${e.message}").getOrElse(""))
           Future.successful(BadRequest(views.html.register(errors)))
         },
    	   registeredForm => {
@@ -63,17 +65,16 @@ extends Controller with Secured with WithAnalytics with RegisterForm with EmailA
                case None =>
                   recipientFactory.newRecipient( registeredForm ).save.flatMap {
                      case Right(recipient) =>
-                        Logger.info("New registration: " + registeredForm._1)
-                  //  EmailAlerter.sendNewRegistrationAlert(recipient)
+                        logger.info("New registration: " + registeredForm._1)
+                        emailNotifier.sendNewRegistrationAlert(recipient)
 
                         if(FeatureToggle.EmailVerification.isEnabled()){
-                           recipient.findOrGenerateVerificationHash.map { verificationHash => // .getOrElse(recipient.generateVerificationHash)
-                              // EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
-                              Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
-                                 """
-                                 Welcome, you have successfully registered.<br/>
-                                 Please click on the verification link in the email we just sent to you
-                                 """)
+                           recipient.findOrGenerateVerificationHash.flatMap { verificationHash =>
+                              emailNotifier.sendEmailVerification(recipient, verificationHash).map { _ =>
+                                 Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
+                                    """Welcome, you have successfully registered.<br/>
+                                    Please click on the verification link in the email we just sent to you""")
+                              }
                            }
                         } else {
                            Future.successful(
@@ -81,13 +82,15 @@ extends Controller with Secured with WithAnalytics with RegisterForm with EmailA
                                  "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered"))
                         }
                      case Left(e) =>
+                        Logger.error("Not able to save new registration")
                         throw new IllegalStateException("Not able to save new registration")
                   }
                case _ =>
+                  Logger.info(s"Username taken: [$registeredForm._1]")
                   Future.successful(
                      BadRequest(views.html.register(
-                           registerForm.fill((registeredForm._1, registeredForm._2, registeredForm._3, "", ""))))
-                        .flashing("messageError" -> "Registration failed. Username already registered"))
+                           registerForm.fill((registeredForm._1, registeredForm._2, registeredForm._3,
+                              "", "")), Some("Registration failed. Username already registered") ) ) )
             }
       	}
       )

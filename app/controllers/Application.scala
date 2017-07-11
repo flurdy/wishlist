@@ -19,22 +19,28 @@ trait WithAnalytics {
 
 }
 
+trait WithLogging {
+
+   val logger: Logger = Logger(this.getClass())
+
+}
+
 @Singleton
 class Application @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
 (implicit val wishlistRepository: WishlistRepository)
-extends Controller with Secured with WithAnalytics with WishForm {
+extends Controller with Secured with WithAnalytics with WishForm with WithLogging {
 
    def index = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
       request.currentRecipient match {
          case Some(recipient) => {
-            Logger.debug("yay already logged in")
+            logger.debug("yay already logged in")
             recipient.findWishlists.map { wishlists =>
                Ok(views.html.indexrecipient(
                   editWishlistForm, wishlists)).withSession( request.session )
             }
          }
          case None =>
-            Logger.debug("not logged in")
+            logger.debug("not logged in")
             Future.successful( Ok(views.html.indexanon()) )
       }
    }

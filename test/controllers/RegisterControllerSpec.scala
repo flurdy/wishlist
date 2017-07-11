@@ -16,6 +16,7 @@ import play.api.test.Helpers._
 import scala.concurrent.Future
 import com.flurdy.wishlist.ScalaSoup
 import models._
+import notifiers._
 import repositories._
 
 
@@ -74,7 +75,8 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
       val recipientLookupMock = mock[RecipientLookup]
       val recipientRepositoryMock = mock[RecipientRepository]
       val featureTogglesMock = mock[FeatureToggles]
-      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock)(recipientRepositoryMock, featureTogglesMock)
+      val emailNotifierMock = mock[EmailNotifier]
+      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock, emailNotifierMock)(recipientRepositoryMock, featureTogglesMock)
    }
 
    trait RegisterSetup extends Setup {
@@ -150,6 +152,8 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                   .thenReturn( Future.successful( "some-verification-hash" ) )
                when( featureTogglesMock.isEnabled(FeatureToggle.EmailVerification) )
                   .thenReturn( true )
+               when( emailNotifierMock.sendEmailVerification(recipientMock, "some-verification-hash"))
+                  .thenReturn( Future.successful(()))
 
                val result = controller.register().apply(registerRequest)
 
@@ -172,9 +176,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                status(result) mustBe 303
 
                verify ( recipientMock ).save()(recipientRepositoryMock)
-               // verify(email notifier mock, times(1)).send
-
-               pending
+               verify( emailNotifierMock ).sendNewRegistrationAlert(recipientMock)
             }
 
 

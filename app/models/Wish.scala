@@ -5,16 +5,18 @@ package models
 // import play.api.Play.current
 // import play.api.db.DB
 // import play.Logger
+import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
+import repositories._
 
 case class Wish(
-    wishId:Option[Long],
-    title:String,
-    description:Option[String],
+    wishId: Option[Long],
+    title: String,
+    description: Option[String],
    //  wishEntries:Set[WishEntry] = Set.empty,
-    links:Seq[WishLink] = Seq.empty,
-    reservation:Option[Reservation] = None,
-    recipient:Recipient
+    links: Seq[WishLink] = Seq.empty,
+    reservation: Option[Reservation] = None,
+    recipient: Recipient
 ) {
 
    def this(title: String, recipient: Recipient) = this(None, title, None, Seq.empty, None, recipient)
@@ -23,11 +25,17 @@ case class Wish(
 
    def this(wishId: Long, title: String, recipient: Recipient) = this(Some(wishId), title, None, Seq.empty, None, recipient)
 
-   def save = Future.successful(this) // Wish.save(this)
+   def this(wishId: Long, title: String, description: Option[String], reservation: Option[Reservation], recipient: Recipient) =
+      this(Some(wishId), title, description, Seq.empty, reservation, recipient)
 
-   def addToWishlist(wishlist: Wishlist) = Future.successful(this) // WishEntry.addWishToWishlist(this,wishlist)
+   def save(implicit wishRepository: WishRepository) =
+      wishRepository.saveWish(this)
 
-   def reserve(recipient:Recipient) = new Reservation(recipient,this).save
+   def addToWishlist(wishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository) =
+      WishEntry(this, wishlist).save.map( _ => this)
+
+   def reserve(recipient:Recipient)(implicit reservationRepository: ReservationRepository) =
+      new Reservation(recipient,this).save
 
    def unreserve: Future[Either[_,Reservation]] = ???
       // reservation map ( realReservation => realReservation.copy(wish=this).cancel )
@@ -56,11 +64,11 @@ case class Wish(
     def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
 
     def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
+    */
 
-    def findLinks : List[WishLink] = WishLink.findWishLinks(this)
+    def findLinks : List[WishLink] = List() // WishLink.findWishLinks(this)
 
-    def moveToWishlist(targetWishlist:Wishlist) = WishEntry.moveWishToWishlist(this,targetWishlist)
-*/
+   //  def moveToWishlist(targetWishlist:Wishlist) = WishEntry.moveWishToWishlist(this,targetWishlist)
 }
 /*
 
@@ -255,10 +263,13 @@ object WishLink {
 case class WishEntry(
         wish:Wish,
         wishlist:Wishlist,
-        ordinal: Option[Int]
+        ordinal: Option[Int] = None
 ) {
 
+   def save(implicit wishEntryRepository: WishEntryRepository) = wishEntryRepository.saveWishEntry(this)
+
  // def update = WishEntry.update(this)
+   require(wish != null && wishlist != null && wish.wishId.isDefined && wishlist.wishlistId.isDefined)
 
 }
 
@@ -284,31 +295,6 @@ object WishEntry {
     }
   }
 
-  def addWishToWishlist(wish:Wish,wishlist:Wishlist) {
-    DB.withConnection { implicit connection =>
-      val maxOrdinal = SQL(
-        """
-          SELECT COALESCE(MAX(ordinal),0) + 1 from wishentry
-          where wishlistid = {wishlistid}
-        """
-        ).on(
-            'wishlistid -> wishlist.wishlistId.get
-        ).as(scalar[Int].single)
-      SQL(
-        """
-            insert into wishentry
-            (wishid,wishlistid,ordinal)
-            values
-            ({wishid},{wishlistid},{ordinal})
-        """
-      ).on(
-        'wishid -> wish.wishId.get,
-        'wishlistid -> wishlist.wishlistId.get,
-        'ordinal -> maxOrdinal
-      ).executeInsert()
-    }
-
-  }
 
   def removeWishFromWishlist(wish:Wish,wishlist:Wishlist){
     Logger.debug("Deleting wishentry: "+wish.title)

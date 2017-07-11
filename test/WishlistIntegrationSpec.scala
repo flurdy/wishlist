@@ -29,7 +29,7 @@ trait WishlistIntegrationHelper extends IntegrationHelper {
 
    def addWish(wishTitle: String,  username: String, wishlistId: Long, session: Option[String]) = {
       val root = wishlistRootUrl(username)
-      val wishData = Map("title" -> Seq("Handbag"))
+      val wishData = Map("title" -> Seq(wishTitle))
       wsWithSession(s"$root/$wishlistId/wish", session).withFollowRedirects(false).post(wishData)
    }
 
@@ -86,12 +86,12 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
             wishlistId       = wishlistLocation.split("/").last.toLong
             showWishlistResponse1   <- showWishlist("Testerson", wishlistId, session)
             addWishResponse <- addWish("A handbag", "Testerson", wishlistId, session)
-            showWishlistResponse   <- showWishlist("Testerson", wishlistId, session)
+            showWishlistResponse2   <- showWishlist("Testerson", wishlistId, session)
 
-         } yield (session, wishlistLocation, wishlistId, addWishResponse, showWishlistResponse, showWishlistResponse1)
+         } yield (session, wishlistLocation, wishlistId, addWishResponse, showWishlistResponse2, showWishlistResponse1)
 
 
-         flow map{ case (session, wishlistLocation, wishlistId, addWishResponse, showWishlistResponse, showWishlistResponse1) =>
+         flow map{ case (session, wishlistLocation, wishlistId, addWishResponse, showWishlistResponse2, showWishlistResponse1) =>
 
             Given("a registered logged in recipient")
             session.value.length should be > 5
@@ -104,8 +104,8 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
             addWishResponse.status shouldBe 303
 
             Then("wish should be part of the wishlist")
-            showWishlistResponse.status shouldBe 200
-            val s = ScalaSoup.parse(showWishlistResponse.body).select(s"#wish-list .wish-row a").headOption
+            showWishlistResponse2.status shouldBe 200
+            val s = ScalaSoup.parse(showWishlistResponse2.body).select(s"#wish-list .wish-row a").headOption
             s.value.text shouldBe "A handbag"
          }
       }

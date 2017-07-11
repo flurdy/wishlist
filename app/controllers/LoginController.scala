@@ -30,7 +30,7 @@ trait LoginForm {
 
 @Singleton
 class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)(implicit recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
-extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks {
+extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging {
 
    def redirectToLoginForm = Action { implicit request =>
       Redirect(routes.LoginController.showLoginForm())
@@ -61,7 +61,7 @@ extends Controller with Secured with WithAnalytics with LoginForm with RegisterF
 
       loginForm.bindFromRequest.fold(
          errors => {
-            Logger.info("Log in failed:"+ errors)
+            logger.info("Log in failed:"+ errors)
             Future.successful( BadRequest(views.html.login(errors)) )
          },{
          case (username, password, source) =>
@@ -71,19 +71,19 @@ extends Controller with Secured with WithAnalytics with LoginForm with RegisterF
                      case true =>
                         recipient.isVerified map { isVerified =>
                            if(isVerified || FeatureToggle.EmailVerification.isDisabled()) {
-                              Logger.debug("Login success: " + username)
+                              logger.debug("Login success: " + username)
                               loginSuccess(username)
                            } else {
-                              Logger.warn("Login failed. Not verified: " + username)
+                              logger.warn("Login failed. Not verified: " + username)
                               notVerified(username)
                            }
                         }
                      case false =>
-                        Logger.warn("Login failed. Credentials not correct: " + username)
+                        logger.warn("Login failed. Credentials not correct: " + username)
                         loginFailed(username)
                   }
                case _ =>
-                  Logger.warn("Login failed. Recipient not found: " + username)
+                  logger.warn("Login failed. Recipient not found: " + username)
                   loginFailed(username)
             }
          }

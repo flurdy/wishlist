@@ -7,10 +7,11 @@ import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.db._
-import play.api.Logger
+// import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import models._
+import controllers.WithLogging
 
 
 trait WishlistMapper {
@@ -20,7 +21,7 @@ trait WishlistMapper {
       get[String]("title") ~
       get[Option[String]]("description") ~
       get[Long]("recipientid") map {
-         case wishlistid~title~description~recipientId=> {
+         case wishlistid~title~description~recipientId => {
             Wishlist( Some(wishlistid), title, description, new Recipient(recipientId))
          }
       }
@@ -31,19 +32,25 @@ trait WishlistMapper {
 trait WishlistLookup {
 
    def wishlistRepository: WishlistRepository
+   // def wishRepository: WishRepository
 
    def findRecipientWishlists(recipient: Recipient) = wishlistRepository.findRecipientWishlists(recipient)
 
    def findWishlist(wishlistId: Long) = wishlistRepository.findWishlist(wishlistId)
 
+   def isOrganiserOfWishlist(organiser: Recipient, wishlist: Wishlist) =
+      wishlistRepository.isOrganiserOfWishlist(organiser, wishlist)
+
+   // def findWishes(wishlist: Wishlist): Future[Seq[Wish]] = wishLookup.findWishes(wishlist)
+
 }
 
 @Singleton
-class DefaultWishlistLookup @Inject() (val wishlistRepository: WishlistRepository) extends WishlistLookup
+class DefaultWishlistLookup @Inject() (val wishlistRepository: WishlistRepository, val wishRepository: WishRepository) extends WishlistLookup
 
 
 @ImplementedBy(classOf[DefaultWishlistRepository])
-trait WishlistRepository extends Repository with WishlistMapper {
+trait WishlistRepository extends Repository with WishlistMapper with WithLogging  {
 
    def findWishlist(wishlistId: Long): Future[Option[Wishlist]] =
       Future {
@@ -75,7 +82,7 @@ trait WishlistRepository extends Repository with WishlistMapper {
       Future {
          wishlist.recipient.recipientId.flatMap{ recipientId =>
             db.withConnection{ implicit connection =>
-               Logger.debug(s"Saving new wishlist: ${wishlist.title}")
+               logger.debug(s"Saving new wishlist: ${wishlist.title}")
                val nextId = SQL("SELECT NEXTVAL('wishlist_seq')").as(scalar[Long].single)
                SQL"""
                      insert into wishlist
@@ -97,7 +104,7 @@ trait WishlistRepository extends Repository with WishlistMapper {
             Left(new IllegalArgumentException("Can not delete wishlist without an id"))
          } { wishlistId =>
             db.withConnection{ implicit connection =>
-               Logger.info(s"Deleting wishlist [${wishlist.wishlistId}] for [${wishlist.recipient.username}]")
+               logger.info(s"Deleting wishlist [${wishlist.wishlistId}] for [${wishlist.recipient.username}]")
                SQL"""
                      delete from wish
                      where wishid in
@@ -118,6 +125,22 @@ trait WishlistRepository extends Repository with WishlistMapper {
                .executeUpdate() match {
                   case 0 => Right(false)
                   case _ => Right(true)
+               }
+            }
+         }
+      }
+
+   def isOrganiserOfWishlist(organiser: Recipient, wishlist: Wishlist) =
+      Future {
+         organiser.recipientId.fold(false){ recipientId =>
+            wishlist.wishlistId.fold(false){  wishlistId =>
+               db.withConnection { implicit connection =>
+                  SQL"""
+                        SELECT count(*) = 1 FROM wishlistorganiser
+                        WHERE recipientid = $recipientId
+                        AND wishlistid = $wishlistId
+                     """
+                  .as(scalar[Boolean].single)
                }
             }
          }

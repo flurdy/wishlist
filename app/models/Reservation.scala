@@ -7,6 +7,7 @@ package models
 // import anorm.SqlParser._
 // import play.Logger
 import scala.concurrent.Future
+import repositories._
 
 case class Reservation(
 	reservationId: Option[Long],
@@ -14,15 +15,18 @@ case class Reservation(
 	wish: Wish
 ) {
 
-   def this(reservationId: Long) = this(Some(reservationId),null,null)
+   // def this(reservationId: Long) = this(Some(reservationId),null,null)
 
    def this(recipient: Recipient, wish: Wish) = this(None,recipient,wish)
 
-   def save: Future[Either[_,Reservation]] = Future.successful(Right(this)) // Reservation.save(this)
+   def save(implicit reservationRepository: ReservationRepository): Future[Reservation] =
+      reservationRepository.saveReservation(this)
 
-   def cancel = Future.successful(Right(this)) // Reservation.cancel(this)
+   def cancel = ??? // Future.successful(Right(this)) // Reservation.cancel(this)
 
-   def isReserver(recipient:Recipient) = false // Reservation.findReserver(this).get == recipient
+   def isReserver(possibleRecipient:Recipient) =
+      recipient.recipientId.isDefined && recipient.recipientId == possibleRecipient.recipientId
+      // false // Reservation.findReserver(this).get == recipient
 
 }
 

@@ -10,6 +10,7 @@ import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.test._
 import scala.concurrent.Await._
+import scala.concurrent.Future
 
 
 trait RegistrationIntegrationHelper extends IntegrationHelper {
@@ -26,18 +27,20 @@ trait RegistrationIntegrationHelper extends IntegrationHelper {
       )
       getWsClient().url(registerUrl).withFollowRedirects(false).post(registerFormData)
    }
+
+   def findVerificationHash(response: String) = Future.successful(None)
 }
 
 class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
    with GivenWhenThen with ScalaFutures with Matchers
    with IntegrationPatience with StartAndStopServer
-   with RegistrationIntegrationHelper {
+   with RegistrationIntegrationHelper with CookieIntegrationHelper {
 
    info("As a wish recipient")
    info("I want to register with the Wish application")
    info("so that I can list my wishes")
 
-   feature("Registration flow") {
+   feature("Registration flow with verification disabled") {
 
       scenario("Front page has registration form") {
 
@@ -89,6 +92,8 @@ class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
             h2.value.text shouldBe "Register"
          }
 
+         And("email verification is disabled")
+
          When("submitting the registration form")
          val response = register("Testerson")
 
@@ -96,10 +101,83 @@ class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
          response map { r =>
             r.status shouldBe 303
             r.header("Location").headOption.value shouldBe "/"
+            findFlashCookie(r).value shouldBe "messageSuccess=Welcome%2C+you+have+successfully+registered"
          }
       }
 
       scenario("Unregister") (pending)
 
+   }
+}
+
+class WishRegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
+   with GivenWhenThen with ScalaFutures with Matchers
+   with IntegrationPatience with StartAndStopServer with LoginIntegrationHelper
+   with RegistrationIntegrationHelper with CookieIntegrationHelper {
+
+   applicationConfiguration = ("com.flurdy.wishlist.feature.email.verification.enabled" -> true)
+
+   feature("Registration flow with verification enabled") {
+
+      scenario("Submit full registration form") {
+         val registerUrl = s"$baseUrl/register/"
+
+         Given("a filled in registration form")
+         getWsClient().url(registerUrl).get() map { r =>
+            r.status shouldBe 200
+            val h2 = ScalaSoup.parse(r.body).select("#register-page h2").headOption
+            h2.value.text shouldBe "Register"
+         }
+
+         And("email verification is enabled")
+
+         When("submitting the registration form")
+         val response = register("AnotherTesterson")
+
+         Then("should be redirect to front login form")
+         response map { r =>
+            r.status shouldBe 303
+            r.header("Location").headOption.value shouldBe "/"
+            val flash = findFlashCookie(r).value
+            flash should startWith ("messageSuccess=Welcome%2C+you+have+successfully+registered")
+            flash should endWith ("sent+to+you")              
+         }
+      }
+
+      scenario("unable to log in unless verified"){
+         Given("email verification is enabled")
+
+         And("a pending registration")
+
+         When("trying to log in")
+
+         Then("should not be able to")
+
+         pending
+      }
+
+      scenario("verifying email post registration"){
+         val flow = for {
+            registerResponse <- register("Testerson99")
+            loginResponse  <- login("Testerson")
+         } yield (registerResponse, loginResponse)
+
+         flow map { case (registerResponse, loginResponse) =>
+
+            Given("email verification is enabled")
+
+            And("a pending registration")
+            registerResponse.status shouldBe 303
+            registerResponse.header("Location").headOption.value shouldBe "/"
+
+            When("clicking on verify email link sent")
+            val hash = findVerificationHash("Testerson2")
+
+            Then("registration should be verified")
+
+            And("able to log in")
+            fail
+         }
+      }
    }
 }

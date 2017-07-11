@@ -4,8 +4,9 @@ import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
 import play.api.libs.ws.WSResponse
+import scala.concurrent.{ExecutionContext, Future}
 
-trait LoginIntegrationHelper extends IntegrationHelper {
+trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIntegrationHelper {
 
    val loginUrl  = s"$baseUrl/login"
    val logoutUrl = s"$baseUrl/logout"
@@ -17,6 +18,13 @@ trait LoginIntegrationHelper extends IntegrationHelper {
       )
       getWsClient().url(loginUrl).withFollowRedirects(false).post(loginFormData)
    }
+
+   def registerAndLogin(username: String)(implicit ec: ExecutionContext) =
+      for {
+         _                <- register("Testerson")
+         loginResponse    <- login("Testerson")
+         session          =  findSessionCookie(loginResponse)
+      } yield session
 
    def logout(session: Option[String]) =
       wsWithSession(logoutUrl, session).withFollowRedirects(false).get()
@@ -39,9 +47,7 @@ trait CookieIntegrationHelper {
 class WishLoginIntegrationSpec extends AsyncFeatureSpec
       with GivenWhenThen with ScalaFutures with Matchers
       with IntegrationPatience with StartAndStopServer
-      with RegistrationIntegrationHelper
-      with LoginIntegrationHelper
-      with CookieIntegrationHelper {
+      with LoginIntegrationHelper {
 
    info("As a wish recipient")
    info("I want to login to the Wish application")

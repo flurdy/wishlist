@@ -1,4 +1,4 @@
-@(registerForm:Form[(String,Option[String],String,String,String)])(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[String])
+@(registerForm:Form[(String,Option[String],String,String,String)], errorMessage: Option[String] = None)(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -9,6 +9,13 @@
 
 		<h2>Register</h2>
 
+
+	    @for(error <- errorMessage){
+	    <p class="alert alert-error">
+	    	<button type="button" class="close" data-dismiss="alert">×</button>
+	        @error
+	    </p>
+	    }
 
 	    @for(error <- registerForm.errors){
 	    <p class="alert alert-error">

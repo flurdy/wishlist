@@ -24,7 +24,8 @@ case class Wishlist(
 
     def delete(implicit wishlistRepository: WishlistRepository) = wishlistRepository.deleteWishlist(this)
 
-    def findWishes: Future[Seq[Wish]] = Future.successful(Seq[Wish]()) // Wishlist.findWishesForWishlist(this)
+    def findWishes(implicit wishLookup: WishLookup): Future[Seq[Wish]] = // Future.successful(Seq[Wish]()) // Wishlist.findWishesForWishlist(this)
+      wishLookup.findWishes(this)
 
     /*
     def update = Wishlist.update(this)
@@ -39,7 +40,9 @@ case class Wishlist(
     def removeOrganiser(organiser:Recipient) = Wishlist.removeOrganiserFromWishlist(organiser,this)
 
     */
-    def isOrganiser(organiser:Recipient) = false // Wishlist.isOrganiserOfWishlist(organiser,this)
+    def isOrganiser(organiser: Recipient)(implicit wishlistLookup: WishlistLookup) =
+    // Wishlist.isOrganiserOfWishlist(organiser,this)
+      wishlistLookup.isOrganiserOfWishlist(organiser, this)
 
     require(recipient != null)
 }
@@ -282,20 +285,6 @@ object Wishlist {
     }
   }
 
-  def isOrganiserOfWishlist(organiser:Recipient,wishlist:Wishlist) = {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-              SELECT count(*) = 1 FROM wishlistorganiser
-              WHERE recipientid = {recipientid}
-              AND wishlistid = {wishlistid}
-        """
-      ).on(
-        'wishlistid -> wishlist.wishlistId.get,
-        'recipientid -> organiser.recipientId.get
-      ).as(scalar[Boolean].single)
-    }
-  }
 
 
   def findEditableWishlists(recipient:Recipient) = {

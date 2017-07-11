@@ -1,24 +1,18 @@
 package repositories
 
 import anorm._
-import anorm.JodaParameterMetaData._
+// import anorm.JodaParameterMetaData._
 import anorm.SqlParser._
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
-import org.joda.time.DateTime
+// import org.joda.time.DateTime
 import play.api.db._
-import play.api.Logger
+// import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import models._
+import controllers.WithLogging
 
-trait Repository {
-
-   def dbApi: DBApi
-
-   lazy val db: Database = dbApi.database("default")
-
-}
 
 
 @ImplementedBy(classOf[DefaultRecipientLookup])
@@ -31,11 +25,12 @@ trait RecipientLookup {
 }
 
 @Singleton
-class DefaultRecipientLookup @Inject() (val recipientRepository: RecipientRepository) extends RecipientLookup
+class DefaultRecipientLookup @Inject() (val recipientRepository: RecipientRepository)
+extends RecipientLookup
 
 
 @ImplementedBy(classOf[DefaultRecipientRepository])
-trait RecipientRepository extends Repository {
+trait RecipientRepository extends Repository with WithLogging {
 
    val MapToRecipient =
       get[Long]("recipientid") ~
@@ -51,7 +46,7 @@ trait RecipientRepository extends Repository {
    def findRecipient(username: String): Future[Option[Recipient]] =
       Future {
          db.withConnection { implicit connection =>
-            Logger.debug(s"Looking up recipient: ${username}")
+            logger.debug(s"Looking up recipient: ${username}")
             SQL"""
                   select *
                   from recipient
@@ -66,7 +61,7 @@ trait RecipientRepository extends Repository {
    def saveRecipient(recipient: Recipient): Future[Either[_,Recipient]] =
       Future {
          db.withConnection{ implicit connection =>
-            Logger.info(s"Saving new recipient: ${recipient.username}")
+            logger.info(s"Saving new recipient: ${recipient.username}")
             val nextRecipientId = SQL("SELECT NEXTVAL('recipient_seq')").as(scalar[Long].single)
             SQL"""
                   insert into recipient
@@ -112,10 +107,11 @@ trait RecipientRepository extends Repository {
 
    def findVerificationHash(recipient:Recipient): Future[Option[String]] =
       Future {
-         db.withConnection { implicit connection =>
-            recipient.recipientId.flatMap { recipientId =>
+         recipient.recipientId.flatMap { recipientId =>
+            db.withConnection { implicit connection =>
                SQL"""
-                     SELECT verificationhash FROM emailverification
+                     SELECT verificationhash
+                     FROM emailverification
                      WHERE recipientid = $recipientId
                   """
                .as(scalar[String].singleOpt)
@@ -123,9 +119,23 @@ trait RecipientRepository extends Repository {
          }
       }
 
-   def saveVerification(recipient: Recipient, verificationHash: String): Future[Either[_,String]] = ???
-
-   def findVerification(recipient: Recipient): Future[Option[String]] = ???
+   def saveVerificationHash(recipient: Recipient, verificationHash: String): Future[String] =
+      Future {
+         recipient.recipientId.fold{
+            throw new IllegalStateException("No recipient id")
+         } { recipientId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                     INSERT INTO emailverification
+                     (recipientid,email,verificationhash)
+                     VALUES
+                     ($recipientId,${recipient.email},$verificationHash)
+                  """
+                  .executeInsert()
+               verificationHash
+            }
+         }
+      }
 }
 
 @Singleton

@@ -4,35 +4,41 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-      <level>DEBUG</level>
+      <level>ERROR</level>
+      <!-- <level>DEBUG</level> -->
     </filter>
     <encoder>
-      <pattern>%d{HH:mm:ss} %highlight(%-5level) %cyan(%logger{35}): - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss} %highlight(%-5level) %cyan(%logger{35}): - %msg%n%xException{10}</pattern>
+      <!-- <pattern>%d{HH:mm:ss} %-5level %logger{35}: - %msg%n%xException{10}</pattern> -->
     </encoder>
   </appender>
 
-  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+  <!-- <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
       <level>ERROR</level>
     </filter>
     <target>System.err</target>
     <encoder>
-      <pattern>%d{HH:mm:ss} %highlight(%-5level) %cyan(%logger{35}): - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss} %highlight(%-5level) %cyan(%logger{35}): - %msg%n%xException{10}</pattern>
     </encoder>
-  </appender>
+  </appender> -->
 
   <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
     <appender-ref ref="STDOUT" />
   </appender>
 
-  <appender name="ASYNCSTDERR" class="ch.qos.logback.classic.AsyncAppender">
+  <!-- <appender name="ASYNCSTDERR" class="ch.qos.logback.classic.AsyncAppender">
     <appender-ref ref="STDERR" />
-  </appender>
+  </appender> -->
 
-  <logger name="play" level="INFO" />
-  <logger name="application" level="DEBUG" />
-  <logger name="com.flurdy" level="INFO" />
-  <logger name="com.flurdy.wishlist" level="DEBUG" />
+  <logger name="application"   level="DEBUG" />
+  <logger name="controllers"   level="DEBUG" />
+  <logger name="models"        level="DEBUG" />
+  <logger name="repositories"  level="DEBUG" />
+  <logger name="notifications" level="DEBUG" />
+  <logger name="LoggingFilter" level="DEBUG" />
+  <logger name="com.flurdy"    level="DEBUG" />
+  <logger name="com.flurdy.wishlist" level="INFO" />
 
   <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
   <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
@@ -48,9 +54,13 @@
   <logger name="io.netty" level="WARN" />
   <logger name="org.asynchttpclient.netty" level="WARN" />
 
+
+  <logger name="play" level="WARN" />
+  <logger name="akka" level="WARN" />
+
   <root>
     <appender-ref ref="ASYNCSTDOUT" />
-    <appender-ref ref="ASYNCSTDERR" />
+    <!-- <appender-ref ref="ASYNCSTDERR" /> -->
   </root>
 
 </configuration>

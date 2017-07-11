@@ -7,13 +7,33 @@ import models.Recipient
 // import play.api.libs.mailer._
 // import play.api.{Mode, Play}
 // import play.core.Router
+import controllers.WithLogging
 
 
 @ImplementedBy(classOf[DefaultEmailNotifier])
-trait EmailNotifier {
+trait EmailNotifier extends WithLogging {
 
    def sendContactEmail(name: String, email: String, username: Option[String],
-                     subject: Option[String], message: String, currentRecipient: Option[Recipient]): Future[Unit] = ???
+                     subject: Option[String], message: String,
+                     currentRecipient: Option[Recipient]): Future[Unit] = {
+      // TODO !
+      logger.warn("TODO")
+      Future.successful(())
+   }
+
+   def sendNewRegistrationAlert(recipient: Recipient): Future[Unit] = {
+      // TODO !
+      logger.warn("TODO")
+      Future.successful(())
+   }
+
+   def sendEmailVerification(recipient:Recipient, verificationHash: String): Future[Unit] = {
+      // TODO !
+      logger.warn("TODO")
+      logger.debug(s"Verification: [$verificationHash]")
+      Future.successful(())
+   }
+
 
 }
 

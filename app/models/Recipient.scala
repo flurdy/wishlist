@@ -42,14 +42,11 @@ case class Recipient (
       case _ => generateVerificationHash
    }
 
-   private def findVerificationHash(implicit recipientRepository: RecipientRepository): Future[Option[String]] = recipientRepository.findVerification(this)
+   private def findVerificationHash(implicit recipientRepository: RecipientRepository): Future[Option[String]] = recipientRepository.findVerificationHash(this)
 
    private def generateVerificationHash(implicit recipientRepository: RecipientRepository): Future[String] = {
       val verificationHash = new BigInteger(130,  new SecureRandom()).toString(32)
-      recipientRepository.saveVerification(this, verificationHash).map{
-         case Right(_) => verificationHash
-         case Left(_)  => throw new IllegalStateException("Could not save verification")
-      }
+      recipientRepository.saveVerificationHash(this, verificationHash)
    }
 
 
@@ -83,9 +80,9 @@ case class Recipient (
 
   def isSame(other: Recipient) = recipientId.fold(false)( _ => recipientId == other.recipientId )
 
-  def canEdit(wishlist:Wishlist) =
-      isAdmin || wishlist.recipient.isSame(this) || wishlist.isOrganiser(this)
-      
+  def canEdit(wishlist:Wishlist)(implicit wishlistLookup: WishlistLookup) =
+      wishlist.isOrganiser(this).map( _ || isAdmin || wishlist.recipient.isSame(this) )
+
 /*
   def findEditableWishlists = Wishlist.findEditableWishlists(this)
   */
