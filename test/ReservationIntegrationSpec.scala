@@ -5,7 +5,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
 import play.api.libs.ws.WSResponse
 import scala.concurrent.ExecutionContext
-// import play.api.libs.concurrent.Execution.Implicits._
+
 
 trait ReservationIntegrationHelper extends RegistrationIntegrationHelper
       with LoginIntegrationHelper

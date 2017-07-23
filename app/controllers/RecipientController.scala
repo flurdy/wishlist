@@ -1,13 +1,16 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
+
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
+
 import scala.concurrent.Future
 import models._
+import play.api.http.HeaderNames
 import repositories._
 // import notifiers._
 // import scravatar._
@@ -15,7 +18,8 @@ import repositories._
 
 @Singleton
 class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
-extends Controller with Secured with WithAnalytics with WishForm {
+                                    (implicit val recipientRepository: RecipientRepository)
+extends Controller with Secured with WithAnalytics with WishForm with WithLogging {
 
 /*
 
@@ -114,8 +118,8 @@ class RecipientController extends Controller with Secured {
   )
 
 
-   def showProfile(username:String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
-      Future.successful( Some( new Recipient(123)) ).map {
+   def showProfile(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+      Future.successful( Some( new Recipient(123)) ).map { // TODO
       // Recipient.findByUsername(username) match {
          case Some(recipient) =>
       //       val wishlists = recipient.findWishlists
@@ -229,6 +233,38 @@ class RecipientController extends Controller with Secured {
     )
   }
 
+*/
+
+   def verifyEmail(username: String, verificationHash: String) = Action.async { implicit request =>
+
+      def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
+               .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
+
+      logger.info(s"Verifying email for $username")
+      recipientLookup.findRecipient(username) flatMap {
+         case Some(recipient) =>
+            recipient.isVerified.flatMap {
+               case true =>
+                  logger.warn(s"Already verified for $username")
+                  Future.successful( redirectToLogin )
+               case false =>
+                  recipient.doesVerificationMatch(verificationHash).flatMap {
+                     case true =>
+                        logger.debug(s"Verification match for $username")
+                        recipient.setEmailAsVerified(verificationHash).map {
+                           case true  => redirectToLogin
+                           case false => throw new IllegalStateException(s"Unable to set $username as verified")
+                        }
+                     case false =>
+                        logger.warn(s"Verification for $username does not match [$verificationHash]")
+                        Future.successful( BadRequest )
+                  }
+            }
+         case _ => Future.successful( NotFound )
+      }
+   }
+
+/*
 
   def verifyEmail(username:String,verificationHash:String) = Action { implicit request =>
     Recipient.findByUsername(username) match {
@@ -295,3 +331,4 @@ class RecipientController extends Controller with Secured {
   }
   */
 }
+

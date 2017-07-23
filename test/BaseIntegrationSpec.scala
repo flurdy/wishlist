@@ -13,7 +13,8 @@ trait WithTestServer {
    val port = Helpers.testServerPort
    lazy val baseUrl: String = s"http://localhost:$port"
 
-   var applicationConfiguration = ("com.flurdy.wishlist.feature.email.verification.enabled" -> false)
+   var applicationConfiguration = Map("play.http.router" -> "testonly.Routes",
+                                      "com.flurdy.wishlist.feature.email.verification.enabled" -> false)
 
    def startServer() = {
       app = new  GuiceApplicationBuilder()

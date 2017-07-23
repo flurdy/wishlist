@@ -31,7 +31,7 @@
     <appender-ref ref="STDERR" />
   </appender> -->
 
-  <logger name="application"   level="DEBUG" />
+  <logger name="application"   level="WARN" />
   <logger name="controllers"   level="DEBUG" />
   <logger name="models"        level="DEBUG" />
   <logger name="repositories"  level="DEBUG" />

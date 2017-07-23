@@ -1,6 +1,5 @@
 package com.flurdy.wishlist
 
-// import org.jsoup.Jsoup
 import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
@@ -9,8 +8,9 @@ import play.api.http._
 import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.test._
+
 import scala.concurrent.Await._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 trait RegistrationIntegrationHelper extends IntegrationHelper {
@@ -28,7 +28,16 @@ trait RegistrationIntegrationHelper extends IntegrationHelper {
       getWsClient().url(registerUrl).withFollowRedirects(false).post(registerFormData)
    }
 
-   def findVerificationHash(response: String) = Future.successful(None)
+   def findVerificationUrl(username: String)(implicit ec: ExecutionContext) = {
+      val hashUrl = s"$baseUrl/test-only/recipient/${username.toLowerCase().trim}/verify/find"
+      getWsClient().url(hashUrl).withFollowRedirects(false).get().map { response =>
+         response.header("Location").headOption
+      }
+   }
+
+   def verify(verifyUrl: String) =
+      getWsClient().url(s"$baseUrl$verifyUrl").withFollowRedirects(false).get()
+
 }
 
 class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
@@ -115,7 +124,8 @@ class WishRegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
    with IntegrationPatience with StartAndStopServer with LoginIntegrationHelper
    with RegistrationIntegrationHelper with CookieIntegrationHelper {
 
-   applicationConfiguration = ("com.flurdy.wishlist.feature.email.verification.enabled" -> true)
+   applicationConfiguration = Map("play.http.router" -> "testonly.Routes",
+                                  "com.flurdy.wishlist.feature.email.verification.enabled" -> true)
 
    feature("Registration flow with verification enabled") {
 
@@ -140,43 +150,60 @@ class WishRegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
             r.header("Location").headOption.value shouldBe "/"
             val flash = findFlashCookie(r).value
             flash should startWith ("messageSuccess=Welcome%2C+you+have+successfully+registered")
-            flash should endWith ("sent+to+you")              
+            flash should endWith ("sent+to+you")
          }
       }
 
       scenario("unable to log in unless verified"){
-         Given("email verification is enabled")
-
-         And("a pending registration")
-
-         When("trying to log in")
-
-         Then("should not be able to")
-
-         pending
-      }
-
-      scenario("verifying email post registration"){
          val flow = for {
             registerResponse <- register("Testerson99")
-            loginResponse  <- login("Testerson")
+            loginResponse    <- login("Testerson99")
          } yield (registerResponse, loginResponse)
 
          flow map { case (registerResponse, loginResponse) =>
-
             Given("email verification is enabled")
 
             And("a pending registration")
             registerResponse.status shouldBe 303
             registerResponse.header("Location").headOption.value shouldBe "/"
 
+            When("trying to log in")
+            loginResponse.status shouldBe 400
+
+            Then("should not be able to")
+            findFlashCookie(loginResponse).value shouldBe "messageError=Log+in+failed.+Email+not+verified.+Please+check+your+email"
+         }
+      }
+
+      scenario("verifying email post registration"){
+         val flow = for {
+            registerResponse <- register("Testerson999")
+            loginResponse1   <- login("Testerson999")
+            verificationUrl  <- findVerificationUrl("Testerson999")
+            verifyResponse   <- verificationUrl.fold(throw new IllegalStateException("no hash found"))( v => verify(v))
+            loginResponse2   <- login("Testerson999")
+         } yield (registerResponse, loginResponse1, verifyResponse, loginResponse2)
+
+         flow map { case (registerResponse, loginResponse1, verifyResponse, loginResponse2) =>
+
+            Given("email verification is enabled")
+
+            And("a pending registration")
+            registerResponse.status shouldBe 303
+            registerResponse.header("Location").headOption.value shouldBe "/"
+            loginResponse1.status shouldBe 400
+            findFlashCookie(loginResponse1).value shouldBe "messageError=Log+in+failed.+Email+not+verified.+Please+check+your+email"
+
             When("clicking on verify email link sent")
-            val hash = findVerificationHash("Testerson2")
+            verifyResponse.status shouldBe 303
 
             Then("registration should be verified")
+            val flash = findFlashCookie(verifyResponse).value
+            flash should startWith ("messageSuccess=Email+address+verified.+Please+log+in")
 
             And("able to log in")
-            fail
+            loginResponse2.status shouldBe 303
+            findFlashCookie(loginResponse2).value shouldBe "message=You+have+logged+in"
          }
       }
    }

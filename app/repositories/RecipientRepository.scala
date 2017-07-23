@@ -22,6 +22,8 @@ trait RecipientLookup {
 
    def findRecipient(username: String) = recipientRepository.findRecipient(username)
 
+   def findVerification(username: String): Future[Option[String]] = Future.successful(None)
+
 }
 
 @Singleton
@@ -50,11 +52,9 @@ trait RecipientRepository extends Repository with WithLogging {
             SQL"""
                   select *
                   from recipient
-                  where username = $username
+                  where username = ${username.trim.toLowerCase()}
                """
-             .on(
-               'username -> username.trim
-            ).as(MapToRecipient.singleOpt)
+               .as(MapToRecipient.singleOpt)
          }
       }
 
@@ -136,6 +136,43 @@ trait RecipientRepository extends Repository with WithLogging {
             }
          }
       }
+
+   def doesVerificationMatch(recipient: Recipient, verificationHash: String): Future[Boolean] =
+      Future {
+         recipient.recipientId.fold{
+            throw new IllegalStateException("No recipient id")
+         } { recipientId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                 SELECT count(*) = 1
+                 FROM emailverification
+                 WHERE recipientid = $recipientId
+                 AND email = ${recipient.email}
+                 AND verificationhash = $verificationHash
+               """
+               .as(scalar[Boolean].single)
+            }
+         }
+      }
+
+
+   def setEmailAsVerified(recipient: Recipient, verificationHash: String): Future[Boolean] =
+      Future {
+         recipient.recipientId.fold{
+            throw new IllegalStateException("No recipient id")
+         } { recipientId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                 UPDATE emailverification
+                 set verified = true
+                 WHERE recipientid = $recipientId
+                 and verificationhash = $verificationHash
+               """
+               .executeUpdate()
+            }
+         }
+      }
+      .map{ _ > 0 }
 }
 
 @Singleton

@@ -42,13 +42,19 @@ case class Recipient (
       case _ => generateVerificationHash
    }
 
-   private def findVerificationHash(implicit recipientRepository: RecipientRepository): Future[Option[String]] = recipientRepository.findVerificationHash(this)
+   private def findVerificationHash(implicit recipientRepository: RecipientRepository): Future[Option[String]] =
+      recipientRepository.findVerificationHash(this)
 
    private def generateVerificationHash(implicit recipientRepository: RecipientRepository): Future[String] = {
       val verificationHash = new BigInteger(130,  new SecureRandom()).toString(32)
       recipientRepository.saveVerificationHash(this, verificationHash)
    }
 
+   def doesVerificationMatch(verificationHash: String)(implicit recipientRepository: RecipientRepository) =
+      recipientRepository.doesVerificationMatch( this, verificationHash)
+
+   def setEmailAsVerified(verificationHash: String)(implicit recipientRepository: RecipientRepository): Future[Boolean] =
+      recipientRepository.setEmailAsVerified(this, verificationHash)
 
 
   /*
