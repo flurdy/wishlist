@@ -328,18 +328,18 @@ class WishController extends Controller with Secured {
 
 
     def search =
-     (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+     (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+        logger.debug("searching")
         searchForm.bindFromRequest.fold(
             errors => {
-              logger.warn("Update failed: " + errors)
-             Future.successful( BadRequest ) // error page
+               logger.warn("search form error")
+               Future.successful( BadRequest(views.html.wishlist.listwishlists(List(), searchForm, editWishlistForm) ) )
             },
             term => {
-                val wishlists = term match {
-                    case None => List() //  Wishlist.findAll
-                    case Some(searchTerm) => List() // Wishlist.searchForWishlistsContaining(searchTerm)
-                }
-                Future.successful( Ok(views.html.wishlist.listwishlists(wishlists,searchForm.fill(term),editWishlistForm)) )
+               val wishlists = term.fold(wishlistRepository.findAll)( t => wishlistRepository.searchForWishlistsContaining(t))
+               wishlists.map { wishlistsFound =>
+                  Ok(views.html.wishlist.listwishlists(wishlistsFound, searchForm.fill(term), editWishlistForm))
+               }
             }
         )
    }

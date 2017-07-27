@@ -10,8 +10,12 @@ trait WishlistIntegrationHelper extends IntegrationHelper {
    def wishlistRootUrl(username: String)  = s"$baseUrl/recipient/${username.trim.toLowerCase}/wishlist"
 
    def createWishlist(username: String, session: Option[String]) = {
+      createWishlistWithTitle(username, "Some wishlist", session)
+   }
+
+   def createWishlistWithTitle(username: String, title: String, session: Option[String]) = {
       val createData = Map(
-         "title" -> Seq("Some wishlist"),
+         "title" -> Seq(title),
          "description" -> Seq("Some description")
       )
       wsWithSession(wishlistRootUrl(username), session).withFollowRedirects(false).post(createData)

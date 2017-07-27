@@ -30,6 +30,14 @@ trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIn
       wsWithSession(logoutUrl, session).withFollowRedirects(false).get()
 }
 
+trait FrontPageIntegrationHelper extends IntegrationHelper  {
+
+
+   val frontUrl = s"$baseUrl/"
+   def frontpage() = getWsClient().url(frontUrl).get()
+   def frontpageWithSession(session: Option[String]) = wsWithSession(frontUrl, session).get()
+}
+
 trait CookieIntegrationHelper {
 
   def findCookie(response: WSResponse, cookieName: String) =
@@ -47,16 +55,11 @@ trait CookieIntegrationHelper {
 class WishLoginIntegrationSpec extends AsyncFeatureSpec
       with GivenWhenThen with ScalaFutures with Matchers
       with IntegrationPatience with StartAndStopServer
-      with LoginIntegrationHelper {
+      with LoginIntegrationHelper with FrontPageIntegrationHelper {
 
    info("As a wish recipient")
    info("I want to login to the Wish application")
    info("so that I can list my wishes")
-
-
-   val frontUrl = s"$baseUrl/"
-   def frontpage() = getWsClient().url(frontUrl).get()
-   def frontpageWithSession(session: Option[String]) = wsWithSession(frontUrl, session).get()
 
    feature("Login flow") {
 

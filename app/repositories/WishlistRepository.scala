@@ -148,6 +148,30 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
             }
          }
       }
+
+   def findAll: Future[List[Wishlist]] =
+      Future{
+         db.withConnection { implicit connection =>
+            SQL"""
+               SELECT * FROM wishlist
+               ORDER BY recipientid DESC,title
+             """
+             .as(MapToShallowWishlist *)
+         }
+      }
+
+   def searchForWishlistsContaining(searchTerm: String): Future[List[Wishlist]] =
+      Future{
+         db.withConnection { implicit connection =>
+            val searchLikeTerm = "%" + searchTerm.toLowerCase.trim + "%"
+            SQL"""
+               SELECT * FROM wishlist
+               where lower(title) like $searchLikeTerm
+               ORDER BY recipientid DESC, title
+             """
+            .as(MapToShallowWishlist *)
+         }
+      }
 }
 
 @Singleton
