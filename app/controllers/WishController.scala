@@ -112,7 +112,7 @@ trait WishActions {
 class WishController @Inject() (val configuration: Configuration,
    val recipientLookup: RecipientLookup)
 (implicit val wishlistRepository: WishlistRepository, val wishRepository: WishRepository, val wishEntryRepository: WishEntryRepository,
-   val wishlistLookup: WishlistLookup, val wishLookup: WishLookup, val reservationRepository: ReservationRepository)
+   val wishlistLookup: WishlistLookup, val wishLookup: WishLookup, val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WishActions with WithLogging {
 
 
@@ -336,10 +336,11 @@ class WishController extends Controller with Secured {
                Future.successful( BadRequest(views.html.wishlist.listwishlists(List(), searchForm, editWishlistForm) ) )
             },
             term => {
-               val wishlists = term.fold(wishlistRepository.findAll)( t => wishlistRepository.searchForWishlistsContaining(t))
-               wishlists.map { wishlistsFound =>
+               for {
+                  wishlists <- term.fold(wishlistRepository.findAll)( t => wishlistRepository.searchForWishlistsContaining(t))
+                  wishlistsFound <- wishlistRepository.inflateWishlistsRecipients(wishlists)
+               } yield
                   Ok(views.html.wishlist.listwishlists(wishlistsFound, searchForm.fill(term), editWishlistForm))
-               }
             }
         )
    }

@@ -172,6 +172,18 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
             .as(MapToShallowWishlist *)
          }
       }
+
+   def inflateWishlistsRecipients(shallowWishlists: List[Wishlist])(implicit recipientRepository: RecipientRepository): Future[List[Wishlist]] = {
+      val thickerWishlists =
+         shallowWishlists.flatMap { wishlist =>
+            wishlist.recipient.recipientId map { recipientId =>
+               recipientRepository.findRecipientById(recipientId) map {
+                  _.map( r => wishlist.copy(recipient = r))
+               }
+            }
+         }
+      Future.sequence(thickerWishlists).map( _.flatten )
+   }
 }
 
 @Singleton

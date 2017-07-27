@@ -52,7 +52,7 @@ trait CookieIntegrationHelper {
 
 }
 
-class WishLoginIntegrationSpec extends AsyncFeatureSpec
+class LoginIntegrationSpec extends AsyncFeatureSpec
       with GivenWhenThen with ScalaFutures with Matchers
       with IntegrationPatience with StartAndStopServer
       with LoginIntegrationHelper with FrontPageIntegrationHelper {

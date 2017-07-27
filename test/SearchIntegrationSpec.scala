@@ -43,9 +43,9 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
             createResponse <- createWishlistWithTitle("Testerson", "Some wishlist", session)
             indexResponse  <- frontpage()
             searchResponse <- search("Some wishlist")
-         } yield (loginResponse, session, createResponse, indexResponse, searchResponse)
+         } yield (createResponse, indexResponse, searchResponse)
 
-         flow map { case (loginResponse, session, createResponse, indexResponse, searchResponse) =>
+         flow map { case (createResponse, indexResponse, searchResponse) =>
             Given("A non logged in user")
             val indexBox = ScalaSoup.parse(indexResponse.body).select("#login-box input").headOption
             indexBox shouldBe defined
@@ -56,29 +56,35 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
 
             When("searching for that wishlist")
             searchResponse.status shouldBe 200
-            val wishlistPage = ScalaSoup.parse(searchResponse.body).select(s"#list-wishlists-page").headOption
+            val searchBody = ScalaSoup.parse(searchResponse.body)
+            val wishlistPage = searchBody.select(s"#list-wishlists-page").headOption
             wishlistPage shouldBe defined
 
             Then("should find it")
-            val wishlistBox = ScalaSoup.parse(searchResponse.body).select(s"#wishlist-list").headOption
+            val wishlistBox = searchBody.select(s"#wishlist-list").headOption
             wishlistBox shouldBe defined
-            val wishlistRow = ScalaSoup.parse(searchResponse.body).select(s"#wishlist-list td a").headOption
+
+            val wishlistRow = searchBody.select(s"#wishlist-list td:eq(0) a").headOption
             wishlistRow shouldBe defined
             wishlistRow.value.text shouldBe "Some wishlist"
+
+            val wishlistRow2 = searchBody.select(s"#wishlist-list td:eq(1) a").headOption
+            wishlistRow2 shouldBe defined
+            wishlistRow2.value.text shouldBe "testerson"
          }
       }
 
-      scenario("find wishlists when logged in") {
+      scenario("find your wishlists when logged in") {
          val flow = for {
             _ <- register("Testerson2")
             loginResponse <- login("Testerson2")
             session = findSessionCookie(loginResponse)
             createResponse <- createWishlistWithTitle("Testerson2", "Some other wishlist", session)
-            indexResponse  <- frontpageWithSession(session)
-            searchResponse <- searchWithSession("Some oTHer wishlist",session)
-         } yield (loginResponse, session, createResponse, indexResponse, searchResponse)
+            indexResponse <- frontpageWithSession(session)
+            searchResponse <- searchWithSession("Some oTHer wishlist", session)
+         } yield (createResponse, indexResponse, searchResponse)
 
-         flow map { case (loginResponse, session, createResponse, indexResponse, searchResponse) =>
+         flow map { case (createResponse, indexResponse, searchResponse) =>
             Given("A logged in user")
             val logoutLink = ScalaSoup.parse(indexResponse.body).select("#logout-box li a").headOption
             logoutLink.value.text shouldBe "testerson2"
@@ -89,12 +95,55 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
 
             When("searching for that wishlist")
             searchResponse.status shouldBe 200
-            val wishlistPage = ScalaSoup.parse(searchResponse.body).select(s"#list-wishlists-page").headOption
+            val searchBody = ScalaSoup.parse(searchResponse.body)
+            val wishlistPage = searchBody.select(s"#list-wishlists-page").headOption
             wishlistPage shouldBe defined
 
             Then("should find it")
-            val wishlistRow = ScalaSoup.parse(searchResponse.body).select(s"#wishlist-list td a").headOption
+            val wishlistRow = searchBody.select(s"#wishlist-list td a").headOption
             wishlistRow.value.text shouldBe "Some other wishlist"
+
+            val wishlistRow2 = searchBody.select(s"#wishlist-list td:eq(1) a").headOption
+            wishlistRow2 shouldBe defined
+            wishlistRow2.value.text shouldBe "testerson2"
+         }
+      }
+
+      scenario("find other's wishlists when logged in") {
+         val flow = for {
+            _ <- register("Testerson3")
+            loginResponse1 <- login("Testerson3")
+            session1 = findSessionCookie(loginResponse1)
+            createResponse <- createWishlistWithTitle("Testerson3", "Some third wishlist", session1)
+            _ <- register("Testerson4")
+            loginResponse2 <- login("Testerson4")
+            session2 = findSessionCookie(loginResponse2)
+            indexResponse  <- frontpageWithSession(session2)
+            searchResponse <- searchWithSession("Some third wishlist",session2)
+         } yield (createResponse, indexResponse, searchResponse)
+
+         flow map { case (createResponse, indexResponse, searchResponse) =>
+            Given("A logged in user")
+            val logoutLink = ScalaSoup.parse(indexResponse.body).select("#logout-box li a").headOption
+            logoutLink.value.text shouldBe "testerson4"
+
+            And("a wishlist from another user")
+            createResponse.status shouldBe 303
+            findFlashCookie(createResponse).value shouldBe "messageSuccess=Wishlist+created"
+
+            When("searching for that wishlist")
+            searchResponse.status shouldBe 200
+            val searchBody = ScalaSoup.parse(searchResponse.body)
+            val wishlistPage = searchBody.select(s"#list-wishlists-page").headOption
+            wishlistPage shouldBe defined
+
+            Then("should find it")
+            val wishlistRow = searchBody.select(s"#wishlist-list td a").headOption
+            wishlistRow.value.text shouldBe "Some third wishlist"
+
+            val wishlistRow2 = searchBody.select(s"#wishlist-list td:eq(1) a").headOption
+            wishlistRow2 shouldBe defined
+            wishlistRow2.value.text shouldBe "testerson3"
          }
       }
 

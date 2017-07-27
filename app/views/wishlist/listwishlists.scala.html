@@ -21,14 +21,16 @@
 				</thead>
 				<tbody>
 				@for(wishlist <- wishlists){
-					<tr>
-						<td>
-							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
-						</td>
-						<td>
-                      <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a>
-						</td>
-					</tr>
+					@for(wishlistId <- wishlist.wishlistId) {
+						<tr>
+							<td>
+								<a href="@routes.WishController.showWishlist(wishlist.recipient.username, wishlistId)">@wishlist.title</a>
+							</td>
+							<td>
+								<a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a>
+							</td>
+						</tr>
+					}
 				}
 				</tbody>
 			</table>

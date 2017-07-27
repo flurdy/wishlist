@@ -40,7 +40,7 @@ trait RegistrationIntegrationHelper extends IntegrationHelper {
 
 }
 
-class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
+class RegistrationIntegrationSpec extends AsyncFeatureSpec
    with GivenWhenThen with ScalaFutures with Matchers
    with IntegrationPatience with StartAndStopServer
    with RegistrationIntegrationHelper with CookieIntegrationHelper {
@@ -119,7 +119,7 @@ class WishRegistrationIntegrationSpec extends AsyncFeatureSpec
    }
 }
 
-class WishRegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
+class RegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
    with GivenWhenThen with ScalaFutures with Matchers
    with IntegrationPatience with StartAndStopServer with LoginIntegrationHelper
    with RegistrationIntegrationHelper with CookieIntegrationHelper {
