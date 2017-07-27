@@ -56,6 +56,11 @@ case class Recipient (
    def setEmailAsVerified(verificationHash: String)(implicit recipientRepository: RecipientRepository): Future[Boolean] =
       recipientRepository.setEmailAsVerified(this, verificationHash)
 
+   def inflate(implicit recipientRepository: RecipientRepository): Future[Either[_,Recipient]] =
+      recipientRepository.findRecipient(this.username).map{
+         _.toRight(new IllegalStateException("Recipient not found"))
+      }
+
 
   /*
 

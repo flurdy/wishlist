@@ -32,25 +32,42 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
    trait Setup {
       val configurationMock = mock[Configuration]
       val wishlistRepositoryMock = mock[WishlistRepository]
-      val controller = new Application(configurationMock, mock[RecipientLookup])(wishlistRepositoryMock)
+      val recipientRepositoryMock = mock[RecipientRepository]
+      val controller = new Application(configurationMock, mock[RecipientLookup])(wishlistRepositoryMock, recipientRepositoryMock)
    }
 
    "Application controller" when requesting {
       "[GET] /" should {
          "show index page" which is {
+
             "anonymous given not logged in" in new Setup {
 
                val result = controller.index().apply(FakeRequest())
 
                status(result) mustBe 200
                val bodyDom = ScalaSoup.parse(contentAsString(result))
-               bodyDom.select(s"#index-page").headOption mustBe defined
+               bodyDom.select("#index-page").headOption mustBe defined
+               bodyDom.select("#wishlist-list").headOption mustBe None
+               bodyDom.select("#login-box").headOption mustBe defined
             }
+
             "logged in given recipient is logged in" in new Setup {
 
-               val result = controller.index().apply(FakeRequest())
+               val recipientMock = mock[Recipient]
+               val wishlist = new Wishlist("my list" , recipientMock)
+               val wishlists = List(wishlist)
+               when(recipientRepositoryMock.findRecipient("some-username"))
+                     .thenReturn(Future.successful(Some(recipientMock)))
+               when(recipientMock.findWishlists(wishlistRepositoryMock))
+                     .thenReturn(Future.successful(wishlists))
 
-               pending
+               val result = controller.index().apply(FakeRequest().withSession("username"  -> "some-username"))
+
+               status(result) mustBe 200
+               val bodyDom = ScalaSoup.parse(contentAsString(result))
+               bodyDom.select("#index-page").headOption mustBe defined
+               bodyDom.select("#wishlist-list").headOption mustBe defined
+               bodyDom.select("#login-box").headOption mustBe None
             }
          }
       }
@@ -72,7 +89,7 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
 
             status(result) mustBe 200
             val bodyDom = ScalaSoup.parse(contentAsString(result))
-            bodyDom.select(s"#about-page").headOption mustBe defined
+            bodyDom.select("#about-page").headOption mustBe defined
          }
       }
    }

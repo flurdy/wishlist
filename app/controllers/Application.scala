@@ -27,21 +27,24 @@ trait WithLogging {
 
 @Singleton
 class Application @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
-(implicit val wishlistRepository: WishlistRepository)
+(implicit val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WithLogging {
 
    def index = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
       request.currentRecipient match {
-         case Some(recipient) => {
-            logger.debug("yay already logged in")
-            recipient.findWishlists.map { wishlists =>
-               Ok(views.html.indexrecipient(
-                  editWishlistForm, wishlists)).withSession( request.session )
+         case Some(recipient) =>
+            recipient.inflate.flatMap{
+               case Right(r) =>
+                  r.findWishlists.map { wishlists =>
+                     logger.debug(s"wishlists found ${wishlists.size}")
+                     Ok(views.html.indexrecipient(editWishlistForm, wishlists))
+                           .withSession(request.session)
+                  }
+               case _ =>
+                  logger.warn("recipient in session but not inflatable")
+                  Future.successful( Ok(views.html.indexanon()).withNewSession )
             }
-         }
-         case None =>
-            logger.debug("not logged in")
-            Future.successful( Ok(views.html.indexanon()) )
+         case None => Future.successful( Ok(views.html.indexanon()) )
       }
    }
 

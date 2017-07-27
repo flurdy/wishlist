@@ -66,7 +66,10 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
 
    def findRecipientWishlists(recipient: Recipient): Future[List[Wishlist]] =
       Future {
-         recipient.recipientId.fold(List[Wishlist]()){ recipientId =>
+         recipient.recipientId.fold{
+            throw new IllegalStateException("No recipient id")
+         } { recipientId =>
+//         recipient.recipientId.fold(List[Wishlist]()){ recipientId =>
             db.withConnection { implicit connection =>
                SQL"""
                      SELECT * FROM wishlist

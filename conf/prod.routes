@@ -33,9 +33,6 @@ POST   /recipient/:username/reservations/wish/:wishId/unreserve         controll
 GET	   /recipient/:username/            controllers.RecipientController.showProfile(username)
 GET	   /recipient/:username/edit.html   controllers.RecipientController.showEditRecipient(username)
 
-# test only . remove from prod routes
-# GET	   /recipient/:username/verify/find controllers.TestOnlyRecipientController.findVerification(username)
-
 GET    /recipient/:username/verify/:verificationHash/ controllers.RecipientController.verifyEmail(username, verificationHash)
 
 GET	   /password.html		   controllers.RecipientController.showResetPassword

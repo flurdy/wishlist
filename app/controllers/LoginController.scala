@@ -44,7 +44,7 @@ extends Controller with Secured with WithAnalytics with LoginForm with RegisterF
 
       def badLogin(username: String, errorMessage: String) =
          BadRequest(views.html.login(
-               loginForm.fill((username, "", None))))
+               loginForm.fill((username, "", None)), Some(errorMessage)))
             .flashing("messageError" -> errorMessage)
 
       def loginFailed(username: String) =

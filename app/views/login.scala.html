@@ -1,4 +1,4 @@
-@(loginForm:Form[(String,String,Option[String])])(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[String])
+@(loginForm:Form[(String,String,Option[String])], loginError: Option[String] = None)(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -13,6 +13,13 @@
 	    <p class="alert alert-error">
 	    	<button type="button" class="close" data-dismiss="alert">×</button>
 	        @loginForm.errors(0).message: @loginForm.errors(0).key
+	    </p>
+	    }
+
+	    @for(error <- loginError){
+	    <p class="alert alert-error">
+	    	<button type="button" class="close" data-dismiss="alert">×</button>
+	        @error
 	    </p>
 	    }
 
