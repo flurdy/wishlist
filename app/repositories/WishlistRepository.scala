@@ -69,12 +69,28 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          recipient.recipientId.fold{
             throw new IllegalStateException("No recipient id")
          } { recipientId =>
-//         recipient.recipientId.fold(List[Wishlist]()){ recipientId =>
             db.withConnection { implicit connection =>
                SQL"""
                      SELECT * FROM wishlist
                      where recipientid = $recipientId
                      ORDER BY title DESC
+                  """
+               .as(MapToShallowWishlist *)
+            }
+         }
+      }
+
+   def findOrganisedWishlists(organiser: Recipient): Future[List[Wishlist]] =
+      Future {
+         organiser.recipientId.fold{
+            throw new IllegalStateException("No recipient id")
+         } { organiserId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                     SELECT wi.* FROM wishlist wi
+                     INNER JOIN wishlistorganiser wo on wo.wishlistid = wi.wishlistid
+                     WHERE wo.recipientid = $organiserId
+                     ORDER BY wi.recipientid,wi.title DESC
                   """
                .as(MapToShallowWishlist *)
             }

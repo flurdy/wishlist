@@ -25,6 +25,8 @@ case class Wish(
 
    def this(wishId: Long, title: String, recipient: Recipient) = this(Some(wishId), title, None, Seq.empty, None, recipient)
 
+   def this(wishId: Long, title: String, description: Option[String], recipient: Recipient) = this(Some(wishId), title, description, Seq.empty, None, recipient)
+
    def this(wishId: Long, title: String, description: Option[String], reservation: Option[Reservation], recipient: Recipient) =
       this(Some(wishId), title, description, Seq.empty, reservation, recipient)
 

@@ -20,6 +20,7 @@ import repositories._
 
 trait BaseUnitSpec extends PlaySpec with MockitoSugar with ScalaFutures {
      def is = afterWord("is")
+     def has = afterWord("has")
      def requesting = afterWord("requesting")
      def posting    = afterWord("posting")
      def show       = afterWord("show")

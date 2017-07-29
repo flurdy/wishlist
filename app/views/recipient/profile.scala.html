@@ -1,4 +1,4 @@
-@(recipient: Recipient, wishlists: Seq[Wishlist], organisedWishlists: Seq[Wishlist], reservations: Seq[Reservation], createWishlistForm: Form[(String,Option[String])], gravatarUrl: String)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(recipient: Recipient, wishlists: Seq[Wishlist], organisedWishlists: Seq[Wishlist], reservations: Seq[Reservation], createWishlistForm: Form[(String,Option[String])], gravatarUrl: Option[String])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -6,13 +6,14 @@
 	<li><a href="@routes.RecipientController.showProfile(recipient.username)">recipient</a></li>
 }{
 
-
 	<div id="profile-page">
 
 
 		<h4>Recipient: @recipient.username</h4>
 
-		<img class="gravatar img-rounded" src="@gravatarUrl" title="Avatar of @recipient.username from Gravatar.com"/>
+		@for(url <- gravatarUrl) {
+			<img class="gravatar img-rounded" src="@url" title="Avatar of @recipient.username from Gravatar.com"/>
+		}
 
 		@recipient.fullname.map { fullname =>
 		 	@if(fullname.length() > 1 ){
@@ -20,100 +21,97 @@
 			}
 		}
 
-
 		<div class="well" id="wishlist-list">
 
             <h4>Wishlists</h4>
 			<table class="table table-striped table-hover">
 				<tbody>
 				@for(wishlist <- wishlists){
-					<tr>
-						<td>
-							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
-						</td>
-					</tr>
+					@for(wishlistId <- wishlist.wishlistId){
+						<tr>
+							<td>
+								<a href="@routes.WishController.showWishlist(wishlist.recipient.username, wishlistId)">@wishlist.title</a>
+							</td>
+						</tr>
+					}
 				}
 				</tbody>
 			</table>
 		</div>
 
+        @for(currentR <- currentRecipient){
+			@if(recipient.isSameUsername(currentR)){
 
+				<div class="well" >
 
-        @if(currentRecipient.isDefined && recipient == currentRecipient.get){
+					@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-inline"){
+						<input type="text" class="input-xlarge" maxlength="50" placeholder="Title of new wishlist" name="title" value="@createWishlistForm("title").value"/>
+						<button type="submit" class="btn btn-info input-small">create</button>
+					}
 
-        <div class="well" >
+				</div>
 
-			@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-inline"){
-				<input type="text" class="input-xlarge" maxlength="50" placeholder="Title of new wishlist" name="title" value="@createWishlistForm("title").value"/>
-				<button type="submit" class="btn btn-info input-small">create</button>
-			}
+				@if(!organisedWishlists.isEmpty){
+					<div class="well" class="wishlist-list" id="organised-list">
 
-		</div>
-
-
-		@if(!organisedWishlists.isEmpty){
-		<div class="well" id="wishlist-list">
-
-            <h4>Organising wishlists for others</h4>
-			<table class="table table-striped table-hover">
-				<tbody>
-				@for(wishlist <- organisedWishlists){
-					<tr>
-						<td>
-							<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
-						</td>
-					</tr>
+						<h4>Organising wishlists for others</h4>
+						<table class="table table-striped table-hover">
+							<tbody>
+							@for(wishlist <- organisedWishlists){
+								<tr>
+									<td>
+										<a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">@wishlist.title</a>
+									</td>
+								</tr>
+							}
+							</tbody>
+						</table>
+					</div>
 				}
-				</tbody>
-			</table>
-		</div>
-		}
 
 
+				@if(!reservations.isEmpty){
+					<div class="well" id="reservation-list">
 
-		@if(!reservations.isEmpty){
-		<div class="well" id="reservation-list">
-
-            <h4>Reservations</h4>
-			<table class="table table-striped table-hover">
-				<tbody>
-					<tr>
-						<th>Wish</th>
-                        <th>Recipient</th>
-                        <td></td>
-					</tr>
-				@for(reservation <- reservations){
-					<tr>
-						<td>
-							@reservation.wish.title
-						</td>
-                        <td>
-                            <a href="@routes.RecipientController.showProfile(reservation.wish.recipient.username)">@reservation.wish.recipient.username</a>
-                        </td>
-                        <td>
-                            @form(action = routes.WishController.unreserveWishFromProfile(reservation.wish.recipient.username,reservation.wish.wishId.get), 'class -> "form-inline" ){
-                                <button class="btn btn-small btn-warning reserve-button" type="submit">cancel reservation</button>
-                            }
-                        </td>
-					</tr>
+						<h4>Reservations</h4>
+						<table class="table table-striped table-hover">
+							<tbody>
+								<tr>
+									<th>Wish</th>
+									<th>Recipient</th>
+									<td></td>
+								</tr>
+							@for(reservation <- reservations){
+								<tr>
+									<td>
+										@reservation.wish.title
+									</td>
+									<td>
+										<a href="@routes.RecipientController.showProfile(reservation.wish.recipient.username)">@reservation.wish.recipient.username</a>
+									</td>
+									<td>
+										@form(action = routes.WishController.unreserveWishFromProfile(reservation.wish.recipient.username,reservation.wish.wishId.get), 'class -> "form-inline" ){
+											<button class="btn btn-small btn-warning reserve-button" type="submit">cancel reservation</button>
+										}
+									</td>
+								</tr>
+							}
+							</tbody>
+						</table>
+					</div>
 				}
-				</tbody>
-			</table>
-		</div>
-		}
 
 
-        <div class="well" >
-            <div class="control-group">
-                <div class="buttons">
-                    <a class="btn btn-warning input-medium" href="@routes.RecipientController.showEditRecipient(recipient.username)">edit recipient</a>
-                </div>
-            </div>
-        </div>
+				<div class="well" >
+					<div class="control-group">
+						<div class="buttons">
+							<a class="btn btn-warning input-medium" href="@routes.RecipientController.showEditRecipient(recipient.username)">edit recipient</a>
+						</div>
+					</div>
+				</div>
 
+			 }
          }
-
-
 
     </div>
 

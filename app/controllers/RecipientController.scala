@@ -18,7 +18,7 @@ import repositories._
 
 @Singleton
 class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
-                                    (implicit val recipientRepository: RecipientRepository)
+         (implicit val recipientRepository: RecipientRepository, val wishlistRepository: WishlistRepository, val reservationRepository: ReservationRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WithLogging {
 
 /*
@@ -118,19 +118,23 @@ class RecipientController extends Controller with Secured {
   )
 
 
-   def showProfile(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
-      Future.successful( Some( new Recipient(123)) ).map { // TODO
-      // Recipient.findByUsername(username) match {
+   def showProfile(username: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+      recipientLookup.findRecipient(username) flatMap {
+         case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
+            for {
+               wishlists    <- recipient.findWishlists
+               organised    <- recipient.findOrganisedWishlists
+               reservations <- recipient.findAndInflateReservations
+               gravatarUrl  =  None
+            } yield Ok(views.html.recipient.profile(recipient, wishlists,
+                  organised, reservations, editWishlistForm, gravatarUrl ))
          case Some(recipient) =>
-      //       val wishlists = recipient.findWishlists
-      //       val organisedWishlists = recipient.findOrganisedWishlists
-      //       val reservations = recipient.findReservations
-            val wishlists = Nil
-            val organisedWishlists = Nil
-            val reservations = Nil
-            val gravatarUrl = "" // recipientGravatarUrl(request.wishlist)
-            Ok(views.html.recipient.profile(recipient, wishlists, organisedWishlists, reservations, editWishlistForm, gravatarUrl )) // gravatarUrl(recipient)))
-         case _ => NotFound // (views.html.error.notfound())
+            for {
+             wishlists    <- recipient.findWishlists
+             gravatarUrl  =  None
+            } yield Ok(views.html.recipient.profile(recipient, wishlists,
+                  organisedWishlists = Nil, reservations = Nil, editWishlistForm, gravatarUrl ))
+         case _ => Future.successful( NotFound ) // TODO
       }
    }
 

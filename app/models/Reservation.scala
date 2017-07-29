@@ -11,7 +11,7 @@ import repositories._
 
 case class Reservation(
 	reservationId: Option[Long],
-	recipient: Recipient,
+   reserver: Recipient,
 	wish: Wish
 ) {
 
@@ -24,8 +24,8 @@ case class Reservation(
 
    def cancel = ??? // Future.successful(Right(this)) // Reservation.cancel(this)
 
-   def isReserver(possibleRecipient:Recipient) =
-      recipient.recipientId.isDefined && recipient.recipientId == possibleRecipient.recipientId
+   def isReserver(possibleReserver: Recipient) =
+      reserver.recipientId.isDefined && reserver.recipientId == possibleReserver.recipientId
       // false // Reservation.findReserver(this).get == recipient
 
 }

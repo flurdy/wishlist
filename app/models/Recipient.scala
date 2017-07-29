@@ -61,6 +61,18 @@ case class Recipient (
          _.toRight(new IllegalStateException("Recipient not found"))
       }
 
+   def findOrganisedWishlists(implicit wishlistRepository: WishlistRepository) =
+      wishlistRepository.findOrganisedWishlists(this)
+
+   def findReservations(implicit reservationRepository: ReservationRepository) =
+      reservationRepository.findReservationsByReserver(this)
+
+   def findAndInflateReservations(implicit reservationRepository: ReservationRepository, recipientRepository: RecipientRepository) =
+      for {
+         shallowReservations <- findReservations
+         withReservers       <- reservationRepository.inflateReservationsReserver(shallowReservations)
+         withWishRecipients  <- reservationRepository.inflateReservationsWishRecipient(withReservers)
+      } yield withWishRecipients
 
   /*
 
@@ -90,6 +102,8 @@ case class Recipient (
 */
 
   def isSame(other: Recipient) = recipientId.fold(false)( _ => recipientId == other.recipientId )
+
+  def isSameUsername(other: Recipient) = username == other.username
 
   def canEdit(wishlist:Wishlist)(implicit wishlistLookup: WishlistLookup) =
       wishlist.isOrganiser(this).map( _ || isAdmin || wishlist.recipient.isSame(this) )
