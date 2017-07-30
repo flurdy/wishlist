@@ -30,7 +30,8 @@ trait ReservationIntegrationHelper extends RegistrationIntegrationHelper
 
    def reserve(username: String, wishlistId: Long, wishId: Long, session: Option[String]) = {
       val root = wishlistRootUrl(username)
-      wsWithSession(s"$root/$wishlistId/wish/$wishId/reserve", session).withFollowRedirects(false).post("")
+      wsWithSession(s"$root/$wishlistId/wish/$wishId/reserve", session)
+            .withFollowRedirects(false).post("")
    }
 }
 

@@ -37,7 +37,7 @@
   <logger name="repositories"  level="DEBUG" />
   <logger name="notifications" level="DEBUG" />
   <logger name="LoggingFilter" level="DEBUG" />
-  <logger name="com.flurdy"    level="DEBUG" />
+  <logger name="com.flurdy"          level="INFO" />
   <logger name="com.flurdy.wishlist" level="INFO" />
 
   <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->

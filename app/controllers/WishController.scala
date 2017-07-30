@@ -3,7 +3,7 @@ package controllers
 import javax.inject.{Inject, Singleton}
 import play.api._
 import play.api.mvc._
-import play.api.mvc.Results.{Forbidden, NotFound}
+import play.api.mvc.Results.{Forbidden, NotFound, Unauthorized}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
@@ -19,13 +19,19 @@ trait WishForm {
          "title" -> text(maxLength = 50, minLength = 2 )
       )
    )
+
+   val editWishForm = Form(
+      tuple(
+         "title" -> nonEmptyText(maxLength = 50,minLength = 2 ),
+         "description" -> optional(text(maxLength = 2000))
+      )
+   )
 }
 
 class WishRequest[A](val wish: Wish, request: MaybeCurrentRecipientRequest[A]) extends WrappedRequest[A](request){
    lazy val username = request.username
    lazy val currentRecipient: Option[Recipient] = request.currentRecipient
 }
-
 
 trait WishActions {
 
@@ -35,19 +41,11 @@ trait WishActions {
    implicit def recipientRepository: RecipientRepository
 
    def WishWishlistAction(wishId: Long) = new ActionRefiner[WishlistRequest, WishRequest] {
-      def refine[A](input: WishlistRequest[A]) = // Future.successful {
-         wishLookup.findWishById(wishId) map {
-            _.map ( new WishRequest(_, input.maybeRecipient) )
+      def refine[A](input: WishlistRequest[A]) =
+         wishLookup.findWishById(wishId) map { w =>
+            w.map ( new WishRequest(_, input.maybeRecipient) )
             .toRight(NotFound)
          }
-//         input.currentRecipient
-//            .map ( new Wish(wishId, _) ) // wrong!
-//            .map ( new WishRequest(_, input.maybeRecipient) )
-//            .toRight(NotFound)
-//         Some(new Wish(wishId, input.currentRecipient.get)).map( wish =>
-//                  new WishRequest(wish, input.maybeRecipient))
-//              .toRight(NotFound)
-//      }
    }
 
    def WishAction(wishId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishRequest] {
@@ -58,6 +56,21 @@ trait WishActions {
       }
    }
 
+   def WishEditorAction(wishlistId: Long) = new ActionRefiner[WishRequest, WishRequest] {
+      def refine[A](input: WishRequest[A]) =
+         input.currentRecipient match {
+            case Some(recipient) =>
+               wishlistLookup.findWishlist(wishlistId).flatMap {
+                  case Some(wishlist) =>
+                     recipient.canEdit(wishlist).map {
+                        case true  => Right(input)
+                        case false => Left(Unauthorized)
+                     }
+                  case None => Future.successful(Left(NotFound))
+               }
+            case None => Future.successful(Left(Unauthorized))
+         }
+   }
 }
 
 
@@ -70,12 +83,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
 
 
     /*
-    val editWishForm = Form(
-      tuple(
-        "title" -> nonEmptyText(maxLength = 50,minLength = 2 ),
-        "description" -> optional(text(maxLength = 2000))
-      )
-    )
+
 
     val updateWishlistOrderForm = Form(
       "order" -> text(maxLength=500)
@@ -109,13 +117,17 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
               }
           },
           title => {
-             new Wish(title, request.currentRecipienter).save.flatMap { wish =>
-               wish.addToWishlist(request.wishlist).map { wishEntry =>
-                  val url = routes.WishlistController.showWishlist(username,wishlistId)
-                  Redirect(s"${url}?wish=${wish.wishId.get}")
-                        .flashing("messageSuccess" -> "Wish added")
-               }
-            }
+             request.currentRecipient match {
+                case Some(currentRecipient) =>
+                   new Wish(title, currentRecipient).save.flatMap { wish =>
+                      wish.addToWishlist(request.wishlist).map { wishEntry =>
+                         val url = routes.WishlistController.showWishlist(username, wishlistId)
+                         Redirect(s"${url}?wish=${wish.wishId.get}")
+                               .flashing("messageSuccess" -> "Wish added")
+                      }
+                   }
+                case _ =>  Future.successful( NotFound )
+             }
           }
         )
    }
@@ -136,62 +148,28 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
 
    */
 
-   def alsoUpdateWish(username: String, wishlistId: Long, wishId: Long) = TODO
+   def alsoUpdateWish(username: String, wishlistId: Long, wishId: Long) = updateWish(username, wishlistId, wishId)
 
-   def updateWish(username: String, wishlistId: Long, wishId: Long) = TODO
+   def updateWish(username: String, wishlistId: Long, wishId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
 
-   /*
-
-  def updateWish(username:String,wishlistId:Long,wishId:Long) = isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
-      editWishForm.bindFromRequest.fold(
-      editWishForm.bindFromRequest.fold(
-        errors => {
-          Logger.warn("Update failed: " + errors)
-          val wishes = wishlist.findWishes
-           Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Wish update failed")
-        },
-        editForm => {
-          Logger.debug("Update title: " + editForm._1)
-          wish.copy(title=editForm._1,description=editForm._2).update
-          Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Wish updated")
-        }
-      )
-  }
-
-
-  */
-
-   def updateWishlistOrder(username: String, wishlistId: Long) = TODO
-
-   /*
-
-
-     def updateWishlistOrder(username:String,wishlistId:Long) = isEditorOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
-
-       // val wishes = Wishlist.findWishesForWishlist(wishlist)
-       updateWishlistOrderForm.bindFromRequest.fold(
-         errors => {
-           Logger.warn("Update order failed: " + errors)
-           Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Order update failed")
-         },
-         listOrder => {
-           Logger.info("Updating wishlist's order: " + wishlistId)
-
-           var ordinalCount = 1;
-           listOrder.split(",") map { wishId =>
-             WishEntry.findByIds(wishId.toInt,wishlistId) map { wishentry =>
-               wishentry.copy(ordinal=Some(ordinalCount)).update
-               ordinalCount += 1
-             }
-           }
-
-           Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("message" -> "Wishlist updated")
-
-         }
-       )
-     }
-
-     */
+         editWishForm.bindFromRequest.fold(
+            errors => {
+               logger.info(s"Bad form. Can not update wish [${wishId}] for [${username}]")
+               Future.successful(
+                  Redirect(routes.WishlistController.showWishlist(username,wishlistId))
+                        .flashing("messageError" -> "Wish update failed"))
+            }, {
+            case (title, description) =>
+               logger.info(s"Updating wish [${wishId}] for [${username}]")
+               request.wish.copy ( title = title , description = description).update.map { wish =>
+                  Redirect(routes.WishlistController.showWishlist(username,wishlistId))
+                        .flashing("messageSuccess" -> "Wish updated")
+               }
+            }
+         )
+   }
 
 
   def reserveWish(username: String, wishlistId: Long, wishId: Long) =

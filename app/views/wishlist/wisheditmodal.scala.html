@@ -54,7 +54,7 @@
                         }
                     }
                     case Some(reservation) => {
-                        <!--   reserved but no by me  -->
+                        <!--   reserved but not by me  -->
                     }
                     case None => {
                         @form(action = routes.WishController.reserveWish(wishlist.recipient.username, wishlist.wishlistId.get, wish.wishId.get), 'class -> "form-inline") {

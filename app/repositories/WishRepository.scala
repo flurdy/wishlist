@@ -21,7 +21,7 @@ trait WishMapper {
       get[Option[String]]("description") ~
       get[Option[Long]]("reservationid") ~
       get[Long]("recipientid") ~
-      get[Option[Long]]("reserverid") map {
+      get[Option[Long]]("recipientid") map {
          case wishId~title~description~reservationId~recipientId~reserverId => {
             val recipient   = new Recipient(recipientId)
             val reservation =
@@ -104,6 +104,28 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
             }
          }
       }
+
+   def updateWish(wish:Wish) = {
+      Future {
+         wish.wishId.fold{
+            throw new IllegalArgumentException("Can not save wish without id")
+         }{ wishId =>
+            logger.debug("Updating wish: "+wish.wishId)
+            logger.debug("Updating wish: "+wish.title)
+            db.withConnection { implicit connection =>
+               val updated =
+                  SQL"""
+                     update wish
+                     set title = ${wish.title}, description = ${wish.description}
+                     where wishid = $wishId
+                  """
+                  .executeUpdate()
+               if(updated > 0 ) wish
+               else throw new IllegalStateException("Unable to update wish")
+            }
+         }
+      }
+   }
 }
 
 

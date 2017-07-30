@@ -21,8 +21,8 @@ trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIn
 
    def registerAndLogin(username: String)(implicit ec: ExecutionContext) =
       for {
-         _                <- register("Testerson")
-         loginResponse    <- login("Testerson")
+         _                <- register(username)
+         loginResponse    <- login(username)
          session          =  findSessionCookie(loginResponse)
       } yield session
 

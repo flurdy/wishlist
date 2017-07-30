@@ -33,12 +33,12 @@ class WishlistRequest[A](val wishlist: Wishlist, request: MaybeCurrentRecipientR
    lazy val currentRecipient: Option[Recipient] = request.currentRecipient
    lazy val maybeRecipient: MaybeCurrentRecipientRequest[A] = request
 }
-
-class WishlistAccessRequest[A](val wishlist: Wishlist, currentRecipient: Recipient, request: WishlistRequest[A]) extends WrappedRequest[A](request){
-   lazy val username = request.username
-   val currentRecipienter = currentRecipient
-   lazy val possibleCurrentRecipient = request.currentRecipient
-}
+//
+//class WishlistAccessRequest[A](val wishlist: Wishlist, currentRecipient: Recipient, request: WishlistRequest[A]) extends WrappedRequest[A](request){
+//   lazy val username = request.username
+//   val currentRecipienter = currentRecipient
+//   lazy val possibleCurrentRecipient = request.currentRecipient
+//}
 
 // object WishlistEditorAction extends ActionFilter[WishlistRequest] {
 //    def filter[A](input: WishlistRequest[A]) = Future.successful {
@@ -57,7 +57,7 @@ trait WishlistActions {
 
    implicit def wishlistRequestToCurrentRecipient(implicit request: WishlistRequest[_]): Option[Recipient] = request.currentRecipient
 
-   implicit def wishlistAccessRequestToCurrentRecipient(implicit request: WishlistAccessRequest[_]): Option[Recipient] = request.possibleCurrentRecipient
+//   implicit def wishlistAccessRequestToCurrentRecipient(implicit request: WishlistAccessRequest[_]): Option[Recipient] = request.possibleCurrentRecipient
 
    def WishlistAction(wishlistId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishlistRequest] {
       def refine[A](input: MaybeCurrentRecipientRequest[A]) =
@@ -68,13 +68,13 @@ trait WishlistActions {
          }
    }
 
-   def WishlistEditorAction = new ActionRefiner[WishlistRequest, WishlistAccessRequest] {
+   def WishlistEditorAction = new ActionRefiner[WishlistRequest, WishlistRequest] {
       def refine[A](input: WishlistRequest[A]) =
          input.currentRecipient match {
             case Some(recipient) =>
                recipient.canEdit(input.wishlist) map {
                   case true  =>
-                     Right(new WishlistAccessRequest( input.wishlist, recipient, input))
+                     Right(input) // new WishlistAccessRequest( input.wishlist, recipient, input))
                   case false => Left(Forbidden)
                }
             case None => Future.successful(Left(Forbidden))
@@ -141,7 +141,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
             errors => {
               logger.warn("Create failed: " + errors)
               Future.successful(BadRequest)
-              // (views.html.wishlist.createwishlist(errors))
+              // TODO (views.html.wishlist.createwishlist(errors))
             },
            titleForm => {
              request.currentRecipient match {

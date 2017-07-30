@@ -91,7 +91,7 @@
 		            	placeholder: "ui-state-highlight",
 		        		update: function(event,ui){
 		        			var serialisedData = $('#wish-list').sortable('toArray').join().replace(/wish-row-/g,"");
-		        		  $.post('@routes.WishController.updateWishlistOrder(wishlist.recipient.username,wishlist.wishlistId.get)', 'order='+serialisedData);
+		        		  $.post('@routes.WishlistController.updateWishlistOrder(wishlist.recipient.username,wishlist.wishlistId.get)', 'order='+serialisedData);
 		        		}
 		    		});
 		        $(".sortable").disableSelection();

@@ -46,6 +46,8 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       val anotherReservedWish = anotherWish.copy( reservation = Some(anotherReservation))
       val otherReservedWish   = otherWish.copy( reservation = Some(otherReservation))
       val wishes    = List(unreservedWish, anotherReservedWish, otherReservedWish)
+      val updatedWish = unreservedWish.copy( title = "updated wishlist",
+                                            description = Some("updated description") )
 
       when( wishLookupMock.findWishById(444) )
             .thenReturn(Future.successful(Some(unreservedWish)))
@@ -76,6 +78,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       when( wishlistLookupMock.isOrganiserOfWishlist(otheruser, wishlist))
             .thenReturn( Future.successful( false ))
 
+      when( wishRepositoryMock.updateWish(updatedWish))
+            .thenReturn( Future.successful(updatedWish))
+
       def showSessionWishlist(sessionUsername: String) = {
          val result = wishlistController.showWishlist("someuser", 123)
                               .apply(FakeRequest().withSession("username"  -> sessionUsername))
@@ -87,9 +92,13 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
          wishController.reserveWish("someuser", 123, 444)
                        .apply(FakeRequest().withSession("username"  -> sessionUsername))
 
-      def updateWish(sessionUsername: String) =
+      def updateSessionWish(sessionUsername: String) =
          wishController.updateWish("someuser", 123, 444)
-                       .apply(FakeRequest().withSession("username"  -> sessionUsername))
+               .apply(FakeRequest()
+                     .withSession("username" -> sessionUsername)
+                     .withFormUrlEncodedBody(
+                        "title" -> "updated wishlist",
+                        "description" -> "updated description"))
 
       def deleteWish(sessionUsername: String) =
          wishController.removeWishFromWishlist("someuser", 123, 444)
@@ -98,6 +107,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
 
    trait WishRecipientSetup extends WishSetup {
       def showWishlist() = showSessionWishlist("someuser")
+      def updateWish()   = updateSessionWish("someuser")
    }
 
    trait WishOrganiserSetup extends WishSetup {
@@ -112,6 +122,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
             .thenReturn( Future.successful( anotherReservation ))
 
       def showWishlist() = showSessionWishlist("someotheruser")
+      def updateWish()   = updateSessionWish("someotheruser")
    }
 
    trait WishOtherSetup extends WishSetup {
@@ -120,6 +131,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
             .thenReturn( Future.successful( otherReservation ))
 
       def showWishlist() = showSessionWishlist("somethirduser")
+      def updateWish()   = updateSessionWish("somethirduser")
    }
 
    trait WishAnonSetup extends WishSetup {
@@ -130,7 +142,8 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       }
       def reserveWish() = wishController.reserveWish("someuser", 123, 444).apply(FakeRequest())
 
-      def updateWish() = wishController.updateWish("someuser", 123, 444).apply(FakeRequest())
+      def updateWish() = wishController.updateWish("someuser", 123, 444)
+            .apply(FakeRequest().withFormUrlEncodedBody())
 
       def deleteWish() = wishController.removeWishFromWishlist("someuser", 123, 444).apply(FakeRequest())
    }
@@ -157,8 +170,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
                   .headOption mustBe defined
          }
          "be able to update wish" in new WishRecipientSetup {
-//            status(updateWish()) mustBe 303
-            pending
+            status(updateWish()) mustBe 303
+
+            verify( wishRepositoryMock ).updateWish(updatedWish)
          }
          "be able to delete wish" in new WishRecipientSetup {
 //            status(deleteWish()) mustBe 303
@@ -195,7 +209,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
          "be able to reserve wish" in new WishOrganiserSetup {
             status(reserveWish("someotheruser")) mustBe 303
          }
-         "be able to update wish" is (pending)
+         "be able to update wish" in new WishOrganiserSetup {
+            status(updateWish()) mustBe 303
+         }
          "be able to delete wish" is (pending)
       }
 
@@ -218,7 +234,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
          "be able to reserve wish" in new WishOtherSetup {
             status(reserveWish("somethirduser")) mustBe 303
          }
-         "not be able to update wish" is (pending)
+         "not be able to update wish" in new WishOtherSetup {
+            status(updateWish()) mustBe 401
+         }
          "not be able to delete wish" is (pending)
       }
 
@@ -241,7 +259,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
          "not be able to reserve wish" in new WishAnonSetup {
             status(reserveWish()) mustBe 401
          }
-         "not be able to update wish" is (pending)
+         "not be able to update wish" in new WishAnonSetup {
+            status(updateWish()) mustBe 401
+         }
          "not be able to delete wish" is (pending)
       }
    }

@@ -55,9 +55,10 @@ case class Wish(
 
 
     def delete = Wish.delete(this)
-
-    def update = Wish.update(this)
-
+*/
+    def update(implicit wishRepository: WishRepository) =
+       wishRepository.updateWish(this)
+/*
 
 
 
@@ -68,7 +69,7 @@ case class Wish(
     def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
     */
 
-    def findLinks : List[WishLink] = List() // WishLink.findWishLinks(this)
+    def findLinks : List[WishLink] = List() // TODO WishLink.findWishLinks(this)
 
    //  def moveToWishlist(targetWishlist:Wishlist) = WishEntry.moveWishToWishlist(this,targetWishlist)
 }

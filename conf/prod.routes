@@ -34,17 +34,18 @@ POST   /recipient/:username/wishlist/:wishlistId/organiser/                  con
 POST   /recipient/:username/wishlist/:wishlistId/organiser/:organiser/delete controllers.WishlistController.alsoRemoveOrganiserFromWishlist(username, wishlistId: Long, organiser: String)
 DELETE /recipient/:username/wishlist/:wishlistId/organiser/:organiser        controllers.WishlistController.removeOrganiserFromWishlist(username, wishlistId: Long, organiser: String)
 
-POST   /recipient/:username/wishlist/:wishlistId/order 		controllers.WishController.updateWishlistOrder(username, wishlistId: Long)
+POST   /recipient/:username/wishlist/:wishlistId/order 		controllers.WishlistController.updateWishlistOrder(username, wishlistId: Long)
 
 POST   /recipient/:username/wishlist/:wishlistId/wish                   controllers.WishController.addWishToWishlist(username, wishlistId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/move		controllers.WishController.moveWishToWishlist(username, wishlistId: Long, wishId: Long)
+POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/update    controllers.WishController.updateWish(username, wishlistId: Long, wishId: Long)
+PUT    /recipient/:username/wishlist/:wishlistId/wish/:wishId           controllers.WishController.alsoUpdateWish(username, wishlistId: Long, wishId: Long)
+POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/delete    controllers.WishController.alsoRemoveWishFromWishlist(username, wishlistId: Long, wishId: Long)
+DELETE /recipient/:username/wishlist/:wishlistId/wish/:wishId           controllers.WishController.removeWishFromWishlist(username, wishlistId: Long, wishId: Long)
+
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/reserve   controllers.WishController.reserveWish(username, wishlistId:Long, wishId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/unreserve controllers.WishController.unreserveWish(username, wishlistId:Long, wishId: Long)
 POST   /recipient/:username/reservations/wish/:wishId/unreserve         controllers.WishController.unreserveWishFromProfile(username, wishId: Long)
-POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/update    controllers.WishController.alsoUpdateWish(username, wishlistId: Long, wishId: Long)
-PUT    /recipient/:username/wishlist/:wishlistId/wish/:wishId           controllers.WishController.updateWish(username, wishlistId: Long, wishId: Long)
-POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/delete    controllers.WishController.alsoRemoveWishFromWishlist(username, wishlistId: Long, wishId: Long)
-DELETE /recipient/:username/wishlist/:wishlistId/wish/:wishId           controllers.WishController.removeWishFromWishlist(username, wishlistId: Long, wishId: Long)
 
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/ 		        controllers.WishController.addLinkToWish(username, wishlistId: Long, wishId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/delete	controllers.WishController.alsoDeleteLinkFromWish(username, wishlistId: Long, wishId: Long, linkId: Long)
