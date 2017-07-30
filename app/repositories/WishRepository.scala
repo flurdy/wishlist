@@ -110,8 +110,6 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
          wish.wishId.fold{
             throw new IllegalArgumentException("Can not save wish without id")
          }{ wishId =>
-            logger.debug("Updating wish: "+wish.wishId)
-            logger.debug("Updating wish: "+wish.title)
             db.withConnection { implicit connection =>
                val updated =
                   SQL"""
@@ -126,42 +124,23 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
          }
       }
    }
+
+   def deleteWish(wish: Wish) =
+       Future {
+          wish.wishId.fold{
+             throw new IllegalArgumentException("Can not save wish without id")
+          } { wishId =>
+             db.withConnection { implicit connection =>
+                SQL"""
+                      delete from wish
+                      where wishid = $wishId
+                   """
+                   .execute()
+             }
+          }
+       }
 }
 
 
 @Singleton
 class DefaultWishRepository @Inject() (val dbApi: DBApi) extends WishRepository
-
-
-@ImplementedBy(classOf[DefaultWishEntryRepository])
-trait WishEntryRepository extends Repository {
-
-   def saveWishEntry(wishEntry: WishEntry): Future[WishEntry] =
-      Future{
-         (wishEntry.wish.wishId, wishEntry.wishlist.wishlistId) match {
-            case (Some(wishId), Some(wishlistId)) =>
-               db.withConnection{ implicit connection =>
-                  val maxOrdinal =
-                     SQL"""
-                           SELECT COALESCE(MAX(ordinal),0) + 1 from wishentry
-                           where wishlistid = $wishlistId
-                        """
-                        .as(scalar[Int].single)
-                     SQL"""
-                           insert into wishentry
-                           (wishid,wishlistid,ordinal)
-                           values
-                           ($wishId,$wishlistId,$maxOrdinal)
-                        """
-                        .executeInsert()
-                     wishEntry
-               }
-            case _ =>
-               throw new IllegalArgumentException("Can not add wish to wishlist without id")
-         }
-      }
-}
-
-
-@Singleton
-class DefaultWishEntryRepository @Inject() (val dbApi: DBApi) extends WishEntryRepository

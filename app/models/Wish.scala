@@ -58,16 +58,22 @@ case class Wish(
 */
     def update(implicit wishRepository: WishRepository) =
        wishRepository.updateWish(this)
-/*
+
+   def removeFromWishlist(wishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository, wishRepository: WishRepository) =
+      wishlist.removeWish(this) flatMap { _ =>
+         wishRepository.deleteWish(this)
+      }
+
+   /*
 
 
 
-    def addLink(url:String) = Wish.addLinkToWish(this,url)
+       def addLink(url:String) = Wish.addLinkToWish(this,url)
 
-    def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
+       def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
 
-    def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
-    */
+       def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
+       */
 
     def findLinks : List[WishLink] = List() // TODO WishLink.findWishLinks(this)
 

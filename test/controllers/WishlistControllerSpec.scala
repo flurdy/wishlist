@@ -26,7 +26,7 @@ class WishlistControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
       val wishEntryRepositoryMock = mock[WishEntryRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
       val controller = new WishlistController(configurationMock, recipientLookupMock)(
-         wishlistRepositoryMock, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock, wishLookupMock, reservationRepositoryMock, recipientRepositoryMock)
+         wishlistRepositoryMock, wishlistLookupMock, wishLookupMock, recipientRepositoryMock)
    }
 
    trait WishlistSetup extends Setup {

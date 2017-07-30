@@ -23,11 +23,12 @@ case class Wishlist(
     def findWishes(implicit wishLookup: WishLookup): Future[Seq[Wish]] = // Future.successful(Seq[Wish]()) // Wishlist.findWishesForWishlist(this)
       wishLookup.findWishes(this)
 
+//    def update = Wishlist.update(this)
+
+    def removeWish(wish: Wish)(implicit wishEntryRepository: WishEntryRepository) =
+       wishEntryRepository.removeWishFromWishlist(wish, this)
+
     /*
-    def update = Wishlist.update(this)
-
-    def removeWish(wish:Wish) = WishEntry.removeWishFromWishlist(wish,this)
-
 
     def findOrganisers = Wishlist.findOrganisers(this)
 

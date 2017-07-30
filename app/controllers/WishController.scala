@@ -28,7 +28,7 @@ trait WishForm {
    )
 }
 
-class WishRequest[A](val wish: Wish, request: MaybeCurrentRecipientRequest[A]) extends WrappedRequest[A](request){
+class WishRequest[A](val wish: Wish, val wishlist: Option[Wishlist], request: MaybeCurrentRecipientRequest[A]) extends WrappedRequest[A](request){
    lazy val username = request.username
    lazy val currentRecipient: Option[Recipient] = request.currentRecipient
 }
@@ -43,7 +43,7 @@ trait WishActions {
    def WishWishlistAction(wishId: Long) = new ActionRefiner[WishlistRequest, WishRequest] {
       def refine[A](input: WishlistRequest[A]) =
          wishLookup.findWishById(wishId) map { w =>
-            w.map ( new WishRequest(_, input.maybeRecipient) )
+            w.map ( new WishRequest(_, Some(input.wishlist), input.maybeRecipient) )
             .toRight(NotFound)
          }
    }
@@ -51,7 +51,7 @@ trait WishActions {
    def WishAction(wishId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishRequest] {
       def refine[A](input: MaybeCurrentRecipientRequest[A]) = Future.successful {
          Some(new Wish(wishId, input.currentRecipient.get)).map( wish =>
-                  new WishRequest(wish, input))
+                  new WishRequest(wish, None, input))
               .toRight(NotFound)
       }
    }
@@ -132,21 +132,20 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
         )
    }
 
-   def alsoRemoveWishFromWishlist(username: String, wishlistId: Long, wishId: Long) = TODO
+   def alsoRemoveWishFromWishlist(username: String, wishlistId: Long, wishId: Long) = removeWishFromWishlist( username, wishlistId, wishId)
 
-   def removeWishFromWishlist(username: String, wishlistId: Long, wishId: Long) = TODO
-
-/*
-
-
-  def removeWishFromWishlist(username:String,wishlistId:Long,wishId:Long) = isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
-
-      wishlist.removeWish(wish)
-
-      Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageWarning" -> "Wish deleted")
-   }
-
-   */
+   def removeWishFromWishlist(username: String, wishlistId: Long, wishId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
+         request.wishlist match {
+            case Some(wishlist) =>
+               wishlist.removeWish(request.wish).map { wishlist =>
+                  Redirect(routes.WishlistController.showWishlist(username, wishlistId))
+                     .flashing("messageWarning" -> "Wish deleted")
+               }
+            case _ => Future.successful(NotFound)
+         }
+      }
 
    def alsoUpdateWish(username: String, wishlistId: Long, wishId: Long) = updateWish(username, wishlistId, wishId)
 

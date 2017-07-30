@@ -28,7 +28,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       val wishController = new WishController(configurationMock, recipientLookupMock)(
          wishlistRepositoryMock, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock, wishLookupMock, reservationRepositoryMock, recipientRepositoryMock)
       val wishlistController = new WishlistController(configurationMock, recipientLookupMock)(
-         wishlistRepositoryMock, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock, wishLookupMock, reservationRepositoryMock, recipientRepositoryMock)
+         wishlistRepositoryMock, wishlistLookupMock, wishLookupMock, recipientRepositoryMock)
    }
 
    trait WishSetup extends Setup {
@@ -81,6 +81,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       when( wishRepositoryMock.updateWish(updatedWish))
             .thenReturn( Future.successful(updatedWish))
 
+      when (wishEntryRepositoryMock.removeWishFromWishlist(unreservedWish, wishlist))
+            .thenReturn( Future.successful(wishlist))
+
       def showSessionWishlist(sessionUsername: String) = {
          val result = wishlistController.showWishlist("someuser", 123)
                               .apply(FakeRequest().withSession("username"  -> sessionUsername))
@@ -88,7 +91,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
          ScalaSoup.parse(contentAsString(result))
       }
 
-      def reserveWish(sessionUsername: String) =
+      def reserveSessionWish(sessionUsername: String) =
          wishController.reserveWish("someuser", 123, 444)
                        .apply(FakeRequest().withSession("username"  -> sessionUsername))
 
@@ -100,14 +103,16 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
                         "title" -> "updated wishlist",
                         "description" -> "updated description"))
 
-      def deleteWish(sessionUsername: String) =
+      def deleteSessionWish(sessionUsername: String) =
          wishController.removeWishFromWishlist("someuser", 123, 444)
                        .apply(FakeRequest().withSession("username"  -> sessionUsername))
    }
 
    trait WishRecipientSetup extends WishSetup {
       def showWishlist() = showSessionWishlist("someuser")
+      def reserveWish()  = reserveSessionWish("someuser")
       def updateWish()   = updateSessionWish("someuser")
+      def deleteWish()   = deleteSessionWish("someuser")
    }
 
    trait WishOrganiserSetup extends WishSetup {
@@ -122,7 +127,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
             .thenReturn( Future.successful( anotherReservation ))
 
       def showWishlist() = showSessionWishlist("someotheruser")
+      def reserveWish()  = reserveSessionWish("someotheruser")
       def updateWish()   = updateSessionWish("someotheruser")
+      def deleteWish()   = deleteSessionWish("someotheruser")
    }
 
    trait WishOtherSetup extends WishSetup {
@@ -131,7 +138,9 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
             .thenReturn( Future.successful( otherReservation ))
 
       def showWishlist() = showSessionWishlist("somethirduser")
+      def reserveWish()  = reserveSessionWish("somethirduser")
       def updateWish()   = updateSessionWish("somethirduser")
+      def deleteWish()   = deleteSessionWish("somethirduser")
    }
 
    trait WishAnonSetup extends WishSetup {
@@ -148,121 +157,167 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       def deleteWish() = wishController.removeWishFromWishlist("someuser", 123, 444).apply(FakeRequest())
    }
 
-   "Wish controller" when {
+   "Wish controller" when given {
+      "logged in as wishlist recipient" when calling {
+         "showWishlist" should {
+            "not see reserve button" in new WishRecipientSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .reserve-button")
+                     .headOption mustBe None
+            }
+            "not see reserve status" in new WishRecipientSetup {
+               showWishlist()
+                     .select("#view-wishlist-page ul #wish-row-544 .reserved")
+                     .headOption mustBe None
+            }
+            "see edit button" in new WishRecipientSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
+                     .headOption mustBe defined
+            }
+         }
+         "reserveWish" should {
+            "not be able to reserve its own wish" in new WishRecipientSetup {
+               status(reserveWish()) mustBe 401
+            }
+         }
+         "updateWish" should {
+            "be able to update wish" in new WishRecipientSetup {
+               status(updateWish()) mustBe 303
 
-      "logged in as wishlist recipient" should {
-         "not see reserve button" in new WishRecipientSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .reserve-button")
-                  .headOption mustBe None
+               verify(wishRepositoryMock).updateWish(updatedWish)
+            }
          }
-         "not see reserve status" in new WishRecipientSetup {
-            showWishlist()
-                  .select("#view-wishlist-page ul #wish-row-544 .reserved")
-                  .headOption mustBe None
-         }
-         "not be able to reserve its own wish" in new WishRecipientSetup {
-            status(reserveWish("someuser")) mustBe 401
-         }
-         "see edit button" in new WishRecipientSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
-                  .headOption mustBe defined
-         }
-         "be able to update wish" in new WishRecipientSetup {
-            status(updateWish()) mustBe 303
+         "deleteWish" should {
+            "be able to delete wish" in new WishRecipientSetup {
+               status(deleteWish()) mustBe 303
 
-            verify( wishRepositoryMock ).updateWish(updatedWish)
-         }
-         "be able to delete wish" in new WishRecipientSetup {
-//            status(deleteWish()) mustBe 303
-            pending
+               verify(wishEntryRepositoryMock).removeWishFromWishlist(unreservedWish, wishlist)
+            }
          }
       }
 
-      "logged in as organiser of wishlist" should {
-         "see edit button" in new WishOrganiserSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
-                  .headOption mustBe defined
+      "logged in as organiser of wishlist" when calling {
+         "showWishlist" should {
+            "see edit button" in new WishOrganiserSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
+                     .headOption mustBe defined
+            }
+            "see reserve status if reserved" in new WishOrganiserSetup {
+               showWishlist()
+                     .select("#view-wishlist-page ul #wish-row-544 .reserved")
+                     .headOption.value.text mustBe "reserved"
+            }
+            "see reserve button" in new WishOrganiserSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .reserve-button")
+                     .headOption mustBe defined
+            }
+            "see reserve cancel button if reserved" in new WishOrganiserSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-544 .reserve-button")
+                     .headOption.value.text mustBe "cancel reservation"
+            }
+            "not see reserve cancel button if reserved by someone else" in new WishOrganiserSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-644 .reserve-button")
+                     .headOption mustBe None
+            }
          }
-         "see reserve status if reserved" in new WishOrganiserSetup {
-            showWishlist()
-                  .select("#view-wishlist-page ul #wish-row-544 .reserved")
-                  .headOption.value.text mustBe "reserved"
+         "reserveWish" should {
+            "be able to reserve wish" in new WishOrganiserSetup {
+               status(reserveWish()) mustBe 303
+            }
          }
-         "see reserve button" in new WishOrganiserSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .reserve-button")
-                  .headOption mustBe defined
+         "updateWish" should {
+            "be able to update wish" in new WishOrganiserSetup {
+               status(updateWish()) mustBe 303
+
+               verify(wishRepositoryMock).updateWish(updatedWish)
+            }
          }
-         "see reserve cancel button if reserved" in new WishOrganiserSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-544 .reserve-button")
-                  .headOption.value.text mustBe "cancel reservation"
+         "deleteWish" should {
+            "be able to delete wish" in new WishOrganiserSetup {
+               status(deleteWish()) mustBe 303
+
+               verify(wishEntryRepositoryMock).removeWishFromWishlist(unreservedWish, wishlist)
+            }
          }
-         "not see reserve cancel button if reserved by someone else" in new WishOrganiserSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-644 .reserve-button")
-                  .headOption mustBe None
-         }
-         "be able to reserve wish" in new WishOrganiserSetup {
-            status(reserveWish("someotheruser")) mustBe 303
-         }
-         "be able to update wish" in new WishOrganiserSetup {
-            status(updateWish()) mustBe 303
-         }
-         "be able to delete wish" is (pending)
       }
 
-      "logged in but not recipient nor organiser of wishlist" should {
-         "not see edit button" in new WishOtherSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
-                  .headOption mustBe None
+      "logged in but not recipient nor organiser of wishlist" when calling {
+         "showWishlist" should {
+            "not see edit button" in new WishOtherSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
+                     .headOption mustBe None
+            }
+            "see reserve status if reserved" in new WishOtherSetup {
+               showWishlist()
+                     .select("#view-wishlist-page ul #wish-row-544 .reserved")
+                     .headOption.value.text mustBe "reserved"
+            }
+            "see reserve button" in new WishOtherSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .reserve-button")
+                     .headOption mustBe defined
+            }
          }
-         "see reserve status if reserved" in new WishOtherSetup {
-            showWishlist()
-                  .select("#view-wishlist-page ul #wish-row-544 .reserved")
-                  .headOption.value.text mustBe "reserved"
+         "reserveWish" should {
+            "be able to reserve wish" in new WishOtherSetup {
+               status(reserveWish()) mustBe 303
+            }
          }
-         "see reserve button" in new WishOtherSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .reserve-button")
-                  .headOption mustBe defined
+         "updateWish" should {
+            "not be able to update wish" in new WishOtherSetup {
+               status(updateWish()) mustBe 401
+            }
          }
-         "be able to reserve wish" in new WishOtherSetup {
-            status(reserveWish("somethirduser")) mustBe 303
+         "deleteWish" should {
+            "not be able to delete wish" in new WishOtherSetup {
+               status(deleteWish()) mustBe 401
+
+               verifyZeroInteractions(wishEntryRepositoryMock)
+            }
          }
-         "not be able to update wish" in new WishOtherSetup {
-            status(updateWish()) mustBe 401
-         }
-         "not be able to delete wish" is (pending)
       }
 
-      "not logged in" should {
-         "not see edit button" in new WishAnonSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
-                  .headOption mustBe None
+      "not logged in" when calling {
+         "showWishlist" should {
+            "not see edit button" in new WishAnonSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .wish-edit-button")
+                     .headOption mustBe None
+            }
+            "not see reserve status if reserved" in new WishAnonSetup {
+               showWishlist()
+                     .select("#view-wishlist-page ul #wish-row-544 .reserved")
+                     .headOption mustBe None
+            }
+            "see reserve button irrespective of status" in new WishAnonSetup {
+               showWishlist()
+                     .select("#view-wishlist-page #wishModal-444 .reserve-button")
+                     .headOption mustBe defined
+            }
          }
-         "not see reserve status if reserved" in new WishAnonSetup {
-            showWishlist()
-                  .select("#view-wishlist-page ul #wish-row-544 .reserved")
-                  .headOption mustBe None
+         "reserveWish" should {
+            "not be able to reserve wish" in new WishAnonSetup {
+               status(reserveWish()) mustBe 401
+            }
          }
-         "see reserve button irrespective of status" in new WishAnonSetup {
-            showWishlist()
-                  .select("#view-wishlist-page #wishModal-444 .reserve-button")
-                  .headOption mustBe defined
+         "updateWish" should {
+            "not be able to update wish" in new WishAnonSetup {
+               status(updateWish()) mustBe 401
+            }
          }
-         "not be able to reserve wish" in new WishAnonSetup {
-            status(reserveWish()) mustBe 401
+         "deleteWish" should {
+            "not be able to delete wish" in new WishAnonSetup {
+               status(deleteWish()) mustBe 401
+
+               verifyZeroInteractions(wishEntryRepositoryMock)
+            }
          }
-         "not be able to update wish" in new WishAnonSetup {
-            status(updateWish()) mustBe 401
-         }
-         "not be able to delete wish" is (pending)
       }
    }
 }
