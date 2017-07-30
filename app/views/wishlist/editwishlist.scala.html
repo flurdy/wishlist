@@ -3,13 +3,10 @@
 @import helper._
 
 @nautical("") {
-	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
+	<li><a href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
 	
 	<div>
-
-
-
 
 	    @for(error <- editWishlistForm.errors){
 	    <p class="alert alert-error">
@@ -17,7 +14,6 @@
 	        @error.message: @error.key
 	    </p>
 	    }
-	    
 
 	    @for(error <- addOrganiserForm.errors){
 	    <p class="alert alert-error">
@@ -25,14 +21,10 @@
 	        @error.message
 	    </p>
 	    }
-	    
-
-
-		
 
 		<div class="well" >
 
-			@form(action = routes.WishController.updateWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
+			@form(action = routes.WishlistController.updateWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
 
 				<div class="control-group">
     				<label class="control-label" for="inputTitle">Title</label>
@@ -49,18 +41,16 @@
 				</div>
 
 
-
 				<div class="control-group">
 					<div class="controls" id="buttons-row">
 						<button type="submit" class="btn btn-success">update wishlist</button>
-    <a class="btn btn-inverse" href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">show wishlist</a>
+    <a class="btn btn-inverse" href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">show wishlist</a>
 
 					</div>
 				</div>
 			}
 
 		</div>
-
 
 
 			<div class="well" >
@@ -71,7 +61,7 @@
 				<ul id="organiser-list" class="unstyled">									
 					@for(organiser <- organisers){	                    
 						<li>
-							@form(action = routes.WishController.removeOrganiserFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,organiser.username), 'class -> "form-inline"){
+							@form(action = routes.WishlistController.removeOrganiserFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,organiser.username), 'class -> "form-inline"){
 								<a href="@routes.RecipientController.showProfile(organiser.username)">@organiser.username</a>
 								<button type="submit" class="btn btn-warning btn-small">remove organiser</button>								
 							}
@@ -85,7 +75,7 @@
 
 			<div class="well" >
 
-			@form(action = routes.WishController.addOrganiserToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
+			@form(action = routes.WishlistController.addOrganiserToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
 				<input type="hidden" name="wishlistid" value="@wishlist.wishlistId.get"/>
 				<input type="hidden" name="recipient" value="@currentRecipient.get.username"/>
 				<input type="text" class="input-large" name="username" placeholder="Organiser's username" value="@addOrganiserForm("username").value"/>
@@ -97,7 +87,7 @@
 
 		<div class="well" >
 
-			@form(action = routes.WishController.showConfirmDeleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
+			@form(action = routes.WishlistController.showConfirmDeleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
 				<div class="control-group">
 					<div class="controls" id="buttons-row">
 						<button type="submit" class="btn btn-danger input-medium">delete wishlist</button>
@@ -106,9 +96,5 @@
 			}
 
 		</div>
-
-
-	
 	</div>
-
 }

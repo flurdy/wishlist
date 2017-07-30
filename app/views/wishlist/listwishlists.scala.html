@@ -24,7 +24,7 @@
 					@for(wishlistId <- wishlist.wishlistId) {
 						<tr>
 							<td>
-								<a href="@routes.WishController.showWishlist(wishlist.recipient.username, wishlistId)">@wishlist.title</a>
+								<a href="@routes.WishlistController.showWishlist(wishlist.recipient.username, wishlistId)">@wishlist.title</a>
 							</td>
 							<td>
 								<a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a>
@@ -39,7 +39,7 @@
 
 
 		<div class="well" id="search-box">
-			@form(action = routes.WishController.search(), 'class -> "form-search", 'method -> "get"){
+			@form(action = routes.WishlistController.search(), 'class -> "form-search", 'method -> "get"){
 			<div class="input-append">
 				<input type="text" class="input-xlarge  search-query" placeholder="Partial title of wishlist or recipient" name="term" value="@searchForm("term").value"/>
 				<button type="submit" class="btn btn-primary input-small">search</button>
@@ -52,7 +52,7 @@
 
 			<div class="well" >
 
-				@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-horizontal"){
+				@form(action = routes.WishlistController.createWishlist(currentRecipient.get.username), 'class -> "form-horizontal"){
 					<input type="text" class="input-xlarge" placeholder="Title of new wishlist" name="title" maxlength="50" value="@createWishlistForm("title").value"/>
 					<button type="submit" class="btn btn-info input-small">create</button>
 				}

@@ -115,16 +115,21 @@ case class Recipient (
   def setEmailAsVerified = Recipient.setEmailAsVerified(this)
 */
 
-  def isSame(other: Recipient) = recipientId.fold(false)( _ => recipientId == other.recipientId )
+  def isSame(other: Recipient) = isSameId(other) || isSameUsername(other)
+
+  def isSameId(other: Recipient) = recipientId.fold(false)( _ => recipientId == other.recipientId )
 
   def isSameUsername(other: Recipient) = username == other.username
 
-  def canEdit(wishlist:Wishlist)(implicit wishlistLookup: WishlistLookup) =
-      wishlist.isOrganiser(this).map( _ || isAdmin || wishlist.recipient.isSame(this) )
+  def canEdit(wishlist: Wishlist)(implicit wishlistLookup: WishlistLookup) =
+     if(isAdmin || wishlist.recipient.isSame(this)) Future.successful(true)
+     else wishlist.isOrganiser(this)
 
-/*
-  def findEditableWishlists = Wishlist.findEditableWishlists(this)
-  */
+  def findEditableWishlists(implicit wishlistRepository: WishlistRepository) =
+     for {
+        ownWishlists       <- findWishlists
+        organisedWishlists <- findOrganisedWishlists
+     } yield ownWishlists union organisedWishlists
 }
 
 

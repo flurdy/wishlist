@@ -61,6 +61,17 @@ trait WishLookup extends Repository with WishMapper with WithLogging {
          wish.copy(links = wish.findLinks)
       }
    }
+   def findWishById(wishId: Long): Future[Option[Wish]] =
+      Future {
+         db.withConnection { implicit connection =>
+            SQL"""
+                 SELECT wish.*,recipient.username FROM wish
+                 INNER JOIN recipient on recipient.recipientid = wish.recipientid
+                 WHERE wish.wishid = $wishId
+               """
+               .as(MapToWish.singleOpt)
+         }
+      }
 }
 
 

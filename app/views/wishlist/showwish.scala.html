@@ -41,7 +41,7 @@
 		 @if(editor){
 		 	<i class="icon-resize-vertical pull-right"></i>
 		 }
-		@if(currentRecipient.isDefined && wishlist.recipient != currentRecipient.get && wish.reservation.isDefined){
+		@if(currentRecipient.isDefined && !wishlist.recipient.isSame(currentRecipient.get) && wish.reservation.isDefined){
 			<div class="reserved">reserved</div>
 			<s><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal">@titleCapper(wish.title,wish.description)</a></s> &nbsp;&nbsp; <small class="wish-description" class="muted"><a href="#wishModal-@wish.wishId.get" role="button" class="" data-toggle="modal"><s>@descriptionCapper(wish.title,wish.description)</s></a><small>
 		} else {

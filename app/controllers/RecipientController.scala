@@ -19,7 +19,7 @@ import repositories._
 @Singleton
 class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
          (implicit val recipientRepository: RecipientRepository, val wishlistRepository: WishlistRepository, val reservationRepository: ReservationRepository)
-extends Controller with Secured with WithAnalytics with WishForm with WithLogging {
+extends Controller with Secured with WithAnalytics with WishlistForm with WithLogging {
 
 /*
 

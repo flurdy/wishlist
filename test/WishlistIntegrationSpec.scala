@@ -145,8 +145,5 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
             showWishlistResponse2.status shouldBe 404
          }
       }
-
-      scenario("find wishlists")(pending)
-
    }
 }

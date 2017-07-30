@@ -22,11 +22,9 @@ case class Reservation(
    def save(implicit reservationRepository: ReservationRepository): Future[Reservation] =
       reservationRepository.saveReservation(this)
 
-   def cancel = ??? // Future.successful(Right(this)) // Reservation.cancel(this)
+   def cancel = ??? // TODO Future.successful(Right(this)) // Reservation.cancel(this)
 
-   def isReserver(possibleReserver: Recipient) =
-      reserver.recipientId.isDefined && reserver.recipientId == possibleReserver.recipientId
-      // false // Reservation.findReserver(this).get == recipient
+   def isReserver(possibleReserver: Recipient) = reserver.isSame(possibleReserver)
 
 }
 

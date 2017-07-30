@@ -28,7 +28,7 @@ trait WithLogging {
 @Singleton
 class Application @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
 (implicit val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)
-extends Controller with Secured with WithAnalytics with WishForm with WithLogging {
+extends Controller with Secured with WithAnalytics with WishlistForm with WithLogging {
 
    def index = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
       request.currentRecipient match {

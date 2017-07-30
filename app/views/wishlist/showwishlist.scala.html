@@ -4,7 +4,7 @@
 @import wishlist._
 
 @nautical(wishlist.title) {
-	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
+	<li><a href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
 
 	<div id="view-wishlist-page">

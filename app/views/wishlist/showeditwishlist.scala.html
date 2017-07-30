@@ -1,14 +1,13 @@
-@(wishlist:Wishlist,wishes:Seq[Wish],addWishForm:Form[String],gravatarUrl:String,editableWishlists:Seq[Wishlist])(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(wishlist: Wishlist, wishes: Seq[Wish], addWishForm: Form[String], gravatarUrl: Option[String], editableWishlists: Seq[Wishlist])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 @import wishlist._
 
 @nautical(wishlist.title) {
-	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
+	<li><a href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
 
 	<div id="view-wishlist-page">
-
 
         @for(error <- addWishForm.errors){
         <p class="alert alert-error">
@@ -17,45 +16,39 @@
         </p>
         }
 
-
-
         <div class="well" >
 
-			<img class="gravatar img-rounded" src="@gravatarUrl" title="Avatar of @wishlist.recipient.username from Gravatar.com"/>
+			@for(url <- gravatarUrl) {
+				<img class="gravatar img-rounded" src="@url" title="Avatar of @wishlist.recipient.username from Gravatar.com"/>
+			}
 
 			<h3>@wishlist.title</h3>
-
 
 			<p>A wishlist by <a href="@routes.RecipientController.showProfile(wishlist.recipient.username)">@wishlist.recipient.username</a></p>
 
 			<p>@wishlist.description</p>
 
-
 		</div>
-
 
 
 		@if(wishes.size>0){
 
-		<div class="well" id="wishlist-wishes">
+			<div class="well" id="wishlist-wishes">
 
-			<h4>Wishes</h4>
+				<h4>Wishes</h4>
 
-			<ul id="wish-list" class="unstyled sortable">
-				@for(wish <- wishes){
-                    @showwish(wishlist,wish,true)
-				}
-			</ul>
+				<ul id="wish-list" class="unstyled sortable">
+					@for(wish <- wishes){
+						@showwish(wishlist, wish, true)
+					}
+				</ul>
 
-		</div>
+			</div>
             @for(wish <- wishes){
-                @wisheditmodal(wishlist,wish,editableWishlists)
+                @wisheditmodal(wishlist, wish, editableWishlists)
             }
 
 		}
-
-
-
 
 		<div class="well" >
 			@form(action = routes.WishController.addWishToWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-inline"){
@@ -64,12 +57,11 @@
 			}
 		</div>
 
-
-
 		<div class="well" >
 			<div class="control-group">
 				<div class="buttons">
-					<a class="btn btn-warning input-small" href="@routes.WishController.showEditWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">edit wishlist</a>
+					<a class="btn btn-warning input-small"
+						href="@routes.WishlistController.showEditWishlist(wishlist.recipient.username, wishlist.wishlistId.get)">edit wishlist</a>
 				</div>
 			</div>
 		</div>
@@ -116,8 +108,5 @@
 			    	});
 		    });
 		</script>
-
 	</div>
-
-
 }

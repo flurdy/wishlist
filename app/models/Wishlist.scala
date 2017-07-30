@@ -37,7 +37,6 @@ case class Wishlist(
 
     */
     def isOrganiser(organiser: Recipient)(implicit wishlistLookup: WishlistLookup) =
-    // Wishlist.isOrganiserOfWishlist(organiser,this)
       wishlistLookup.isOrganiserOfWishlist(organiser, this)
 
     def inflate(implicit recipientRepository: RecipientRepository): Future[Wishlist] =
@@ -290,12 +289,6 @@ object Wishlist {
         'recipientid -> organiser.recipientId.get
       ).execute()
     }
-  }
-
-
-
-  def findEditableWishlists(recipient:Recipient) = {
-    findByRecipient(recipient) union findByOrganiser(recipient)
   }
 
 
