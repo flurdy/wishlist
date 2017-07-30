@@ -35,8 +35,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WithLoggin
          case Some(recipient) =>
             recipient.inflate.flatMap{
                case Right(r) =>
-                  r.findWishlists.map { wishlists =>
-                     logger.debug(s"wishlists found ${wishlists.size}")
+                  r.findAndInflateWishlists.map { wishlists =>
                      Ok(views.html.indexrecipient(editWishlistForm, wishlists))
                            .withSession(request.session)
                   }

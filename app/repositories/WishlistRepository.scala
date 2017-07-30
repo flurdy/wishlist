@@ -1,13 +1,10 @@
 package repositories
 
 import anorm._
-import anorm.JodaParameterMetaData._
 import anorm.SqlParser._
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
-import org.joda.time.DateTime
 import play.api.db._
-// import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import models._
@@ -188,18 +185,6 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
             .as(MapToShallowWishlist *)
          }
       }
-
-   def inflateWishlistsRecipients(shallowWishlists: List[Wishlist])(implicit recipientRepository: RecipientRepository): Future[List[Wishlist]] = {
-      val thickerWishlists =
-         shallowWishlists.flatMap { wishlist =>
-            wishlist.recipient.recipientId map { recipientId =>
-               recipientRepository.findRecipientById(recipientId) map {
-                  _.map( r => wishlist.copy(recipient = r))
-               }
-            }
-         }
-      Future.sequence(thickerWishlists).map( _.flatten )
-   }
 }
 
 @Singleton

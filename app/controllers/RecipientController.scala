@@ -122,15 +122,15 @@ class RecipientController extends Controller with Secured {
       recipientLookup.findRecipient(username) flatMap {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
             for {
-               wishlists    <- recipient.findWishlists
-               organised    <- recipient.findOrganisedWishlists
+               wishlists    <- recipient.findAndInflateWishlists
+               organised    <- recipient.findAndInflateOrganisedWishlists
                reservations <- recipient.findAndInflateReservations
                gravatarUrl  =  None
             } yield Ok(views.html.recipient.profile(recipient, wishlists,
                   organised, reservations, editWishlistForm, gravatarUrl ))
          case Some(recipient) =>
             for {
-             wishlists    <- recipient.findWishlists
+             wishlists    <- recipient.findAndInflateWishlists
              gravatarUrl  =  None
             } yield Ok(views.html.recipient.profile(recipient, wishlists,
                   organisedWishlists = Nil, reservations = Nil, editWishlistForm, gravatarUrl ))

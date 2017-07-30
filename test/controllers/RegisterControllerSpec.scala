@@ -22,8 +22,6 @@ import repositories._
 
 class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite with TableDrivenPropertyChecks {
 
-   def given = afterWord("given")
-
    val invalidEmailAddresses =
       Table(
          ("invalid email address", "error message"),

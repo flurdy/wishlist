@@ -64,6 +64,8 @@ class WishlistAccessRequest[A](val wishlist: Wishlist, currentRecipient: Recipie
 trait WishActions {
 
    implicit def wishlistLookup: WishlistLookup
+   implicit def wishlistRepository: WishlistRepository
+   implicit def recipientRepository: RecipientRepository
 
    implicit def wishlistRequestToCurrentRecipient(implicit request: WishlistRequest[_]): Option[Recipient] = request.currentRecipient
 
@@ -71,9 +73,10 @@ trait WishActions {
 
    def WishlistAction(wishlistId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishlistRequest] {
       def refine[A](input: MaybeCurrentRecipientRequest[A]) =
-         wishlistLookup.findWishlist(wishlistId).map{
-            _.map( w => new WishlistRequest(w, input))
-            .toRight(NotFound)
+         wishlistLookup.findWishlist(wishlistId) map {
+            _.map { shallowWishlist =>
+               new WishlistRequest(shallowWishlist, input)
+            }.toRight(NotFound)
          }
    }
 
@@ -260,26 +263,28 @@ class WishController extends Controller with Secured {
      (UsernameAction andThen MaybeCurrentRecipientAction
         andThen WishlistAction(wishlistId)).async { implicit request =>
 
-      val gravatarUrl = "" // recipientGravatarUrl(request.wishlist)
+      val gravatarUrl = None // recipientGravatarUrl(request.wishlist)
 
-      request.wishlist.findWishes flatMap { wishes =>
+      request.wishlist.inflate.flatMap { wishlist =>
+         wishlist.findWishes flatMap { wishes =>
+            def showWishlist = Ok(views.html.wishlist.showwishlist(
+               wishlist, wishes, simpleAddWishForm, gravatarUrl))
 
-         def showWishlist = Ok(views.html.wishlist.showwishlist(
-               request.wishlist, wishes, simpleAddWishForm, gravatarUrl))
+            def showEditWishlist = Ok(views.html.wishlist.showwishlist(
+               wishlist, wishes, simpleAddWishForm, gravatarUrl))
 
-         def showEditWishlist = Ok(views.html.wishlist.showwishlist(
-               request.wishlist, wishes, simpleAddWishForm, gravatarUrl))
-
-         findCurrentRecipient flatMap {
-            case Some(currentRecipient) =>
-               currentRecipient.canEdit(request.wishlist) map {
-                  case true  => showEditWishlist
-                  case false => showWishlist
-               }
-            case _ => Future.successful(showWishlist)
+            findCurrentRecipient flatMap {
+               case Some(currentRecipient) =>
+                  currentRecipient.canEdit(wishlist) map {
+                     case true  => showEditWishlist
+                     case false => showWishlist
+                  }
+               case _ => Future.successful(showWishlist)
+            }
          }
       }
    }
+
    //    ( for {
    //          currentRecipient  <- findCurrentRecipient
    //          wishes            <- request.wishlist.findWishes
@@ -338,7 +343,7 @@ class WishController extends Controller with Secured {
             term => {
                for {
                   wishlists <- term.fold(wishlistRepository.findAll)( t => wishlistRepository.searchForWishlistsContaining(t))
-                  wishlistsFound <- wishlistRepository.inflateWishlistsRecipients(wishlists)
+                  wishlistsFound <- Future.sequence( wishlists.map ( _.inflate ) )
                } yield
                   Ok(views.html.wishlist.listwishlists(wishlistsFound, searchForm.fill(term), editWishlistForm))
             }
@@ -356,7 +361,7 @@ class WishController extends Controller with Secured {
           errors => {
               logger.warn("Add failed: " + errors)
               request.wishlist.findWishes.map{ wishes =>
-                 BadRequest(views.html.wishlist.showwishlist(request.wishlist,wishes,errors, "")) //recipientGravatarUrl(wishlist)))
+                 BadRequest(views.html.wishlist.showwishlist(request.wishlist,wishes,errors, None)) //recipientGravatarUrl(wishlist)))
               }
           },
           title => {

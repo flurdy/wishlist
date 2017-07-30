@@ -1,10 +1,6 @@
 package models
 
-// import anorm._
-// import anorm.SqlParser._
-// import play.api.Play.current
-// import play.api.db.DB
-// import play.Logger
+import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import repositories._
 
@@ -43,6 +39,17 @@ case class Wishlist(
     def isOrganiser(organiser: Recipient)(implicit wishlistLookup: WishlistLookup) =
     // Wishlist.isOrganiserOfWishlist(organiser,this)
       wishlistLookup.isOrganiserOfWishlist(organiser, this)
+
+    def inflate(implicit recipientRepository: RecipientRepository): Future[Wishlist] =
+       recipient.recipientId.fold{
+          throw new IllegalStateException("No recipient id")
+       }{ recipientId =>
+          recipientRepository.findRecipientById(recipientId) map {
+             _.fold(throw new IllegalStateException("No recipient found")){ r =>
+                this.copy(recipient = r)
+             }
+          }
+       }
 
     require(recipient != null)
 }

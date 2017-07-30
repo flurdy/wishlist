@@ -1,12 +1,6 @@
 package controllers
 
-//import akka.stream.Materializer
 import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers.{any, anyString, eq => eqTo}
-//import org.scalatest._
-//import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-//import org.scalatest.mockito.MockitoSugar
-//import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.mvc._
@@ -32,17 +26,21 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
    trait ProfileSetup extends Setup {
 
       val recipient = new Recipient("someuser").copy(recipientId = Some(1222), fullname = Some("Some User"))
-      lazy val anotherRecipient = new Recipient("someother").copy(fullname = Some("Some Other"))
+      val anotherRecipient = new Recipient("someother").copy(recipientId = Some(5555), fullname = Some("Some Other"))
       val wishlist  = new Wishlist("Some wishlist", recipient).copy(wishlistId = Some(123))
-      lazy val organised = new Wishlist("Some organised wishlist", anotherRecipient).copy(wishlistId = Some(123))
-      lazy val wish = new Wish( 222, "Some wish title", anotherRecipient)
-      lazy val reserved = Reservation( Some(111), recipient, wish)
-      lazy val reservations = List(reserved)
+      val organised = new Wishlist("Some organised wishlist", anotherRecipient).copy(wishlistId = Some(123))
+      val wish = new Wish( 222, "Some wish title", anotherRecipient)
+      val reserved = Reservation( Some(111), recipient, wish)
+      val reservations = List(reserved)
 
       when( recipientLookupMock.findRecipient("someuser") )
             .thenReturn( Future.successful( Some( recipient ) ) )
       when( wishlistRepositoryMock.findRecipientWishlists(recipient) )
             .thenReturn( Future.successful( List(wishlist) ))
+      when( recipientRepositoryMock.findRecipientById(1222) )
+            .thenReturn( Future.successful( Some( recipient ) ) )
+//      when( wishlistRepositoryMock.inflateWishlistsRecipients(List(wishlist))(recipientRepositoryMock))
+//            .thenReturn( Future.successful( List(wishlist) ))
 
       def showAnonymousProfile() = {
 
@@ -57,6 +55,8 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
          when( wishlistRepositoryMock.findOrganisedWishlists(recipient) )
                .thenReturn( Future.successful( List(organised) ))
+         when( recipientRepositoryMock.findRecipientById(5555) )
+               .thenReturn( Future.successful( Some( anotherRecipient ) ) )
          when( reservationRepositoryMock.findReservationsByReserver(recipient) )
                .thenReturn( Future.successful( reservations))
          when( reservationRepositoryMock.inflateReservationsReserver(reservations)(recipientRepositoryMock) )
@@ -98,10 +98,17 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                      .headOption.value.text mustBe "Full name: Some User"
             }
 
-            "its wishlists" in new ProfileSetup {
-               showAnonymousProfile()
-                     .select("#profile-page #wishlist-list tr td a")
-                     .headOption.value.text mustBe "Some wishlist"
+            "wishlists" which has {
+               "a title" in new ProfileSetup {
+                  showAnonymousProfile()
+                        .select("#profile-page #wishlist-list tr td a")
+                        .headOption.value.text mustBe "Some wishlist"
+               }
+               "a valid url" in new ProfileSetup {
+                  showAnonymousProfile()
+                        .select("#profile-page #wishlist-list tr td a")
+                        .headOption.value.attr("href") mustBe "/someuser/wishlist/123/"
+               }
             }
          }
 

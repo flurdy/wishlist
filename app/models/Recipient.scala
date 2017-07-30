@@ -34,8 +34,15 @@ case class Recipient (
    def isVerified(implicit recipientRepository: RecipientRepository) =
       recipientRepository.isEmailVerified(this)
 
-   def findWishlists(implicit wishlistRepository: WishlistRepository): Future[List[Wishlist]] =
+   private def findWishlists(implicit wishlistRepository: WishlistRepository): Future[List[Wishlist]] =
       wishlistRepository.findRecipientWishlists(this)
+
+   def findAndInflateWishlists(implicit wishlistRepository: WishlistRepository, recipientRepository: RecipientRepository): Future[List[Wishlist]] =
+      findWishlists.flatMap { wishlists =>
+         Future.sequence {
+            wishlists.map ( _.inflate )
+         }
+      }
 
    def findOrGenerateVerificationHash(implicit recipientRepository: RecipientRepository): Future[String] = findVerificationHash.flatMap {
       case Some(verificationHash) => Future.successful( verificationHash )
@@ -61,10 +68,17 @@ case class Recipient (
          _.toRight(new IllegalStateException("Recipient not found"))
       }
 
-   def findOrganisedWishlists(implicit wishlistRepository: WishlistRepository) =
+   private def findOrganisedWishlists(implicit wishlistRepository: WishlistRepository) =
       wishlistRepository.findOrganisedWishlists(this)
 
-   def findReservations(implicit reservationRepository: ReservationRepository) =
+   def findAndInflateOrganisedWishlists(implicit wishlistRepository: WishlistRepository, recipientRepository: RecipientRepository): Future[List[Wishlist]] =
+      findOrganisedWishlists.flatMap { wishlists =>
+         Future.sequence {
+            wishlists.map ( _.inflate )
+         }
+      }
+
+   private def findReservations(implicit reservationRepository: ReservationRepository) =
       reservationRepository.findReservationsByReserver(this)
 
    def findAndInflateReservations(implicit reservationRepository: ReservationRepository, recipientRepository: RecipientRepository) =

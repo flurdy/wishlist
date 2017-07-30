@@ -19,9 +19,11 @@ import repositories._
 
 
 trait BaseUnitSpec extends PlaySpec with MockitoSugar with ScalaFutures {
-     def is = afterWord("is")
-     def has = afterWord("has")
+     def is         = afterWord("is")
+     def has        = afterWord("has")
+//     def have        = afterWord("have")
      def requesting = afterWord("requesting")
+     def given      = afterWord("given")
      def posting    = afterWord("posting")
      def show       = afterWord("show")
      def redirect   = afterWord("redirect")
@@ -59,7 +61,7 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
                val wishlists = List(wishlist)
                when(recipientRepositoryMock.findRecipient("some-username"))
                      .thenReturn(Future.successful(Some(recipientMock)))
-               when(recipientMock.findWishlists(wishlistRepositoryMock))
+               when(recipientMock.findAndInflateWishlists(wishlistRepositoryMock, recipientRepositoryMock))
                      .thenReturn(Future.successful(wishlists))
 
                val result = controller.index().apply(FakeRequest().withSession("username"  -> "some-username"))

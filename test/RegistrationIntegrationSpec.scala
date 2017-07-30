@@ -104,7 +104,7 @@ class RegistrationIntegrationSpec extends AsyncFeatureSpec
          And("email verification is disabled")
 
          When("submitting the registration form")
-         val response = register("Testerson")
+         val response = register("Testerson231")
 
          Then("should be redirect to front login form")
          response map { r =>
