@@ -32,28 +32,10 @@ trait WishlistForm {
          "recipient"  -> text(maxLength = 180,minLength = 2 ),
          "wishlistid" -> number,
          "username"   -> text(maxLength = 180,minLength = 2 )
-//      )  verifying("Organiser not found", fields => fields match {
-//         case (recipient,wishlistid,username) => {
-//            false // Recipient.findByUsername(username.trim).isDefined
-//         }
-//      }
       ) verifying("Organiser is the recipient", fields => fields match {
          case (recipient,wishlistid,username) => {
             recipient != username
          }
-//      }) verifying("Recipient already an organiser", fields => fields match {
-//         case (recipient,wishlistid,username) => {
-//            false
-//            /* Wishlist.findById(wishlistid) match {
-//            case Some(wishlist) => {
-//               Recipient.findByUsername(username.trim) match {
-//               case Some(recipient) =>  !wishlist.isOrganiser(recipient)
-//               case None => true
-//               }
-//            }
-//            case None => true
-//            }
-//         } */
       })
    }
 
@@ -264,16 +246,12 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
         )
    }
 
-
    // private def recipientGravatarUrl(wishlist:Wishlist) = RecipientController.gravatarUrl(wishlist.recipient)
-
-
 
    def updateWishlistOrder(username: String, wishlistId: Long) =
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
             andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
 
-       // val wishes = Wishlist.findWishesForWishlist(wishlist)
        updateWishlistOrderForm.bindFromRequest.fold(
          errors => {
            logger.warn("Update order failed: " + errors)
@@ -282,22 +260,27 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                     .flashing("messageError" -> "Order update failed"))
          },
          listOrder => {
-           logger.info("Updating wishlist's order: " + wishlistId)
+            logger.info("Updating wishlist's order: " + wishlistId)
+            val zippedOrders = listOrder
+                           .split(",")
+                           .toList
+                           .map(_.toInt)
+                           .zipWithIndex
 
-           var ordinalCount = 1;
-           listOrder.split(",") map { wishId =>
-             wishEntryRepository.findByIds( wishId.toInt, wishlistId) map {
-                _.map { wishEntry =>
-                  wishEntry.copy( ordinal = Some(ordinalCount)).update map { _ =>
-                     ordinalCount += 1
-                  }
-                }
-             }
-           }
+            val wishEntries = zippedOrders.map { case (wishId, index) =>
+               wishEntryRepository.findByIds( wishId, wishlistId) map {
+                  _.map(we => we.copy(ordinal = Some(index)))
+               }
+            }
 
-           Future.successful(
-              Redirect(routes.WishlistController.showWishlist(username,wishlistId))
-                    .flashing("message" -> "Wishlist updated"))
+            val sequencedEntries = Future.sequence( wishEntries ).map ( _.flatten )
+            val updatedEntries   = sequencedEntries.map ( _.map ( _.update ) )
+            val sequencedUpdates = updatedEntries.flatMap ( Future.sequence(_) )
+
+            sequencedUpdates.map { _ =>
+               Redirect(routes.WishlistController.showWishlist(username,wishlistId))
+                     .flashing("message" -> "Wishlist updated")
+            }
          }
        )
      }
@@ -307,28 +290,46 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
             andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
 
+      def editForm = editWishlistForm.fill((request.wishlist.title, request.wishlist.description))
+
+
       addOrganiserForm.bindFromRequest.fold(
         errors => {
             logger.warn("Add failed: " + errors)
-            val editForm = editWishlistForm.fill((request.wishlist.title, request.wishlist.description))
             request.wishlist.findOrganisers.map { organisers =>
                BadRequest(views.html.wishlist.editwishlist(request.wishlist, editForm, organisers, errors))
             }
         }, {
          case (recipientUsername, wishlistId, organiserUsername) => {
+
+            def organiserForm = addOrganiserForm.fill(recipientUsername, wishlistId, organiserUsername)
+
             recipientLookup.findRecipient(organiserUsername) flatMap {
                case Some(organiser) =>
                   logger.info(s"Adding organiser $organiserUsername to wishlist $wishlistId")
-
-                  request.wishlist.addOrganiser(organiser) map { _ =>
-                     Redirect(routes.WishlistController.showEditWishlist(username, wishlistId)).flashing("messageSuccess" -> "Organiser added")
+                  request.wishlist.isOrganiser(organiser) flatMap {
+                     case true  =>
+                        request.wishlist.findOrganisers.map { organisers =>
+                           BadRequest(views.html.wishlist.editwishlist(request.wishlist, editForm, organisers, organiserForm))
+                                 .flashing("messageWarning" -> "Organiser is already an organiser")
+                        }
+                     case false =>
+                        request.wishlist.addOrganiser(organiser) map { _ =>
+                           Redirect(routes.WishlistController.showEditWishlist(username, wishlistId))
+                                 .flashing ("messageSuccess" -> "Organiser added")
+                        }
                   }
-               case _ => Future.successful( NotFound) // TODO (views.html.error.notfound())
+               case _ =>
+                  logger.info(s"Organiser [$organiserUsername] not found")
+                  request.wishlist.findOrganisers.map { organisers =>
+                     BadRequest(views.html.wishlist.editwishlist(request.wishlist, editForm, organisers, organiserForm))
+                           .flashing("messageWarning" -> "Organiser not found")
+                  }
             }
          }
-       }
-      )
-   }
+      }
+    )
+  }
 
 
   def alsoRemoveOrganiserFromWishlist(username: String, wishlistId: Long, organiserUsername: String) =
