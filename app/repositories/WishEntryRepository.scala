@@ -92,6 +92,26 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
          }
       }
 
+
+   def moveWishToWishlist(wish: Wish, targetWishlist: Wishlist): Future[Wish] =
+      (wish.wishId, targetWishlist.wishlistId) match {
+         case (Some(wishId), Some(wishlistId)) =>
+            Future {
+               db.withConnection { implicit connection =>
+                  val updated =
+                     SQL"""
+                        update wishentry
+                        set wishlistid = $wishlistId
+                        where wishid = $wishId
+                    """
+                    .executeUpdate()
+                  if(updated > 0) wish
+                  else throw new IllegalStateException("Unable to update wish entry")
+               }
+            }
+         case _ => throw new IllegalArgumentException("No ids")
+      }
+
    private def updateOrdinal(wishId: Long, wishlistId: Long, ordinal: Int) =
       Future {
          db.withConnection { implicit connection =>

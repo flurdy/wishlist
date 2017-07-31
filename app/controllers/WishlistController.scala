@@ -274,7 +274,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
             }
 
             val sequencedEntries = Future.sequence( wishEntries ).map ( _.flatten )
-            val updatedEntries   = sequencedEntries.map ( _.map ( _.update ) )
+            val updatedEntries   = sequencedEntries.map ( _.map ( _.updateOrdinal ) )
             val sequencedUpdates = updatedEntries.flatMap ( Future.sequence(_) )
 
             sequencedUpdates.map { _ =>

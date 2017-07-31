@@ -74,7 +74,11 @@ case class Wish(
 
    def findLinks(implicit wishLinkRepository: WishLinkRepository): List[WishLink] = List() // TODO WishLink.findWishLinks(this)
 
-     def moveToWishlist(targetWishlist:Wishlist): Future[Wish] = ??? // WishEntry.moveWishToWishlist(this,targetWishlist)
+   def moveToWishlist(targetWishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository) =
+      reservation.fold(Future.successful(()))( _.cancel )
+         .flatMap { _ =>
+            wishEntryRepository.moveWishToWishlist(this, targetWishlist)
+         }
 }
 
 
@@ -127,13 +131,13 @@ object WishLink {
 
 case class WishEntry(
         wish:Wish,
-        wishlist:Wishlist,
+        wishlist: Wishlist,
         ordinal: Option[Int] = None
 ) {
 
    def save(implicit wishEntryRepository: WishEntryRepository) = wishEntryRepository.saveWishEntry(this)
 
-  def update(implicit wishEntryRepository: WishEntryRepository): Future[WishEntry] =
+  def updateOrdinal(implicit wishEntryRepository: WishEntryRepository): Future[WishEntry] =
       wishEntryRepository.update(this)
 
    require(wish != null && wishlist != null && wish.wishId.isDefined && wishlist.wishlistId.isDefined)
@@ -160,29 +164,6 @@ object WishEntry {
             ordinal)
       }
     }
-  }
-
-
-
-  def moveWishToWishlist(wish:Wish,wishlist:Wishlist) = {
-    wish.reservation.map{ reservation =>
-      if(reservation.isReserver(wishlist.recipient) ){
-        Logger.info("Wish unreserved as move target wishlist is reserver and recipient")
-        wish.unreserve
-    } }
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            update wishentry
-            set wishlistid = {wishlistid}
-            where wishid = {wishid}
-        """
-      ).on(
-        'wishid -> wish.wishId.get,
-        'wishlistid -> wishlist.wishlistId.get
-      ).execute()
-    }
-    Wish.findById(wish.wishId.get).get
   }
 
 }
