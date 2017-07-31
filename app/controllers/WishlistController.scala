@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api._
+import play.api.Configuration
 import play.api.mvc._
 import play.api.mvc.Results.{Forbidden, NotFound}
 import play.api.data._
@@ -33,21 +33,6 @@ class WishlistRequest[A](val wishlist: Wishlist, request: MaybeCurrentRecipientR
    lazy val currentRecipient: Option[Recipient] = request.currentRecipient
    lazy val maybeRecipient: MaybeCurrentRecipientRequest[A] = request
 }
-//
-//class WishlistAccessRequest[A](val wishlist: Wishlist, currentRecipient: Recipient, request: WishlistRequest[A]) extends WrappedRequest[A](request){
-//   lazy val username = request.username
-//   val currentRecipienter = currentRecipient
-//   lazy val possibleCurrentRecipient = request.currentRecipient
-//}
-
-// object WishlistEditorAction extends ActionFilter[WishlistRequest] {
-//    def filter[A](input: WishlistRequest[A]) = Future.successful {
-//       input.currentRecipient match {
-//          case Some(recipient) if recipient.canEdit(input.wishlist) => None
-//          case _ => Some(Forbidden)
-//       }
-//    }
-// }
 
 trait WishlistActions {
 
@@ -56,8 +41,6 @@ trait WishlistActions {
    implicit def recipientRepository: RecipientRepository
 
    implicit def wishlistRequestToCurrentRecipient(implicit request: WishlistRequest[_]): Option[Recipient] = request.currentRecipient
-
-//   implicit def wishlistAccessRequestToCurrentRecipient(implicit request: WishlistAccessRequest[_]): Option[Recipient] = request.possibleCurrentRecipient
 
    def WishlistAction(wishlistId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishlistRequest] {
       def refine[A](input: MaybeCurrentRecipientRequest[A]) =
@@ -162,7 +145,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                            throw new IllegalStateException("Not able to save new wishlist")
                      }
                   case _ =>
-                     Logger.warn(s"Recipient ${username} can not create a wishlist for ${request.username}")
+                     logger.warn(s"Recipient ${username} can not create a wishlist for ${request.username}")
                      Future.successful(Unauthorized) // (views.html.error.permissiondenied())
               }
           }
@@ -215,10 +198,11 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
          andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
        request.wishlist.delete.map {
           case Right(_) =>
-            Redirect(routes.Application.index()).flashing("messageWarning" -> "Wishlist deleted")
+             Redirect(routes.Application.index())
+                   .flashing("messageWarning" -> "Wishlist deleted")
           case Left(e) =>
-            Logger.error("Failed to delete wishlist",e)
-            InternalServerError("Failed to delete wishlist")
+             logger.error("Failed to delete wishlist",e)
+             InternalServerError("Failed to delete wishlist")
        }
     }
 

@@ -36,6 +36,12 @@ trait WishForm {
          case url => ValidUrl.findFirstIn(url.trim).isDefined
       })
    )
+
+   val moveWishForm = Form(
+      single (
+         "targetwishlistid" -> number
+      )
+   )
 }
 
 class WishRequest[A](val wish: Wish, val wishlist: Option[Wishlist], request: MaybeCurrentRecipientRequest[A]) extends WrappedRequest[A](request){
@@ -97,10 +103,6 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
 
     val updateWishlistOrderForm = Form(
       "order" -> text(maxLength=500)
-    )
-
-    val moveWishForm = Form(
-      "targetwishlistid" -> number
     )
 
    */
@@ -196,24 +198,31 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
     (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
           andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) ).async { implicit request =>
 
-   request.wish.unreserve.map { _ =>
-      Redirect(routes.WishlistController.showWishlist(username,wishlistId)).flashing("message" -> "Wish reservation cancelled")
-      }
+       (request.currentRecipient, request.wish.reservation) match {
+         case (Some(currentRecipient), Some(reservation)) if reservation.isReserver(currentRecipient) =>
+            reservation.cancel.map { _ =>
+               Redirect(routes.WishlistController.showWishlist(username, wishlistId))
+                     .flashing("message" -> "Wish reservation cancelled")
+            }
+         case (Some(currentRecipient), Some(reservation)) =>
+            Future.successful(Unauthorized)
+         case _ => Future.successful(NotFound)
+       }
    }
 
    def unreserveWishFromProfile(username:String, wishId:Long) =
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-         andThen WishAction(wishId) ) { implicit request =>
+         andThen WishAction(wishId) ).async { implicit request =>
 
-            // withJustWishAndCurrentRecipient(username,wishId) { (wish,currentRecipient) => implicit request =>
-
-      request.wish.reservation.map { reservation =>
+      request.wish.reservation.fold[Future[Result]](Future.successful(NotFound)){ reservation =>
          if(reservation.isReserver(request.currentRecipient.get)){
-           request.wish.unreserve
-         }
+           reservation.cancel.map{ _ =>
+               Redirect(routes.RecipientController.showProfile(request.username.get))
+                     .flashing("message" -> "Wish reservation cancelled")
+           }
+         } else Future.successful(Unauthorized)
       }
 
-      Redirect(routes.RecipientController.showProfile(request.username.get)).flashing("message" -> "Wish reservation cancelled")
    }
 
 
@@ -254,34 +263,37 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
    }
 
 
-   def moveWishToWishlist(username: String, wishlistId: Long, wishId: Long) = TODO
+   def moveWishToWishlist(username: String, wishlistId: Long, wishId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
 
-   /*
-
-   def moveWishToWishlist(username:String,wishlistId:Long,wishId:Long) = isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
-     moveWishForm.bindFromRequest.fold(
-       errors => {
-         Logger.warn("move wish failed")
-         Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Wish could not be moved")
-       },
-       targetWishlistId => {
-         Wishlist.findById(targetWishlistId) match {
-           case Some(targetWishlist) => {
-             if( currentRecipient.canEdit(targetWishlist) ) {
-               Logger.info("moving wish to %d".format(targetWishlist.wishlistId.get))
-
-               wish.moveToWishlist(targetWishlist)
-
-               Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("message" -> "Wish moved to other list")
-             } else {
-               Unauthorized(views.html.error.permissiondenied())
-             }
-           }
-           case None => NotFound(views.html.error.notfound())
+      moveWishForm.bindFromRequest.fold(
+         errors => {
+            logger.warn("move wish failed")
+            Future.successful(
+               Redirect(routes.WishlistController.showWishlist(username,wishlistId))
+                     .flashing("messageError" -> "Wish could not be moved"))
+         },
+         targetWishlistId => {
+            request.currentRecipient match {
+               case Some(currentRecipient) =>
+                  wishlistLookup.findWishlist(targetWishlistId) flatMap {
+                     case Some(targetWishlist) =>
+                        currentRecipient.canEdit(targetWishlist) flatMap {
+                           case true =>
+                              logger.info(s"moving wish to ${targetWishlist.wishlistId}")
+                              request.wish.moveToWishlist(targetWishlist).map { _ =>
+                                 Redirect(routes.WishlistController.showWishlist(username, wishlistId))
+                                       .flashing("message" -> "Wish moved to other list")
+                              }
+                           case false => Future.successful( Unauthorized )// (views.html.error.permissiondenied())
+                        }
+                     case None => Future.successful(NotFound)  //(views.html.error.notfound())
+                  }
+               case _ => Future.successful(InternalServerError) // TODO
+            }
          }
-       }
-     )
+      )
    }
 
-   */
 }

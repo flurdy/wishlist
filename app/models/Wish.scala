@@ -39,7 +39,7 @@ case class Wish(
    def reserve(recipient:Recipient)(implicit reservationRepository: ReservationRepository) =
       new Reservation(recipient,this).save
 
-   def unreserve: Future[Either[_,Reservation]] = ???
+//   def unreserve: Future[Reservation] = ???
       // reservation map ( realReservation => realReservation.copy(wish=this).cancel )
 
    /*
@@ -74,7 +74,7 @@ case class Wish(
 
    def findLinks(implicit wishLinkRepository: WishLinkRepository): List[WishLink] = List() // TODO WishLink.findWishLinks(this)
 
-   //  def moveToWishlist(targetWishlist:Wishlist) = WishEntry.moveWishToWishlist(this,targetWishlist)
+     def moveToWishlist(targetWishlist:Wishlist): Future[Wish] = ??? // WishEntry.moveWishToWishlist(this,targetWishlist)
 }
 
 

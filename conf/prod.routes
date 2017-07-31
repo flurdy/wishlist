@@ -34,7 +34,7 @@ POST   /recipient/:username/wishlist/:wishlistId/organiser/                  con
 POST   /recipient/:username/wishlist/:wishlistId/organiser/:organiser/delete controllers.WishlistController.alsoRemoveOrganiserFromWishlist(username, wishlistId: Long, organiser: String)
 DELETE /recipient/:username/wishlist/:wishlistId/organiser/:organiser        controllers.WishlistController.removeOrganiserFromWishlist(username, wishlistId: Long, organiser: String)
 
-POST   /recipient/:username/wishlist/:wishlistId/order 		controllers.WishlistController.updateWishlistOrder(username, wishlistId: Long)
+POST   /recipient/:username/wishlist/:wishlistId/order 		            controllers.WishlistController.updateWishlistOrder(username, wishlistId: Long)
 
 POST   /recipient/:username/wishlist/:wishlistId/wish                   controllers.WishController.addWishToWishlist(username, wishlistId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/move		controllers.WishController.moveWishToWishlist(username, wishlistId: Long, wishId: Long)
