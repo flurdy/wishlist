@@ -38,11 +38,7 @@ with ReservationMapper {
             case (Some(wishId), Some(recipientId)) =>
                logger.info(s"Saving reservation for wish [$wishId] and recipient [$recipientId]")
                db.withConnection{ implicit connection =>
-                  val nextId =
-                     SQL"""
-                          SELECT NEXTVAL('reservation_seq')
-                        """
-                        .as(scalar[Long].single)
+                  val nextId = generateNextId("reservation_seq")
                   SQL"""
          				   insert into reservation
          						(reservationid,recipientid,wishid)
@@ -106,6 +102,23 @@ with ReservationMapper {
          }
       Future.sequence(thickerReservations).map( _.flatten )
    }
+
+
+   def deleteReservation(reservation:Reservation) =
+      Future {
+         reservation.reservationId.fold {
+            throw new IllegalStateException("No recipient id")
+         } { reservationId =>
+            db.withConnection { implicit connection =>
+               logger.debug("Cancelling reservation: " + reservation.wish.wishId)
+               SQL"""
+                     delete  from reservation
+                     where reservationid = $reservationId
+                  """
+                  .execute()
+            }
+         }
+      }
 
 }
 

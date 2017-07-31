@@ -74,7 +74,8 @@ case class Wish(
 
    def findLinks(implicit wishLinkRepository: WishLinkRepository): List[WishLink] = List() // TODO WishLink.findWishLinks(this)
 
-   def moveToWishlist(targetWishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository) =
+   def moveToWishlist(targetWishlist: Wishlist)(implicit wishRepository: WishRepository,
+            wishEntryRepository: WishEntryRepository, reservationRepository: ReservationRepository) =
       reservation.fold(Future.successful(()))( _.cancel )
          .flatMap { _ =>
             wishEntryRepository.moveWishToWishlist(this, targetWishlist)

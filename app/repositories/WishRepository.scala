@@ -103,16 +103,36 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
          }
       }
 
-   def updateWish(wish:Wish) = {
+   def updateWish(wish: Wish) = {
       Future {
          wish.wishId.fold{
-            throw new IllegalArgumentException("Can not save wish without id")
+            throw new IllegalArgumentException("Can not update wish without id")
          }{ wishId =>
             db.withConnection { implicit connection =>
                val updated =
                   SQL"""
                      update wish
                      set title = ${wish.title}, description = ${wish.description}
+                     where wishid = $wishId
+                  """
+                  .executeUpdate()
+               if(updated > 0 ) wish
+               else throw new IllegalStateException("Unable to update wish")
+            }
+         }
+      }
+   }
+
+   def removeReservation(wish: Wish) = {
+      Future {
+         wish.wishId.fold{
+            throw new IllegalArgumentException("Can not update wish without id")
+         }{ wishId =>
+            db.withConnection { implicit connection =>
+               val updated =
+                  SQL"""
+                     update wish
+                     set reservationid = null
                      where wishid = $wishId
                   """
                   .executeUpdate()
