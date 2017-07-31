@@ -1,12 +1,10 @@
 package repositories
 
 import anorm._
-import anorm.JodaParameterMetaData._
 import anorm.SqlParser._
 import com.google.inject.ImplementedBy
 import java.sql.Connection
 import javax.inject.{Inject, Singleton}
-import org.joda.time.DateTime
 import play.api.db._
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
@@ -40,7 +38,7 @@ trait WishMapper {
 @ImplementedBy(classOf[DefaultWishLookup])
 trait WishLookup extends Repository with WishMapper with WithLogging {
 
-   def findWishes(wishlist: Wishlist): Future[Seq[Wish]] =
+   def findWishes(wishlist: Wishlist)(implicit wishLinkRepository: WishLinkRepository): Future[Seq[Wish]] =
       Future {
          db.withConnection { implicit connection =>
             wishlist.wishlistId.fold(List[Wish]()){ wishlistId => {
@@ -139,6 +137,7 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
              }
           }
        }
+
 }
 
 

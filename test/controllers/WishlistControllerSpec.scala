@@ -24,9 +24,10 @@ class WishlistControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
       val wishLookupMock = mock[WishLookup]
       val wishRepositoryMock = mock[WishRepository]
       val wishEntryRepositoryMock = mock[WishEntryRepository]
+      val wishLinkRepositoryMock = mock[WishLinkRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
       val controller = new WishlistController(configurationMock, recipientLookupMock)(
-         wishlistRepositoryMock, wishlistLookupMock, wishLookupMock, recipientRepositoryMock)
+         wishlistRepositoryMock, wishlistLookupMock, wishLookupMock, wishLinkRepositoryMock, recipientRepositoryMock)
    }
 
    trait WishlistSetup extends Setup {
@@ -48,7 +49,7 @@ class WishlistControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
             .thenReturn( Future.successful( Some( recipient) ))
       when( recipientRepositoryMock.findRecipientById(444) )
             .thenReturn( Future.successful( Some( another ) ))
-      when( wishLookupMock.findWishes(wishlist) )
+      when( wishLookupMock.findWishes(wishlist)(wishLinkRepositoryMock) )
             .thenReturn( Future.successful(wishes) )
 
       def showAnonymousWishlist() = {

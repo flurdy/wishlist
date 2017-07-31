@@ -64,174 +64,30 @@ case class Wish(
          wishRepository.deleteWish(this)
       }
 
-   /*
+   def addLink(url: String)(implicit wishLinkRepository: WishLinkRepository) =
+       wishLinkRepository.addLinkToWish(this,url)
 
+//       def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
 
+   def findLink(linkId: Long)(implicit wishLinkRepository: WishLinkRepository): Future[Option[WishLink]] =
+      wishLinkRepository.findLink(this,linkId)
 
-       def addLink(url:String) = Wish.addLinkToWish(this,url)
-
-       def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
-
-       def findLink(linkId:Long) : Option[String] = Wish.findLink(this,linkId)
-       */
-
-    def findLinks : List[WishLink] = List() // TODO WishLink.findWishLinks(this)
+   def findLinks(implicit wishLinkRepository: WishLinkRepository): List[WishLink] = List() // TODO WishLink.findWishLinks(this)
 
    //  def moveToWishlist(targetWishlist:Wishlist) = WishEntry.moveWishToWishlist(this,targetWishlist)
 }
-/*
-
-object Wish {
-
-
-  val simple = {
-    get[Long]("wishid") ~
-      get[String]("title") ~
-      get[Option[String]]("description") ~
-      get[Option[Long]]("reservationid") ~
-      get[Long]("recipientid") ~
-      get[String]("username")   map {
-      case wishid~title~description~reservationid~recipientid~username => {
-        val reservation = reservationid.map { reservationId =>
-            new Reservation(reservationId) //,new Recipient(recipientid),new Wish(wishid))
-        }
-        new Wish( wishid, title, description, reservation, new Recipient(recipientid,username))
-      }
-    }
-  }
-
-    def save(wish:Wish) = {
-        Logger.debug("Inserting wish: "+wish.title)
-        DB.withConnection { implicit connection =>
-            val nextId = SQL("SELECT NEXTVAL('wish_seq')").as(scalar[Long].single)
-            SQL(
-                """
-                    insert into wish
-                    (wishid,title,description,recipientid)
-                    values
-                    ({wishid},{title},{description},{recipientid})
-                """
-            ).on(
-                'wishid -> nextId,
-                'title -> wish.title,
-                'description -> wish.description,
-                'recipientid -> wish.recipient.recipientId.get
-            ).executeInsert()
-            wish.copy(wishId = Some(nextId))
-        }
-    }
-
-
-    def findById(wishId:Long) : Option[Wish]= {
-        DB.withConnection { implicit connection =>
-          SQL(
-            """
-              SELECT wish.*,recipient.username FROM wish
-              INNER JOIN recipient on recipient.recipientid = wish.recipientid
-              WHERE wish.wishid = {wishid}
-            """
-          ).on(
-            'wishid -> wishId
-          ).as(Wish.simple.singleOpt)
-        }
-    }
-
-
-    def delete(wish:Wish) {
-        Logger.debug("Deleting wish: "+wish.title)
-        DB.withConnection { implicit connection =>
-            SQL(
-                """
-                    delete from wish
-                    where wishid = {wishid}
-                """
-            ).on(
-                'wishid -> wish.wishId
-            ).execute()
-        }
-    }
-
-  def update(wish:Wish) = {
-    Logger.debug("Updating wish: "+wish.wishId)
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            update wish
-            set title = {title}, description = {description}
-            where wishid = {wishid}
-        """
-      ).on(
-        'wishid -> wish.wishId,
-        'title -> wish.title,
-        'description -> wish.description
-      ).executeInsert()
-      wish
-    }
-  }
-
- def addLinkToWish(wish:Wish,url:String) = {
-    DB.withConnection { implicit connection =>
-      val nextId = SQL("SELECT NEXTVAL('wishlink_seq')").as(scalar[Long].single)
-      SQL(
-        """
-            insert into wishlink
-            (linkid,wishid,url)
-            values
-            ({linkid},{wishid},{url})
-        """
-      ).on(
-        'linkid -> nextId,
-        'wishid -> wish.wishId.get,
-        'url -> url
-      ).executeInsert()
-      nextId
-    }
-  }
-
- def deleteLinkFromWish(wish:Wish,linkId:Long)  {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            delete from wishlink
-            where wishid = {wishid}
-            and linkid = {linkid}
-        """
-      ).on(
-        'wishid -> wish.wishId.get,
-        'linkid -> linkId
-      ).execute()
-    }
-  }
-
-
-
-  def findLink(wish:Wish,linkId:Long) : Option[String]= {
-      DB.withConnection { implicit connection =>
-        SQL(
-          """
-            select url from wishlink
-            where wishid = {wishid}
-            and linkid = {linkid}
-          """
-        ).on(
-          'wishid -> wish.wishId.get,
-          'linkid -> linkId
-        ).as(scalar[String].singleOpt)
-      }
-  }
-
-
-}
-
-
-*/
 
 
 case class WishLink(
   linkId : Long,
   wish : Wish,
   url : String
-)
+){
+
+   def delete(implicit wishLinkRepository: WishLinkRepository) =
+      wishLinkRepository.deleteLink(this)
+
+}
 
 /*
 

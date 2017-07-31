@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api._
+import play.api.Configuration
 import play.api.mvc._
 import play.api.mvc.Results.{Forbidden, NotFound, Unauthorized}
 import play.api.data._
@@ -14,6 +14,8 @@ import repositories._
 
 trait WishForm {
 
+   val ValidUrl = """^https?:\/\/.+$""".r
+
    val simpleAddWishForm = Form (
       single(
          "title" -> text(maxLength = 50, minLength = 2 )
@@ -25,6 +27,14 @@ trait WishForm {
          "title" -> nonEmptyText(maxLength = 50,minLength = 2 ),
          "description" -> optional(text(maxLength = 2000))
       )
+   )
+
+   val addLinkToWishForm = Form(
+      single (
+         "url" -> text(minLength=4,maxLength=250)
+      ) verifying("Invalid url format. Make sure it starts with http or https?", fields => fields match {
+         case url => ValidUrl.findFirstIn(url.trim).isDefined
+      })
    )
 }
 
@@ -77,31 +87,23 @@ trait WishActions {
 @Singleton
 class WishController @Inject() (val configuration: Configuration,
    val recipientLookup: RecipientLookup)
-(implicit val wishlistRepository: WishlistRepository, val wishRepository: WishRepository, val wishEntryRepository: WishEntryRepository,
-   val wishlistLookup: WishlistLookup, val wishLookup: WishLookup, val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository)
+(implicit val wishlistRepository: WishlistRepository, val wishRepository: WishRepository,
+      val wishEntryRepository: WishEntryRepository, val wishlistLookup: WishlistLookup,
+      val wishLookup: WishLookup, val wishLinkRepository: WishLinkRepository,
+      val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WishActions with WishlistActions with WithLogging {
 
-
     /*
-
 
     val updateWishlistOrderForm = Form(
       "order" -> text(maxLength=500)
     )
 
-    val addLinkToWishForm = Form(
-      "url" -> text(minLength=4,maxLength=250)
-    )
-
-
     val moveWishForm = Form(
       "targetwishlistid" -> number
     )
 
-    val ValidUrl= """^https?:\/\/[0-9a-zA-Z][^@]+$""".r
-
-}
-*/
+   */
 
    // private def recipientGravatarUrl(wishlist:Wishlist) = RecipientController.gravatarUrl(wishlist.recipient)
 
@@ -215,46 +217,42 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
    }
 
 
-   def addLinkToWish(username:String, wishlistId: Long, wishId: Long) = TODO
+   def addLinkToWish(username:String, wishlistId: Long, wishId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
 
-   /*
-
-   def addLinkToWish(username:String, wishlistId:Long, wishId:Long) =  isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
      addLinkToWishForm.bindFromRequest.fold(
        errors => {
-         Logger.warn("add to link failed")
-         Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Link could not be added to wish")
+          logger.warn("add to link failed")
+          Future.successful( Redirect(routes.WishlistController.showWishlist(username,wishlistId))
+               .flashing("messageError" -> "Link could not be added to wish"))
        },
        url => {
-         ValidUrl.findFirstIn(url.trim) match {
-           case Some(_) => {
-             wish.addLink(url)
-             Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageSuccess" -> "Link added to wish")
-           }
-           case None => Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Invalid url. Make sure it starts with http or https?")
-         }
+          request.wish.addLink(url).map { _ =>
+             Redirect(routes.WishlistController.showWishlist(username, wishlistId))
+                   .flashing("messageSuccess" -> "Link added to wish")
+          }
        }
      )
    }
 
-   */
+   def alsoDeleteLinkFromWish(username: String, wishlistId: Long, wishId: Long, linkId: Long) =
+      deleteLinkFromWish(username, wishlistId, wishId, linkId)
 
-   def alsoDeleteLinkFromWish(username: String, wishlistId: Long, wishId: Long, linkId: Long) = TODO
+   def deleteLinkFromWish(username: String, wishlistId: Long, wishId: Long, linkId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
 
-   def deleteLinkFromWish(username: String, wishlistId: Long, wishId: Long, linkId: Long) = TODO
+      request.wish.findLink(linkId) flatMap {
+         case Some(link) =>
+            link.delete map { _ =>
+               Redirect(routes.WishlistController.showWishlist(username, wishlistId))
+                     .flashing("messageWarning" -> "Link removed from wish")
+            }
+         case None => Future.successful( NotFound) // TODO (views.html.error.notfound()) )
+      }
+   }
 
-/*
-def deleteLinkFromWish(username:String, wishlistId:Long, wishId:Long, linkId:Long) = isEditorOfWish(username,wishlistId,wishId) { (wish,wishlist,currentRecipient) => implicit request =>
-  wish.findLink(linkId) match {
-    case Some(url) => {
-      wish.deleteLink(linkId)
-      Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageWarning" -> "Link removed from wish")
-    }
-    case None => NotFound(views.html.error.notfound())
-  }
-}
-
-   */
 
    def moveWishToWishlist(username: String, wishlistId: Long, wishId: Long) = TODO
 

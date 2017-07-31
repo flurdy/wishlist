@@ -24,11 +24,12 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       val wishLookupMock = mock[WishLookup]
       val wishRepositoryMock = mock[WishRepository]
       val wishEntryRepositoryMock = mock[WishEntryRepository]
+      val wishLinkRepositoryMock = mock[WishLinkRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
       val wishController = new WishController(configurationMock, recipientLookupMock)(
-         wishlistRepositoryMock, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock, wishLookupMock, reservationRepositoryMock, recipientRepositoryMock)
+         wishlistRepositoryMock, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock, wishLookupMock, wishLinkRepositoryMock, reservationRepositoryMock, recipientRepositoryMock)
       val wishlistController = new WishlistController(configurationMock, recipientLookupMock)(
-         wishlistRepositoryMock, wishlistLookupMock, wishLookupMock, recipientRepositoryMock)
+         wishlistRepositoryMock, wishlistLookupMock, wishLookupMock, wishLinkRepositoryMock, recipientRepositoryMock)
    }
 
    trait WishSetup extends Setup {
@@ -58,7 +59,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
 
       when( wishlistLookupMock.findWishlist(123) )
             .thenReturn(Future.successful(Some(wishlist)))
-      when( wishLookupMock.findWishes(wishlist) )
+      when( wishLookupMock.findWishes(wishlist)(wishLinkRepositoryMock) )
             .thenReturn( Future.successful(wishes) )
       when( recipientLookupMock.findRecipient("someuser") )
             .thenReturn( Future.successful( Some( recipient ) ))

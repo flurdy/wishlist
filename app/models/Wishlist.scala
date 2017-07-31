@@ -20,7 +20,7 @@ case class Wishlist(
 
     def delete(implicit wishlistRepository: WishlistRepository) = wishlistRepository.deleteWishlist(this)
 
-    def findWishes(implicit wishLookup: WishLookup): Future[Seq[Wish]] = // Future.successful(Seq[Wish]()) // Wishlist.findWishesForWishlist(this)
+    def findWishes(implicit wishLookup: WishLookup, wishLinkRepository: WishLinkRepository): Future[Seq[Wish]] =
       wishLookup.findWishes(this)
 
 //    def update = Wishlist.update(this)
@@ -56,7 +56,6 @@ case class Wishlist(
 /*
 object Wishlist {
 
-
   val simple = {
     get[Long]("wishlistid") ~
       get[String]("title") ~
@@ -73,43 +72,6 @@ object Wishlist {
       }
     }
   }
-
-
-    def save(wishlist:Wishlist) = {
-        Logger.debug("Inserting wishlist: "+wishlist.title)
-        DB.withConnection { implicit connection =>
-            val nextId = SQL("SELECT NEXTVAL('wishlist_seq')").as(scalar[Long].single)
-            SQL(
-                """
-                    insert into wishlist
-                    (wishlistid,title,description,recipientid)
-                    values
-                    ({wishlistid},{title},{description},{recipientid})
-                """
-            ).on(
-                'wishlistid -> nextId,
-                'title -> wishlist.title,
-                'description -> wishlist.description,
-                'recipientid -> wishlist.recipient.recipientId
-            ).executeInsert()
-            wishlist.copy(wishlistId = Some(nextId))
-        }
-    }
-
-
-    def findById(wishlistId:Long) : Option[Wishlist]= {
-        DB.withConnection { implicit connection =>
-          SQL(
-            """
-              SELECT * FROM wishlist
-                WHERE wishlistid = {wishlistid}
-            """
-          ).on(
-            'wishlistid -> wishlistId
-          ).as(Wishlist.simple.singleOpt)
-        }
-    }
-
 
     def delete(wishlist:Wishlist) {
         Logger.debug("Deleting wishlist: "+wishlist.title)
