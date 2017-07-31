@@ -105,7 +105,8 @@ trait WishlistActions {
 @Singleton
 class WishlistController @Inject() (val configuration: Configuration,
    val recipientLookup: RecipientLookup)
-(implicit val wishlistRepository: WishlistRepository, val wishlistLookup: WishlistLookup,
+(implicit val wishlistRepository: WishlistRepository,
+      val wishlistOrganiserRepository: WishlistOrganiserRepository, val wishlistLookup: WishlistLookup,
       val wishLookup: WishLookup, val wishLinkRepository: WishLinkRepository,
       val wishEntryRepository: WishEntryRepository, val recipientRepository: RecipientRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WishlistForm with WishlistActions with WishActions with WithLogging {
@@ -302,54 +303,49 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
      }
 
 
-   def addOrganiserToWishlist(username: String, wishlistId: Long) = TODO
+   def addOrganiserToWishlist(username: String, wishlistId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
 
-/*
-
-def addOrganiserToWishlist(username:String,wishlistId:Long) = isEditorOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
       addOrganiserForm.bindFromRequest.fold(
         errors => {
-            Logger.warn("Add failed: " + errors)
-            val editForm = editWishlistForm.fill((wishlist.title,wishlist.description))
-            val organisers = wishlist.findOrganisers
-            BadRequest(views.html.wishlist.editwishlist(wishlist,editForm,organisers,errors))
-        },
-        organiserUsername => {
-          Recipient.findByUsername(organiserUsername._3) match {
-            case Some(organiser) => {
-              Logger.info("Adding organiser %s to wishlist %d".format(organiser.username,wishlistId))
-
-              wishlist.addOrganiser(organiser)
-
-              Redirect(routes.WishController.showEditWishlist(username,wishlistId)).flashing("messageSuccess" -> "Organiser added")
+            logger.warn("Add failed: " + errors)
+            val editForm = editWishlistForm.fill((request.wishlist.title, request.wishlist.description))
+            request.wishlist.findOrganisers.map { organisers =>
+               BadRequest(views.html.wishlist.editwishlist(request.wishlist, editForm, organisers, errors))
             }
-            case None => NotFound(views.html.error.notfound())
-          }
-        }
+        }, {
+         case (recipientUsername, wishlistId, organiserUsername) => {
+            recipientLookup.findRecipient(organiserUsername) flatMap {
+               case Some(organiser) =>
+                  logger.info(s"Adding organiser $organiserUsername to wishlist $wishlistId")
+
+                  request.wishlist.addOrganiser(organiser) map { _ =>
+                     Redirect(routes.WishlistController.showEditWishlist(username, wishlistId)).flashing("messageSuccess" -> "Organiser added")
+                  }
+               case _ => Future.successful( NotFound) // TODO (views.html.error.notfound())
+            }
+         }
+       }
       )
- }
+   }
 
-*/
 
- def alsoRemoveOrganiserFromWishlist(username: String, wishlistId: Long, organiserUsername: String) = TODO
+  def alsoRemoveOrganiserFromWishlist(username: String, wishlistId: Long, organiserUsername: String) =
+     removeOrganiserFromWishlist(username, wishlistId, organiserUsername)
 
- def removeOrganiserFromWishlist(username: String, wishlistId: Long, organiserUsername: String) = TODO
+  def removeOrganiserFromWishlist(username: String, wishlistId: Long, organiserUsername: String) =
+    (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+          andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
 
-/*
-def removeOrganiserFromWishlist(username:String,wishlistId:Long,organiserUsername:String) = isEditorOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
-    Logger.info("Removing organiser %s from wishlist %d".format(organiserUsername,wishlistId))
-    Recipient.findByUsername(organiserUsername) match {
-      case Some(organiser) => {
-
-        wishlist.removeOrganiser(organiser)
-
-        Redirect(routes.WishController.showEditWishlist(username,wishlistId)).flashing("messageRemoved" -> "Organiser removed")
+      logger.info(s"Removing organiser $organiserUsername from wishlist $wishlistId")
+      recipientLookup.findRecipient(organiserUsername) flatMap {
+         case Some(organiser) =>
+            request.wishlist.removeOrganiser(organiser) map { _ =>
+               Redirect(routes.WishlistController.showEditWishlist(username, wishlistId))
+                  .flashing("messageRemoved" -> "Organiser removed")
+            }
+         case _ => Future.successful( NotFound) // TODO (views.html.error.notfound())
       }
-      case None => NotFound(views.html.error.notfound())
-    }
- }
-
-
-*/
-
+   }
 }

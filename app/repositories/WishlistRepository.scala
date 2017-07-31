@@ -210,3 +210,49 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
 
 @Singleton
 class DefaultWishlistRepository @Inject() (val dbApi: DBApi) extends WishlistRepository
+
+
+@ImplementedBy(classOf[DefaultWishlistOrganiserRepository])
+trait WishlistOrganiserRepository extends Repository with WithLogging  {
+
+   def addOrganiserToWishlist(organiser: Recipient, wishlist: Wishlist) =
+      Future {
+         (organiser.recipientId, wishlist.wishlistId) match {
+            case (Some(recipientId), Some(wishlistId)) =>
+               db.withConnection { implicit connection =>
+                  SQL"""
+                        insert into wishlistorganiser
+                        (wishlistid,recipientid)
+                        values
+                        ($wishlistId, $recipientId)
+                     """
+                     .executeInsert()
+                  wishlist
+               }
+            case _ => throw new IllegalArgumentException("Missing ids")
+         }
+      }
+
+
+
+
+
+   def removeOrganiserFromWishlist(organiser: Recipient,wishlist: Wishlist) =
+      Future {
+         (organiser.recipientId, wishlist.wishlistId) match {
+            case (Some(recipientId), Some(wishlistId)) =>
+               db.withConnection { implicit connection =>
+                  SQL"""
+                        delete from wishlistorganiser
+                        where wishlistid = $wishlistId
+                        and recipientid = $recipientId
+                     """
+                     .execute()
+               }
+            case _ => throw new IllegalArgumentException("Missing ids")
+         }
+      }
+}
+
+@Singleton
+class DefaultWishlistOrganiserRepository @Inject() (val dbApi: DBApi) extends WishlistOrganiserRepository

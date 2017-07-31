@@ -34,13 +34,12 @@ case class Wishlist(
     def findOrganisers(implicit recipientRepository: RecipientRepository) =
        recipientRepository.findOrganisers(this)
 
-    /*
+    def addOrganiser(organiser: Recipient)(implicit wishOrganiserRepository: WishlistOrganiserRepository): Future[Wishlist] =
+       wishOrganiserRepository.addOrganiserToWishlist(organiser,this)
 
-    def addOrganiser(organiser:Recipient) = Wishlist.addOrganiserToWishlist(organiser,this)
+    def removeOrganiser(organiser:Recipient)(implicit wishOrganiserRepository: WishlistOrganiserRepository) =
+       wishOrganiserRepository.removeOrganiserFromWishlist(organiser,this)
 
-    def removeOrganiser(organiser:Recipient) = Wishlist.removeOrganiserFromWishlist(organiser,this)
-
-    */
     def isOrganiser(organiser: Recipient)(implicit wishlistLookup: WishlistLookup) =
       wishlistLookup.isOrganiserOfWishlist(organiser, this)
 
@@ -96,42 +95,6 @@ object Wishlist {
             }
         }
     }
-
-
-
-
-  def addOrganiserToWishlist(organiser:Recipient,wishlist:Wishlist) {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            insert into wishlistorganiser
-            (wishlistid,recipientid)
-            values
-            ({wishlistid},{recipientid})
-        """
-      ).on(
-        'wishlistid -> wishlist.wishlistId.get,
-        'recipientid -> organiser.recipientId.get
-      ).executeInsert()
-    }
-  }
-
-
-
-  def removeOrganiserFromWishlist(organiser:Recipient,wishlist:Wishlist) {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            delete from wishlistorganiser
-            where wishlistid = {wishlistid}
-            and recipientid = {recipientid}
-        """
-      ).on(
-        'wishlistid -> wishlist.wishlistId.get,
-        'recipientid -> organiser.recipientId.get
-      ).execute()
-    }
-  }
 
 
 }
