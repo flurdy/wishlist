@@ -10,9 +10,25 @@ import scala.concurrent.Future
 import models._
 import controllers.WithLogging
 
+trait WishEntryMapper {
+
+   val MapToShallowWishEntry = {
+      get[Long]("wishid") ~
+      get[Long]("wishlistid") ~
+      get[Option[Int]]("ordinal") ~
+      get[Long]("recipientid") map {
+         case wishId~wishlistId~ordinal~recipientId => {
+            val recipient = new Recipient(recipientId)
+            val wishlist  = new Wishlist(wishlistId, recipient)
+            val wish      = new Wish(wishId, recipient)
+            WishEntry(wish, wishlist, ordinal)
+         }
+      }
+   }
+}
 
 @ImplementedBy(classOf[DefaultWishEntryRepository])
-trait WishEntryRepository extends Repository with WithLogging {
+trait WishEntryRepository extends Repository with WishEntryMapper with WithLogging {
 
    def saveWishEntry(wishEntry: WishEntry): Future[WishEntry] =
       Future{
@@ -59,6 +75,65 @@ trait WishEntryRepository extends Repository with WithLogging {
          if(_) wishlist
          else throw new IllegalStateException("Unable to remove wish from wishlist")
       }
+
+
+
+   def findByIds(wishId: Long, wishlistId: Long): Future[Option[WishEntry]]=
+      Future {
+         db.withConnection { implicit connection =>
+            SQL"""
+                 SELECT we.wishid, we.wishlistid, we.ordinal, wi.recipientid
+                 FROM wishentry we
+                 LEFT JOIN wish wi ON wi.wishid = we.wishid
+                 WHERE we.wishid = $wishId
+                 AND we.wishlistid = $wishlistId
+              """
+              .as(MapToShallowWishEntry.singleOpt)
+         }
+      }
+
+   private def updateOrdinal(wishId: Long, wishlistId: Long, ordinal: Int) =
+      Future {
+         db.withConnection { implicit connection =>
+            SQL"""
+               update wishentry
+               set ordinal = $ordinal
+               where wishid = $wishId
+               and wishlistid = $wishlistId
+           """
+           .executeUpdate()
+         }
+      }
+
+
+   private def removeOrdinal(wishId: Long, wishlistId: Long) =
+      Future {
+         db.withConnection { implicit connection =>
+            SQL"""
+                  update wishentry
+                  set ordinal = null
+                  where wishid = $wishId
+                  and wishlistid = $wishlistId
+              """
+              .executeUpdate()
+         }
+      }
+
+
+   def update(wishEntry: WishEntry): Future[WishEntry] = {
+      (wishEntry.wish.wishId, wishEntry.wishlist.wishlistId) match {
+         case (Some(wishId), Some(wishlistId)) =>
+            wishEntry.ordinal.fold{
+               removeOrdinal(wishId, wishlistId)
+            }{ ordinal =>
+               updateOrdinal(wishId, wishlistId, ordinal)
+            }.map { updated =>
+               if(updated > 0) wishEntry
+               else throw new IllegalStateException("Unable to update wish entry")
+            }
+         case _ => throw new IllegalArgumentException("Missing ids")
+      }
+   }
 }
 
 

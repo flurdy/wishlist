@@ -77,66 +77,6 @@ object Wishlist {
     }
   }
 
-    def delete(wishlist:Wishlist) {
-        Logger.debug("Deleting wishlist: "+wishlist.title)
-        DB.withConnection { implicit connection =>
-          SQL(
-            """
-                    delete from wish
-                    where wishid in (select wishid from wishentry where wishlistid = {wishlistid})
-            """
-          ).on(
-            'wishlistid -> wishlist.wishlistId
-          ).execute()
-          SQL(
-            """
-                    delete from wishentry
-                    where wishlistid = {wishlistid}
-            """
-          ).on(
-            'wishlistid -> wishlist.wishlistId
-          ).execute()
-            SQL(
-                """
-                    delete from wishlist
-                    where wishlistid = {wishlistid}
-                """
-            ).on(
-                'wishlistid -> wishlist.wishlistId
-            ).execute()
-        }
-    }
-
-
-
-    def findAll : Seq[Wishlist] = {
-        DB.withConnection { implicit connection =>
-            SQL(
-                """
-                  SELECT * FROM wishlist
-                  ORDER BY recipientid DESC,title
-                """
-            ).as(Wishlist.simple *)
-        }
-    }
-
-    def searchForWishlistsContaining(searchTerm:String) : Seq[Wishlist] = {
-        Logger.debug("Search term is " + searchTerm)
-        val searchLikeTerm = "%" + searchTerm + "%"
-        DB.withConnection { implicit connection =>
-            SQL(
-                """
-                  SELECT * FROM wishlist
-                  where title like {term}
-                  ORDER BY recipientid DESC, title
-                """
-            ).on(
-                'term -> searchLikeTerm
-            ).as(Wishlist.simple *)
-        }
-    }
-
-
     def findWishesForWishlist(wishlist:Wishlist) : Seq[Wish] = {
         DB.withConnection { implicit connection =>
             val wishes = SQL(
@@ -154,37 +94,6 @@ object Wishlist {
             wishes.map { wish =>
               wish.copy(links=wish.findLinks)
             }
-        }
-    }
-
-
-    def findByRecipient(recipient:Recipient) : Seq[Wishlist] = {
-        DB.withConnection { implicit connection =>
-            SQL(
-                """
-                  SELECT * FROM wishlist
-                  where recipientid = {recipientid}
-                  ORDER BY title DESC
-                """
-            ).on(
-                'recipientid -> recipient.recipientId.get
-            ).as(Wishlist.simple *)
-        }
-    }
-
-
-    def findByOrganiser(organiser:Recipient) : Seq[Wishlist] = {
-        DB.withConnection { implicit connection =>
-            SQL(
-                """
-                  SELECT wi.* FROM wishlist wi
-                  INNER JOIN wishlistorganiser wo on wo.wishlistid = wi.wishlistid
-                  WHERE wo.recipientid = {recipientid}
-                  ORDER BY wi.recipientid,wi.title DESC
-                """
-            ).on(
-                'recipientid -> organiser.recipientId.get
-            ).as(Wishlist.simple *)
         }
     }
 

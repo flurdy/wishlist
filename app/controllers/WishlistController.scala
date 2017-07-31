@@ -56,6 +56,12 @@ trait WishlistForm {
 //         } */
       })
    }
+
+   val updateWishlistOrderForm = Form(
+      single(
+         "order" -> text(maxLength=500)
+      )
+   )
 }
 
 class WishlistRequest[A](val wishlist: Wishlist, request: MaybeCurrentRecipientRequest[A]) extends WrappedRequest[A](request){
@@ -101,17 +107,8 @@ class WishlistController @Inject() (val configuration: Configuration,
    val recipientLookup: RecipientLookup)
 (implicit val wishlistRepository: WishlistRepository, val wishlistLookup: WishlistLookup,
       val wishLookup: WishLookup, val wishLinkRepository: WishLinkRepository,
-      val recipientRepository: RecipientRepository)
+      val wishEntryRepository: WishEntryRepository, val recipientRepository: RecipientRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WishlistForm with WishlistActions with WishActions with WithLogging {
-
-
-    /*
-
-    val updateWishlistOrderForm = Form(
-      "order" -> text(maxLength=500)
-    )
-
-*/
 
 
     def createWishlist(username: String) =
@@ -271,37 +268,38 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
 
 
 
-   def updateWishlistOrder(username: String, wishlistId: Long) = TODO
-
-   /*
-
-
-     def updateWishlistOrder(username:String,wishlistId:Long) = isEditorOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
+   def updateWishlistOrder(username: String, wishlistId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
 
        // val wishes = Wishlist.findWishesForWishlist(wishlist)
        updateWishlistOrderForm.bindFromRequest.fold(
          errors => {
-           Logger.warn("Update order failed: " + errors)
-           Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("messageError" -> "Order update failed")
+           logger.warn("Update order failed: " + errors)
+           Future.successful(
+              Redirect(routes.WishlistController.showWishlist(username,wishlistId))
+                    .flashing("messageError" -> "Order update failed"))
          },
          listOrder => {
-           Logger.info("Updating wishlist's order: " + wishlistId)
+           logger.info("Updating wishlist's order: " + wishlistId)
 
            var ordinalCount = 1;
            listOrder.split(",") map { wishId =>
-             WishEntry.findByIds(wishId.toInt,wishlistId) map { wishentry =>
-               wishentry.copy(ordinal=Some(ordinalCount)).update
-               ordinalCount += 1
+             wishEntryRepository.findByIds( wishId.toInt, wishlistId) map {
+                _.map { wishEntry =>
+                  wishEntry.copy( ordinal = Some(ordinalCount)).update map { _ =>
+                     ordinalCount += 1
+                  }
+                }
              }
            }
 
-           Redirect(routes.WishController.showWishlist(username,wishlistId)).flashing("message" -> "Wishlist updated")
-
+           Future.successful(
+              Redirect(routes.WishlistController.showWishlist(username,wishlistId))
+                    .flashing("message" -> "Wishlist updated"))
          }
        )
      }
-
-     */
 
 
    def addOrganiserToWishlist(username: String, wishlistId: Long) = TODO

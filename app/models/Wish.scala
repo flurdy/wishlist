@@ -133,7 +133,9 @@ case class WishEntry(
 
    def save(implicit wishEntryRepository: WishEntryRepository) = wishEntryRepository.saveWishEntry(this)
 
- // def update = WishEntry.update(this)
+  def update(implicit wishEntryRepository: WishEntryRepository): Future[WishEntry] =
+      wishEntryRepository.update(this)
+
    require(wish != null && wishlist != null && wish.wishId.isDefined && wishlist.wishlistId.isDefined)
 
 }
@@ -161,66 +163,6 @@ object WishEntry {
   }
 
 
-  def removeWishFromWishlist(wish:Wish,wishlist:Wishlist){
-    Logger.debug("Deleting wishentry: "+wish.title)
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            delete from wishentry
-            where wishid = {wishid}
-            and wishlistid = {wishlistid}
-        """
-      ).on(
-        'wishid -> wish.wishId.get,
-        'wishlistid -> wishlist.wishlistId.get
-      ).execute()
-      SQL(
-        """
-            delete from wish
-            where wishid = {wishid}
-        """
-      ).on(
-        'wishid -> wish.wishId.get
-      ).execute()
-    }
-  }
-
-
-  def findByIds(wishId:Long,wishlistId:Long) : Option[WishEntry]= {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-              SELECT we.*,wi.* FROM wishentry we
-                LEFT JOIN wish wi ON wi.wishid = we.wishid
-              WHERE we.wishid = {wishid}
-              AND we.wishlistid = {wishlistid}
-        """
-      ).on(
-        'wishid -> wishId,
-        'wishlistid -> wishlistId
-      ).as(WishEntry.simple.singleOpt)
-    }
-  }
-
-
-
-  def update(wishentry:WishEntry)= {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            update wishentry
-            set ordinal = {ordinal}
-            where wishid = {wishid}
-            and wishlistid = {wishlistid}
-        """
-      ).on(
-        'wishid -> wishentry.wish.wishId.get,
-        'ordinal -> wishentry.ordinal,
-        'wishlistid -> wishentry.wishlist.wishlistId.get
-      ).execute()
-      wishentry
-    }
-  }
 
   def moveWishToWishlist(wish:Wish,wishlist:Wishlist) = {
     wish.reservation.map{ reservation =>
