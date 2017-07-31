@@ -16,21 +16,25 @@ case class Wishlist(
 
     def this(title: String, recipient: Recipient) = this(None, title, None, recipient, Seq.empty)
 
-    def save(implicit wishlistRepository: WishlistRepository) = wishlistRepository.saveWishlist(this)
+    def save(implicit wishlistRepository: WishlistRepository) =
+       wishlistRepository.saveWishlist(this)
 
     def delete(implicit wishlistRepository: WishlistRepository) = wishlistRepository.deleteWishlist(this)
 
     def findWishes(implicit wishLookup: WishLookup, wishLinkRepository: WishLinkRepository): Future[Seq[Wish]] =
       wishLookup.findWishes(this)
 
-//    def update = Wishlist.update(this)
+    def update(implicit wishlistRepository: WishlistRepository) =
+       wishlistRepository.updateWishlist(this)
 
     def removeWish(wish: Wish)(implicit wishEntryRepository: WishEntryRepository) =
        wishEntryRepository.removeWishFromWishlist(wish, this)
 
-    /*
 
-    def findOrganisers = Wishlist.findOrganisers(this)
+    def findOrganisers(implicit recipientRepository: RecipientRepository) =
+       recipientRepository.findOrganisers(this)
+
+    /*
 
     def addOrganiser(organiser:Recipient) = Wishlist.addOrganiserToWishlist(organiser,this)
 
@@ -104,24 +108,6 @@ object Wishlist {
     }
 
 
-    def update(wishlist:Wishlist) = {
-        Logger.debug("Updating wishlist: "+wishlist.title)
-        DB.withConnection { implicit connection =>
-            val nextId = SQL("SELECT NEXTVAL('wishlist_seq')").as(scalar[Long].single)
-            SQL(
-                """
-                    update wishlist
-                    set title = {title}, description = {description}
-                    where wishlistid = {wishlistid}
-                """
-            ).on(
-                'wishlistid -> wishlist.wishlistId,
-                'title -> wishlist.title,
-                'description -> wishlist.description
-            ).executeInsert()
-            wishlist
-        }
-    }
 
     def findAll : Seq[Wishlist] = {
         DB.withConnection { implicit connection =>
@@ -203,22 +189,6 @@ object Wishlist {
     }
 
 
-
-    def findOrganisers(wishlist:Wishlist) : Seq[Recipient] = {
-        DB.withConnection { implicit connection =>
-            SQL(
-              """
-                  SELECT rec.*
-                  FROM recipient rec
-                  INNER JOIN wishlistorganiser wo on wo.recipientid = rec.recipientid
-                  where wo.wishlistid = {wishlistid}
-                  ORDER BY rec.username
-              """
-            ).on(
-                'wishlistid -> wishlist.wishlistId
-            ).as(Recipient.simple *)
-        }
-    }
 
 
   def addOrganiserToWishlist(organiser:Recipient,wishlist:Wishlist) {

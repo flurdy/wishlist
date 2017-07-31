@@ -27,6 +27,7 @@ POST   /recipient/:username/wishlist/:wishlistId/delete      controllers.Wishlis
 DELETE /recipient/:username/wishlist/:wishlistId             controllers.WishlistController.deleteWishlist(username, wishlistId: Long)
 
 GET	   /recipient/:username/wishlist/:wishlistId/edit.html   controllers.WishlistController.showEditWishlist(username,wishlistId: Long)
+GET    /recipient/:username/wishlist/:wishlistId/update 	 controllers.WishlistController.redirectoShowEditWishlist(username,wishlistId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/update 	 controllers.WishlistController.alsoUpdateWishlist(username,wishlistId: Long)
 PUT    /recipient/:username/wishlist/:wishlistId             controllers.WishlistController.updateWishlist(username,wishlistId: Long)
 

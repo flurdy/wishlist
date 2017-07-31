@@ -114,6 +114,27 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }.toRight(new IllegalStateException("Saving wishlist failed"))
       }
 
+
+   def updateWishlist(wishlist: Wishlist) =
+      Future {
+         wishlist.wishlistId.fold {
+            throw new IllegalArgumentException("No wishlist id")
+         } { wishlistId =>
+            db.withConnection { implicit connection =>
+               logger.debug("Updating wishlist: " + wishlist.title)
+               val updated =
+                  SQL"""
+                       update wishlist
+                       set title = ${wishlist.title}, description = ${wishlist.description}
+                       where wishlistid = $wishlistId
+                     """
+                  .executeUpdate()
+               if(updated > 0) wishlist
+               else throw new IllegalStateException("Unable to update wishlist")
+            }
+         }
+      }
+
    def deleteWishlist(wishlist: Wishlist): Future[Either[Throwable,Boolean]] =
       Future {
          wishlist.wishlistId.fold[Either[Throwable,Boolean]] {

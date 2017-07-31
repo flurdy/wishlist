@@ -186,6 +186,26 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
       .map{ _ > 0 }
+
+
+
+   def findOrganisers(wishlist: Wishlist): Future[List[Recipient]] =
+      Future {
+         wishlist.wishlistId.fold {
+            throw new IllegalArgumentException("No wishlist id")
+         } { wishlistId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                     SELECT rec.*
+                     FROM recipient rec
+                     INNER JOIN wishlistorganiser wo on wo.recipientid = rec.recipientid
+                     where wo.wishlistid = $wishlistId
+                     ORDER BY rec.username
+                  """
+                  .as(MapToRecipient *)
+            }
+         }
+      }
 }
 
 @Singleton
