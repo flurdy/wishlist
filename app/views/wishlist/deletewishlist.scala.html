@@ -1,9 +1,9 @@
-@(wishlist:Wishlist)(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(wishlist: Wishlist)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
 @nautical(" delete: " + wishlist.title) {
-	<li><a href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
+	<li><a href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
 	
 	<div>
@@ -22,13 +22,13 @@
 			<br/>
 			<br/>
 
-			@form(action = routes.WishController.deleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
+			@form(action = routes.WishlistController.deleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
 
 				<div class="control-group">
 <!--					<div class="controls" id="buttons-row">
 				-->		<button type="submit" class="btn btn-danger input-medium">delete wishlist</button>
 
-				    	<a class="btn btn-info input-small" href="@routes.WishController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">cancel</a>
+				    	<a class="btn btn-info input-small" href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">cancel</a>
 <!--
 					</div>
 	-->			</div>

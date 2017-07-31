@@ -186,7 +186,14 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
          }
         }
       )
-    }
+   }
+
+
+   def showConfirmDeleteWishlist(username: String, wishlistId: Long) =
+      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
+            andThen WishlistAction(wishlistId) andThen WishlistEditorAction) { implicit request =>
+      Ok(views.html.wishlist.deletewishlist(request.wishlist))
+   }
 
     def deleteWishlist(username: String, wishlistId: Long)     = removeWishlist(username, wishlistId)
 
@@ -239,17 +246,6 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
          }
       }
    }
-
-
-   def showConfirmDeleteWishlist(username: String, wishlistId: Long) = TODO
-
-/*
-
-    def showConfirmDeleteWishlist(username:String,wishlistId:Long) = isEditorOfWishlist(username,wishlistId) { (wishlist,currentRecipient) => implicit request =>
-        Ok(views.html.wishlist.deletewishlist(wishlist))
-    }
-
-    */
 
 
     def search =
