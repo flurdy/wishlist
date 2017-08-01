@@ -34,14 +34,10 @@ extends Controller with Secured with WithAnalytics with WishlistForm with WithLo
       request.currentRecipient match {
          case Some(recipient) =>
             recipient.inflate.flatMap{
-               case Right(r) =>
-                  r.findAndInflateWishlists.map { wishlists =>
-                     Ok(views.html.indexrecipient(editWishlistForm, wishlists))
-                           .withSession(request.session)
-                  }
-               case _ =>
-                  logger.warn("recipient in session but not inflatable")
-                  Future.successful( Ok(views.html.indexanon()).withNewSession )
+               _.findAndInflateWishlists.map { wishlists =>
+                  Ok(views.html.indexrecipient(editWishlistForm, wishlists))
+                        .withSession(request.session)
+               }
             }
          case None => Future.successful( Ok(views.html.indexanon()) )
       }

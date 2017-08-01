@@ -63,9 +63,13 @@ case class Recipient (
    def setEmailAsVerified(verificationHash: String)(implicit recipientRepository: RecipientRepository): Future[Boolean] =
       recipientRepository.setEmailAsVerified(this, verificationHash)
 
-   def inflate(implicit recipientRepository: RecipientRepository): Future[Either[_,Recipient]] =
-      recipientRepository.findRecipient(this.username).map{
-         _.toRight(new IllegalStateException("Recipient not found"))
+   def inflate(implicit recipientRepository: RecipientRepository): Future[Recipient] =
+      recipientId.fold{
+         recipientRepository.findRecipient(username)
+      }{ id =>
+         recipientRepository.findRecipientById(id)
+      }.map{
+         _.getOrElse(throw new IllegalStateException(s"Recipient [$username][$recipientId] not found"))
       }
 
    private def findOrganisedWishlists(implicit wishlistRepository: WishlistRepository) =
@@ -102,17 +106,8 @@ case class Recipient (
     Recipient.updatePassword(this.copy(password=Some(newPassword)))
   }
 
-  def findWishlists = Wishlist.findByRecipient(this)
-
-  def findOrganisedWishlists = Wishlist.findByOrganiser(this)
-
-  def findReservations : Seq[Reservation] = Reservation.findByRecipient(this)
-
-  def doesVerificationMatch(verificationHash:String) = Recipient.doesVerificationMatch(this,verificationHash)
-
   def isEmailVerified = Recipient.isEmailVerified(this)
 
-  def setEmailAsVerified = Recipient.setEmailAsVerified(this)
 */
 
   def isSame(other: Recipient) = isSameId(other) || isSameUsername(other)

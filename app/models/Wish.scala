@@ -1,10 +1,5 @@
 package models
 
-// import anorm._
-// import anorm.SqlParser._
-// import play.api.Play.current
-// import play.api.db.DB
-// import play.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import repositories._
@@ -36,38 +31,21 @@ case class Wish(
    def addToWishlist(wishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository) =
       WishEntry(this, wishlist).save.map( _ => this)
 
-   def reserve(recipient:Recipient)(implicit reservationRepository: ReservationRepository) =
-      new Reservation(recipient,this).save
+   def reserve(reserver: Recipient)(implicit reservationRepository: ReservationRepository) =
+      new Reservation(reserver, this).save
 
-//   def unreserve: Future[Reservation] = ???
-      // reservation map ( realReservation => realReservation.copy(wish=this).cancel )
+   def delete(implicit wishRepository: WishRepository) = wishRepository.deleteWish(this)
 
-   /*
-    def this(wishId:Long,
-        title:String,
-        description:Option[String],
-        reservation:Option[Reservation],recipient:Recipient) =
-          this(Some(wishId), title, description, Set.empty, Seq.empty, reservation, recipient)
-
-    def this(wishId:Long) = this(Some(wishId),"",None, Set.empty, Seq.empty, None , null)
-    def this(wishId:Long,title:String,description:Option[String],recipient:Recipient) = this(Some(wishId),title,description, Set.empty, Seq.empty, None, recipient:Recipient)
-
-
-
-    def delete = Wish.delete(this)
-*/
-    def update(implicit wishRepository: WishRepository) =
+   def update(implicit wishRepository: WishRepository) =
        wishRepository.updateWish(this)
 
    def removeFromWishlist(wishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository, wishRepository: WishRepository) =
       wishlist.removeWish(this) flatMap { _ =>
-         wishRepository.deleteWish(this)
+         delete
       }
 
    def addLink(url: String)(implicit wishLinkRepository: WishLinkRepository) =
        wishLinkRepository.addLinkToWish(this,url)
-
-//       def deleteLink(linkId:Long) = Wish.deleteLinkFromWish(this,linkId)
 
    def findLink(linkId: Long)(implicit wishLinkRepository: WishLinkRepository): Future[Option[WishLink]] =
       wishLinkRepository.findLink(this,linkId)

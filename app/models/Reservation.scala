@@ -9,16 +9,17 @@ package models
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import repositories._
+import controllers.WithLogging
 
 case class Reservation(
 	reservationId: Option[Long],
    reserver: Recipient,
 	wish: Wish
-) {
+) extends WithLogging {
 
    // def this(reservationId: Long) = this(Some(reservationId),null,null)
 
-   def this(recipient: Recipient, wish: Wish) = this(None,recipient,wish)
+   def this(reserver: Recipient, wish: Wish) = this(None, reserver, wish)
 
    def save(implicit reservationRepository: ReservationRepository): Future[Reservation] =
       reservationRepository.saveReservation(this)
@@ -28,7 +29,11 @@ case class Reservation(
          wishRepository.removeReservation(wish)
       }.map( _ => ())
 
-   def isReserver(possibleReserver: Recipient) = reserver.isSame(possibleReserver)
+   def isReserver(possibleReserver: Recipient) =
+      reserver.isSame(possibleReserver)
+
+   def inflate(implicit recipientRepository: RecipientRepository): Future[Reservation] =
+      reserver.inflate.map( r => this.copy( reserver = r ) )
 
 }
 

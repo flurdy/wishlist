@@ -180,6 +180,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
              andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) ).async { implicit request =>
       request.currentRecipient match {
          case Some(r) if !r.isSame(request.wish.recipient) =>
+            logger.info(s"Reserving wish $wishId by ${r.username} for ${request.wish.recipient.username}")
             request.wish.reserve(request.currentRecipient.get).map { _ =>
                Redirect(routes.WishlistController.showWishlist(username,wishlistId))
                   .flashing("messageSuccess" -> "Wish reserved")
@@ -197,15 +198,22 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
   def unreserveWish(username: String, wishlistId: Long, wishId: Long) =
     (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
           andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) ).async { implicit request =>
-
        (request.currentRecipient, request.wish.reservation) match {
-         case (Some(currentRecipient), Some(reservation)) if reservation.isReserver(currentRecipient) =>
-            reservation.cancel.map { _ =>
-               Redirect(routes.WishlistController.showWishlist(username, wishlistId))
-                     .flashing("message" -> "Wish reservation cancelled")
-            }
          case (Some(currentRecipient), Some(reservation)) =>
-            Future.successful(Unauthorized)
+            currentRecipient.inflate.flatMap { thickerRecipient =>
+               reservation.inflate.flatMap { thickerReservation =>
+                  if( thickerReservation.isReserver(thickerRecipient) ){
+                     logger.info(s"Unreserving wish $wishId reserved by ${currentRecipient.username} for ${request.wish.recipient.username}")
+                     reservation.cancel.map { _ =>
+                        Redirect(routes.WishlistController.showWishlist(username, wishlistId))
+                              .flashing("message" -> "Wish reservation cancelled")
+                     }
+                  } else {
+                     logger.warn("===== not reserver")
+                     Future.successful(Unauthorized)
+                  }
+               }
+            }
          case _ => Future.successful(NotFound)
        }
    }

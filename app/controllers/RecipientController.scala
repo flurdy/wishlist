@@ -29,7 +29,6 @@ object RecipientController {
 
   val ValidUsername= """^[0-9a-zA-Z_-]+$""".r
 
-
   val editRecipientForm = Form(
     tuple(
       "oldusername" -> nonEmptyText(maxLength = 99),
@@ -138,7 +137,7 @@ class RecipientController extends Controller with Secured {
       }
    }
 
-   def showEditRecipient(username:String) = TODO
+   def showEditRecipient(username: String) = TODO
 
    /*
 
@@ -148,10 +147,23 @@ class RecipientController extends Controller with Secured {
   }
 
 
-  def showDeleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
-    Ok(views.html.recipient.deleterecipient(profileRecipient))
-  }
+  */
 
+   def showDeleteRecipient(username: String) = TODO
+
+   /*
+
+   def showDeleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
+     Ok(views.html.recipient.deleterecipient(profileRecipient))
+   }
+
+   */
+
+  def alsoDeleteRecipient(username: String) = deleteRecipient(username)
+
+  def deleteRecipient(username: String) = TODO
+
+  /*
 
   def deleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
 
@@ -161,64 +173,80 @@ class RecipientController extends Controller with Secured {
   }
 
 
-  def updateRecipient(username:String)  = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
-    editRecipientForm.bindFromRequest.fold(
-      errors => {
-        Logger.warn("Update failed: " + errors)
-        BadRequest(views.html.recipient.editrecipient(profileRecipient,errors))
-      },
-      editForm => {
-        val updatedRecipient = profileRecipient.copy(
-          fullname=editForm._3,
-          email=editForm._4 )
+  */
 
-        updatedRecipient.update
+   def alsoUpdateRecipient(username: String) = updateRecipient(username)
 
-        Redirect(routes.RecipientController.showEditRecipient(username)).flashing("message" -> "Recipient updated")
-      }
-    )
-  }
+   def updateRecipient(username: String) = TODO
 
-*/
+   /*
+
+   def updateRecipient(username:String)  = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
+     editRecipientForm.bindFromRequest.fold(
+       errors => {
+         Logger.warn("Update failed: " + errors)
+         BadRequest(views.html.recipient.editrecipient(profileRecipient,errors))
+       },
+       editForm => {
+         val updatedRecipient = profileRecipient.copy(
+           fullname=editForm._3,
+           email=editForm._4 )
+
+         updatedRecipient.update
+
+         Redirect(routes.RecipientController.showEditRecipient(username)).flashing("message" -> "Recipient updated")
+       }
+     )
+   }
+
+ */
 
    def showResetPassword = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.recipient.passwordreset(resetPasswordForm))
    }
 
+   def resetPassword = TODO
+
 /*
 
-  def resetPassword = Action { implicit request =>
-    resetPasswordForm.bindFromRequest.fold(
-      errors => {
-        BadRequest(views.html.recipient.passwordreset(errors))
-      },
-      resetForm => {
-        Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match {
-          case Some(recipient) => {
-            Logger.info("Password reset requested for: " + recipient.recipientId)
+def resetPassword = Action { implicit request =>
+ resetPasswordForm.bindFromRequest.fold(
+   errors => {
+     BadRequest(views.html.recipient.passwordreset(errors))
+   },
+   resetForm => {
+     Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match {
+       case Some(recipient) => {
+         Logger.info("Password reset requested for: " + recipient.recipientId)
 
-            val newPassword = recipient.resetPassword
+         val newPassword = recipient.resetPassword
 
-            EmailNotifier.sendPasswordResetEmail(recipient,newPassword)
+         EmailNotifier.sendPasswordResetEmail(recipient,newPassword)
 
-            Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset and sent by email")
-          }
-          case None => {
-            NotFound(views.html.error.notfound())
-          }
-        }
-      }
-    )
-  }
+         Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset and sent by email")
+       }
+       case None => {
+         NotFound(views.html.error.notfound())
+       }
+     }
+   }
+ )
+}
 
+*/
 
+   def showChangePassword(username:String) = TODO
+
+   def updatePassword(username:String) = TODO
+
+   /*
 
    def showChangePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     Ok(views.html.recipient.passwordchange(changePasswordForm(username)))
-  }
+   }
 
 
-  def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
+   def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
     changePasswordForm(username).bindFromRequest.fold(
       errors => {
         BadRequest(views.html.recipient.passwordchange(errors))
@@ -235,104 +263,106 @@ class RecipientController extends Controller with Secured {
             .withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
       }
     )
-  }
-
-*/
-
-   def verifyEmail(username: String, verificationHash: String) = Action.async { implicit request =>
-
-      def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
-               .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
-
-      logger.info(s"Verifying email for $username")
-      recipientLookup.findRecipient(username) flatMap {
-         case Some(recipient) =>
-            recipient.isVerified.flatMap {
-               case true =>
-                  logger.warn(s"Already verified for $username")
-                  Future.successful( redirectToLogin )
-               case false =>
-                  recipient.doesVerificationMatch(verificationHash).flatMap {
-                     case true =>
-                        logger.debug(s"Verification match for $username")
-                        recipient.setEmailAsVerified(verificationHash).map {
-                           case true  => redirectToLogin
-                           case false => throw new IllegalStateException(s"Unable to set $username as verified")
-                        }
-                     case false =>
-                        logger.warn(s"Verification for $username does not match [$verificationHash]")
-                        Future.successful( BadRequest )
-                  }
-            }
-         case _ => Future.successful( NotFound )
-      }
    }
+
+   */
+
+def verifyEmail(username: String, verificationHash: String) = Action.async { implicit request =>
+
+   def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
+            .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
+
+   logger.info(s"Verifying email for $username")
+   recipientLookup.findRecipient(username) flatMap {
+      case Some(recipient) =>
+         recipient.isVerified.flatMap {
+            case true =>
+               logger.warn(s"Already verified for $username")
+               Future.successful( redirectToLogin )
+            case false =>
+               recipient.doesVerificationMatch(verificationHash).flatMap {
+                  case true =>
+                     logger.debug(s"Verification match for $username")
+                     recipient.setEmailAsVerified(verificationHash).map {
+                        case true  => redirectToLogin
+                        case false => throw new IllegalStateException(s"Unable to set $username as verified")
+                     }
+                  case false =>
+                     logger.warn(s"Verification for $username does not match [$verificationHash]")
+                     Future.successful( BadRequest )
+               }
+         }
+      case _ => Future.successful( NotFound )
+   }
+}
 
 /*
 
-  def verifyEmail(username:String,verificationHash:String) = Action { implicit request =>
-    Recipient.findByUsername(username) match {
-      case Some(recipient) => {
-        Logger.info("Verifying email for %s".format(username))
-        if(recipient.isEmailVerified) {
-          Logger.warn("Already verified for %s".format(username))
-          Redirect(routes.Application.showLoginForm)
-            .withNewSession.flashing("message" -> "Email address verified. Please log in")
-        } else {
-          if(recipient.doesVerificationMatch(verificationHash)) {
-            recipient.setEmailAsVerified
-            Redirect(routes.Application.showLoginForm)
-              .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
-          } else {
-            Logger.warn("Verifying does not match for %s".format(username))
-            NotFound(views.html.error.notfound())
-          }
-        }
-      }
-      case None => NotFound(views.html.error.notfound())
-    }
-  }
+def verifyEmail(username:String,verificationHash:String) = Action { implicit request =>
+ Recipient.findByUsername(username) match {
+   case Some(recipient) => {
+     Logger.info("Verifying email for %s".format(username))
+     if(recipient.isEmailVerified) {
+       Logger.warn("Already verified for %s".format(username))
+       Redirect(routes.Application.showLoginForm)
+         .withNewSession.flashing("message" -> "Email address verified. Please log in")
+     } else {
+       if(recipient.doesVerificationMatch(verificationHash)) {
+         recipient.setEmailAsVerified
+         Redirect(routes.Application.showLoginForm)
+           .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
+       } else {
+         Logger.warn("Verifying does not match for %s".format(username))
+         NotFound(views.html.error.notfound())
+       }
+     }
+   }
+   case None => NotFound(views.html.error.notfound())
+ }
+}
 
 */
 
    def showResendVerification = TODO
 
+   def resendVerification = TODO
+
 /*
 
-  def showResendVerification = Action { implicit request =>
-    Ok(views.html.recipient.emailverification(emailVerificationForm))
-  }
+def showResendVerification = Action { implicit request =>
+ Ok(views.html.recipient.emailverification(emailVerificationForm))
+}
 
 
-  def resendVerification = Action { implicit request =>
-    emailVerificationForm.bindFromRequest.fold(
-      errors => {
-        BadRequest(views.html.recipient.emailverification(errors))
-      },
-      verificationForm => {
-        Recipient.findByUsernameAndEmail(verificationForm._1,verificationForm._2) match {
-          case Some(recipient) => {
-            Logger.info("Verification resend requested for: " + recipient.recipientId)
+def resendVerification = Action { implicit request =>
+ emailVerificationForm.bindFromRequest.fold(
+   errors => {
+     BadRequest(views.html.recipient.emailverification(errors))
+   },
+   verificationForm => {
+     Recipient.findByUsernameAndEmail(verificationForm._1,verificationForm._2) match {
+       case Some(recipient) => {
+         Logger.info("Verification resend requested for: " + recipient.recipientId)
 
-            if (recipient.isEmailVerified){
+         if (recipient.isEmailVerified){
 
-              Redirect(routes.Application.login()).flashing("messageWarning" -> "Email already verified")
-            } else {
+           Redirect(routes.Application.login()).flashing("messageWarning" -> "Email already verified")
+         } else {
 
-              val verificationHash = recipient.generateVerificationHash
-              EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
+           val verificationHash = recipient.generateVerificationHash
+           EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
 
-              Redirect(routes.Application.index()).flashing("messageWarning" -> "Verification resent by email")
-            }
+           Redirect(routes.Application.index()).flashing("messageWarning" -> "Verification resent by email")
+         }
 
-          }
-          case None => {
-            NotFound(views.html.error.notfound())
-          }
-        }
-      }
-    )
-  }
-  */
+       }
+       case None => {
+         NotFound(views.html.error.notfound())
+       }
+     }
+   }
+ )
+}
+*/
 }
 

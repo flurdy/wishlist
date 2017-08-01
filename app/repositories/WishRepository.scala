@@ -19,7 +19,7 @@ trait WishMapper {
       get[Option[String]]("description") ~
       get[Option[Long]]("reservationid") ~
       get[Long]("recipientid") ~
-      get[Option[Long]]("recipientid") map {
+      get[Option[Long]]("reserverid") map {
          case wishId~title~description~reservationId~recipientId~reserverId => {
             val recipient   = new Recipient(recipientId)
             val reservation =
@@ -63,9 +63,11 @@ trait WishLookup extends Repository with WishMapper with WithLogging {
       Future {
          db.withConnection { implicit connection =>
             SQL"""
-                 SELECT wish.*,recipient.username FROM wish
-                 INNER JOIN recipient on recipient.recipientid = wish.recipientid
-                 WHERE wish.wishid = $wishId
+                 SELECT wi.*, res.recipientid as reserverid,rec.username
+                 FROM wish wi
+                 INNER JOIN recipient rec on rec.recipientid = wi.recipientid
+                 LEFT JOIN reservation res on wi.wishid = res.wishid
+                 WHERE wi.wishid = $wishId
                """
                .as(MapToWish.singleOpt)
          }
