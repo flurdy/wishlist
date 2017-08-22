@@ -180,7 +180,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
              andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) ).async { implicit request =>
       request.currentRecipient match {
          case Some(r) if !r.isSame(request.wish.recipient) =>
-            logger.info(s"Reserving wish $wishId by ${r.username} for ${request.wish.recipient.username}")
+            logger.info(s"Reserving wish $wishId by ${r.username} for ${request.wish.recipient.recipientId}")
             request.wish.reserve(request.currentRecipient.get).map { _ =>
                Redirect(routes.WishlistController.showWishlist(username,wishlistId))
                   .flashing("messageSuccess" -> "Wish reserved")

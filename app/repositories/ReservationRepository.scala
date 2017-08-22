@@ -36,7 +36,7 @@ with ReservationMapper {
       Future {
          (reservation.wish.wishId, reservation.reserver.recipientId) match {
             case (Some(wishId), Some(recipientId)) =>
-               logger.info(s"Saving reservation for wish [$wishId] and recipient [$recipientId]")
+               logger.debug(s"Saving reservation for wish [$wishId] and recipient [$recipientId]")
                db.withConnection{ implicit connection =>
                   val nextId = generateNextId("reservation_seq")
                   SQL"""

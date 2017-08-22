@@ -54,7 +54,6 @@ with EmailAddressChecks with WithLogging {
 
   	def register =
      (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
-      logger.info("registration start")
   		registerForm.bindFromRequest.fold(
         errors => {
           logger.warn("Registration failed: " + errors.errors.headOption.map( e => s"${e.key}: ${e.message}").getOrElse(""))

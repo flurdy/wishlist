@@ -30,7 +30,7 @@ trait EmailNotifier extends WithLogging {
    def sendEmailVerification(recipient:Recipient, verificationHash: String): Future[Unit] = {
       // TODO !
       logger.warn("TODO")
-      logger.debug(s"Verification: [$verificationHash]")
+      logger.info(s"Verification: " + controllers.routes.RecipientController.verifyEmail(recipient.username, verificationHash).url)
       Future.successful(())
    }
 

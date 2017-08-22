@@ -21,26 +21,30 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
       val wishlistRepositoryMock = mock[WishlistRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
       val controller = new RecipientController(configurationMock, recipientLookupMock)(recipientRepositoryMock, wishlistRepositoryMock, reservationRepositoryMock)
+
+      val recipient = new Recipient("someuser").copy(recipientId = Some(1222), fullname = Some("Some User"))
+      val anotherRecipient = new Recipient("someother").copy(recipientId = Some(5555), fullname = Some("Some Other"))
+
+      when( recipientLookupMock.findRecipient("someuser") )
+            .thenReturn( Future.successful( Some( recipient ) ) )
+      when( recipientLookupMock.findRecipient("someother") )
+            .thenReturn( Future.successful( Some( anotherRecipient ) ) )
+      when( recipientRepositoryMock.findRecipientById(1222) )
+            .thenReturn( Future.successful( Some( recipient ) ) )
+      when( recipientRepositoryMock.findRecipientById(5555) )
+            .thenReturn( Future.successful( Some( anotherRecipient ) ) )
    }
 
    trait ProfileSetup extends Setup {
 
-      val recipient = new Recipient("someuser").copy(recipientId = Some(1222), fullname = Some("Some User"))
-      val anotherRecipient = new Recipient("someother").copy(recipientId = Some(5555), fullname = Some("Some Other"))
       val wishlist  = new Wishlist("Some wishlist", recipient).copy(wishlistId = Some(123))
       val organised = new Wishlist("Some organised wishlist", anotherRecipient).copy(wishlistId = Some(123))
       val wish = new Wish( 222, "Some wish title", anotherRecipient)
       val reserved = Reservation( Some(111), recipient, wish)
       val reservations = List(reserved)
 
-      when( recipientLookupMock.findRecipient("someuser") )
-            .thenReturn( Future.successful( Some( recipient ) ) )
       when( wishlistRepositoryMock.findRecipientWishlists(recipient) )
             .thenReturn( Future.successful( List(wishlist) ))
-      when( recipientRepositoryMock.findRecipientById(1222) )
-            .thenReturn( Future.successful( Some( recipient ) ) )
-//      when( wishlistRepositoryMock.inflateWishlistsRecipients(List(wishlist))(recipientRepositoryMock))
-//            .thenReturn( Future.successful( List(wishlist) ))
 
       def showAnonymousProfile() = {
 
@@ -51,12 +55,23 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
       }
 
+      def showAnotherRecipientProfile() = {
+
+         when( wishlistRepositoryMock.findRecipientWishlists(anotherRecipient) )
+               .thenReturn( Future.successful( List(organised) ))
+
+         val result = controller.showProfile("someother").apply(
+               FakeRequest().withSession("username"  -> "someuser"))
+
+         status(result) mustBe 200
+         ScalaSoup.parse(contentAsString(result))
+
+      }
+
       def showRecipientProfile() = {
 
          when( wishlistRepositoryMock.findOrganisedWishlists(recipient) )
                .thenReturn( Future.successful( List(organised) ))
-         when( recipientRepositoryMock.findRecipientById(5555) )
-               .thenReturn( Future.successful( Some( anotherRecipient ) ) )
          when( reservationRepositoryMock.findReservationsByReserver(recipient) )
                .thenReturn( Future.successful( reservations))
          when( reservationRepositoryMock.inflateReservationsReserver(reservations)(recipientRepositoryMock) )
@@ -74,6 +89,19 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
    }
 
+   trait EditProfileSetup extends Setup {
+
+      def showEditProfile(username: String) = {
+
+         val result = controller.showEditRecipient(username).apply(
+               FakeRequest().withSession("username"  -> "someuser"))
+
+         status(result) mustBe 200
+         ScalaSoup.parse(contentAsString(result))
+
+      }
+   }
+
    "Recipient controller" when requesting {
 
       "[GET] /recipient/someuser/" should {
@@ -84,7 +112,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
             verify( recipientLookupMock ).findRecipient("someuser")
          }
 
-         "show a profile given not loggedin" which has {
+         "show a profile given not logged in" which has {
 
             "a username" in new ProfileSetup {
                showAnonymousProfile()
@@ -96,6 +124,12 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                showAnonymousProfile()
                      .select("#profile-page h4:eq(1)")
                      .headOption.value.text mustBe "Full name: Some User"
+            }
+            "no edit profile button" in new ProfileSetup {
+               showAnonymousProfile()
+                     .select("#profile-page .control-group a")
+                     .headOption mustBe None
+
             }
 
             "wishlists" which has {
@@ -112,7 +146,21 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
             }
          }
 
-         "show a profile given loggedin" which has {
+         "show a profile given logged in as another recipient" which has {
+            "no edit profile button" in new ProfileSetup {
+               showAnotherRecipientProfile()
+                     .select("#profile-page .control-group a")
+                     .headOption mustBe None
+
+            }
+            "no organised wishlists" in new ProfileSetup {
+               showAnotherRecipientProfile()
+                     .select("#profile-page #organised-list")
+                     .headOption mustBe None
+            }
+         }
+
+         "show a profile given logged in as profile recipient" which has {
 
             "organised wishlists" in new ProfileSetup {
                showRecipientProfile()
@@ -131,6 +179,27 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                verify( reservationRepositoryMock ).inflateReservationsWishRecipient(reservations)(recipientRepositoryMock)
                verify( reservationRepositoryMock ).inflateReservationsReserver(reservations)(recipientRepositoryMock)
             }
+            "create wishlist button" in new ProfileSetup {
+               showRecipientProfile()
+                     .select("#profile-page button")
+                     .headOption.value.text mustBe "create"
+
+            }
+            "edit profile button" in new ProfileSetup {
+               showRecipientProfile()
+                     .select("#profile-page .control-group a")
+                     .headOption.value.text mustBe "edit recipient"
+
+            }
+         }
+      }
+
+      "[GET] /recipient/someuser/" should {
+         "show edit recipient page" in new EditProfileSetup {
+
+            showEditProfile("someother").select("#edit-profile-page").headOption mustBe defined
+
+            verify( recipientLookupMock ).findRecipient("someother")
          }
       }
    }

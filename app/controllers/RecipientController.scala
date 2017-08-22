@@ -15,11 +15,64 @@ import repositories._
 // import notifiers._
 // import scravatar._
 
+trait RecipientForm extends RegisterForm {
+
+  val editRecipientForm = Form(
+    tuple(
+      "oldusername" -> nonEmptyText(maxLength = 99),
+      "username" -> nonEmptyText(maxLength = 99),
+      "fullname" -> optional(text(maxLength = 99)),
+      "email" -> nonEmptyText(maxLength = 99)
+    ) verifying("Email address is not valid", fields => fields match {
+      case (_, _, _, email) => { 
+        ValidEmailAddresses.filterNot( r => r.findFirstIn(email.trim).isDefined ).isEmpty &&
+            InvalidEmailAddress.findFirstIn(email.trim).isEmpty
+      }
+    }) verifying("Username is not valid. A to Z and numbers only. No spaces. Sorry", fields => fields match {
+      case (_, username, _, _) => {
+        ValidUsername.findFirstIn(username.trim).isDefined
+      }
+    // }) verifying("Username is already taken", fields => fields match {
+    //   case (oldusername, username, fullname, email) => {
+    //     oldusername == username || !Recipient.findByUsername(username.trim).isDefined
+    //   }
+    })
+  )
+
+  val resetPasswordForm = Form(
+    tuple(
+    "username" -> nonEmptyText(maxLength = 99),
+    "email" -> nonEmptyText(maxLength = 99)
+    ) verifying("Email address is not valid", fields => fields match {
+      case (username, email) => {
+         false
+      //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+      }
+    }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
+      case (username, email) => {
+         false
+      //   RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
+      }
+    }) verifying("Username and email does match or exist", fields => fields match {
+      case (username, email) => {
+         false
+      //   if(RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined &&
+            // RecipientController.ValidUsername.findFirstIn(username.trim).isDefined) {
+         //  Recipient.findByUsernameAndEmail(username.trim,email.trim).isDefined
+      //   } else {
+         //  true
+      //   }
+      }
+    })
+  )
+
+}
 
 @Singleton
 class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
-         (implicit val recipientRepository: RecipientRepository, val wishlistRepository: WishlistRepository, val reservationRepository: ReservationRepository)
-extends Controller with Secured with WithAnalytics with WishlistForm with WithLogging {
+         (implicit val recipientRepository: RecipientRepository, val wishlistRepository: WishlistRepository, 
+         val reservationRepository: ReservationRepository)
+extends Controller with Secured with WithAnalytics with WishlistForm with RecipientForm with EmailAddressChecks with WithLogging {
 
 /*
 
@@ -29,26 +82,6 @@ object RecipientController {
 
   val ValidUsername= """^[0-9a-zA-Z_-]+$""".r
 
-  val editRecipientForm = Form(
-    tuple(
-      "oldusername" -> nonEmptyText(maxLength = 99),
-      "username" -> nonEmptyText(maxLength = 99),
-      "fullname" -> optional(text(maxLength = 99)),
-      "email" -> nonEmptyText(maxLength = 99)
-    ) verifying("Email address is not valid", fields => fields match {
-      case (oldusername, username, fullname, email) => {
-        ValidEmailAddress.findFirstIn(email.trim).isDefined
-      }
-    })   verifying("Username is not valid. A to Z and numbers only. No spaces. Sorry", fields => fields match {
-      case (oldusername, username, fullname, email) => {
-        ValidUsername.findFirstIn(username.trim).isDefined
-      }
-    })  verifying("Username is already taken", fields => fields match {
-      case (oldusername, username, fullname, email) => {
-        oldusername == username || !Recipient.findByUsername(username.trim).isDefined
-      }
-    })
-  )
 
 
   def changePasswordForm(username:String) = Form(
@@ -89,32 +122,6 @@ class RecipientController extends Controller with Secured {
   )
 */
 
-  val resetPasswordForm = Form(
-    tuple(
-    "username" -> nonEmptyText(maxLength = 99),
-    "email" -> nonEmptyText(maxLength = 99)
-    ) verifying("Email address is not valid", fields => fields match {
-      case (username, email) => {
-         false
-      //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
-      }
-    }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
-      case (username, email) => {
-         false
-      //   RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
-      }
-    }) verifying("Username and email does match or exist", fields => fields match {
-      case (username, email) => {
-         false
-      //   if(RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined &&
-            // RecipientController.ValidUsername.findFirstIn(username.trim).isDefined) {
-         //  Recipient.findByUsernameAndEmail(username.trim,email.trim).isDefined
-      //   } else {
-         //  true
-      //   }
-      }
-    })
-  )
 
 
    def showProfile(username: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
@@ -137,17 +144,16 @@ class RecipientController extends Controller with Secured {
       }
    }
 
-   def showEditRecipient(username: String) = TODO
+   def showEditRecipient(username: String) =  (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
 
-   /*
-
-  def showEditRecipient(username:String) = isProfileRecipient(username) { (profileRecipient) => implicit request =>
-    val editForm = editRecipientForm.fill(profileRecipient.username,profileRecipient.username,profileRecipient.fullname,profileRecipient.email)
-    Ok(views.html.recipient.editrecipient(profileRecipient,editForm))
-  }
-
-
-  */
+      recipientLookup.findRecipient(username) map {
+         case Some(recipient) =>
+           val editForm = editRecipientForm.fill(
+             username, username, recipient.fullname, recipient.email)
+           Ok( views.html.recipient.editrecipient(recipient, editForm) )
+         case _ => NotFound // TODO
+      }
+   }
 
    def showDeleteRecipient(username: String) = TODO
 

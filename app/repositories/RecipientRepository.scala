@@ -4,7 +4,7 @@ import anorm._
 // import anorm.JodaParameterMetaData._
 import anorm.SqlParser._
 import com.google.inject.ImplementedBy
-import java.sql.Connection
+// import java.sql.Connection
 import javax.inject.{Inject, Singleton}
 // import org.joda.time.DateTime
 import play.api.db._
@@ -49,7 +49,7 @@ trait RecipientRepository extends Repository with WithLogging {
    def findRecipient(username: String): Future[Option[Recipient]] =
       Future {
          db.withConnection { implicit connection =>
-            logger.debug(s"Looking up recipient: ${username}")
+            logger.trace(s"Looking up recipient: ${username}")
             SQL"""
                   select *
                   from recipient
@@ -62,6 +62,7 @@ trait RecipientRepository extends Repository with WithLogging {
    def findRecipientById(recipientId: Long) =
       Future {
          db.withConnection { implicit connection =>
+            logger.trace(s"Looking up recipient id: ${recipientId}")
             SQL"""
                   select *
                   from recipient
