@@ -1,4 +1,4 @@
-@(recipient: Recipient, editRecipientForm: Form[(String,String,Option[String],String)])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(recipient: Recipient, editRecipientForm: Form[(String,String,Option[String],String)], errorMessage: Option[String] = None)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
@@ -6,19 +6,23 @@
 	<li><a href="@routes.RecipientController.showProfile(recipient.username)">recipient</a></li>
 }{
 
-
-@for(error <- editRecipientForm.errors){
-    <p class="alert alert-error">
-        <button type="button" class="close" data-dismiss="alert">×</button>
-        @error.message: @error.key
-    </p>
-    }
-
-
     <div id="edit-profile-page">
 
-		<h3>Edit recipient</h3>
+        <h3>Edit recipient</h3>
+        
+	    @for(error <- errorMessage){
+            <p class="alert alert-error">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                @error
+            </p>
+        }
 
+        @for(error <- editRecipientForm.errors){
+            <p class="alert alert-error">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                @error.message: @error.key
+            </p>
+        }
 
         <div class="well" >
             @form(action = routes.RecipientController.updateRecipient(recipient.username), 'class -> "form-horizontal"){

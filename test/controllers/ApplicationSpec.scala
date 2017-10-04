@@ -23,13 +23,15 @@ trait BaseUnitSpec extends PlaySpec with MockitoSugar with ScalaFutures {
      def calling     = afterWord("calling")
      def does        = afterWord("does")
      def is          = afterWord("is")
+     def fail        = afterWord("fail")
      def has         = afterWord("has")
-     def requesting  = afterWord("requesting")
      def given       = afterWord("given")
      def notBeAbleTo = afterWord("not be able to")
+     def pass        = afterWord("pass")
      def posting     = afterWord("posting")
-     def show        = afterWord("show")
+     def requesting  = afterWord("requesting")
      def redirect    = afterWord("redirect")
+     def show        = afterWord("show")
 }
 
 

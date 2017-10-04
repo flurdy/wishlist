@@ -24,7 +24,7 @@ trait RecipientForm extends RegisterForm {
       "fullname" -> optional(text(maxLength = 99)),
       "email" -> nonEmptyText(maxLength = 99)
     ) verifying("Email address is not valid", fields => fields match {
-      case (_, _, _, email) => { 
+      case (_, _, _, email) => {
         ValidEmailAddresses.filterNot( r => r.findFirstIn(email.trim).isDefined ).isEmpty &&
             InvalidEmailAddress.findFirstIn(email.trim).isEmpty
       }
@@ -66,11 +66,25 @@ trait RecipientForm extends RegisterForm {
     })
   )
 
+   val changePasswordForm = Form(
+      tuple(
+         "password" -> nonEmptyText(minLength = 4, maxLength = 99),
+         "newpassword" -> nonEmptyText(minLength = 4, maxLength = 99),
+         "confirm" -> nonEmptyText(minLength = 4, maxLength = 99)
+      ) verifying("Passwords do not match", fields => fields match {
+         case (_, newpassword, confirmPassword) => {
+            newpassword.trim == confirmPassword.trim
+         }
+      // }) verifying("Current password is invalid", fields => fields match {
+      //    case (password, newpassword, confirmPassword) =>  Recipient.authenticate(username, password).isDefined
+      })
+   )
+
 }
 
 @Singleton
 class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
-         (implicit val recipientRepository: RecipientRepository, val wishlistRepository: WishlistRepository, 
+         (implicit val recipientRepository: RecipientRepository, val wishlistRepository: WishlistRepository,
          val reservationRepository: ReservationRepository)
 extends Controller with Secured with WithAnalytics with WishlistForm with RecipientForm with EmailAddressChecks with WithLogging {
 
@@ -82,21 +96,6 @@ object RecipientController {
 
   val ValidUsername= """^[0-9a-zA-Z_-]+$""".r
 
-
-
-  def changePasswordForm(username:String) = Form(
-    tuple(
-      "password" -> nonEmptyText(minLength = 4, maxLength = 99),
-      "newpassword" -> nonEmptyText(minLength = 4, maxLength = 99),
-      "confirm" -> nonEmptyText(minLength = 4, maxLength = 99)
-    ) verifying("Passwords do not match", fields => fields match {
-      case (password, newpassword, confirmPassword) => {
-        newpassword.trim == confirmPassword.trim
-      }
-    }) verifying("Current password is invalid", fields => fields match {
-      case (password, newpassword, confirmPassword) =>  Recipient.authenticate(username, password).isDefined
-    })
-  )
 
 
   def gravatarUrl(recipient:Recipient) = Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
@@ -122,8 +121,6 @@ class RecipientController extends Controller with Secured {
   )
 */
 
-
-
    def showProfile(username: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) flatMap {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
@@ -144,13 +141,18 @@ class RecipientController extends Controller with Secured {
       }
    }
 
-   def showEditRecipient(username: String) =  (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+   def redirectToShowEditRecipient(username: String) = Action {
+      Redirect(routes.RecipientController.showEditRecipient(username))
+   }
+
+   def showEditRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
 
       recipientLookup.findRecipient(username) map {
-         case Some(recipient) =>
+         case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
            val editForm = editRecipientForm.fill(
              username, username, recipient.fullname, recipient.email)
            Ok( views.html.recipient.editrecipient(recipient, editForm) )
+         case Some(recipient) => Unauthorized // TODO
          case _ => NotFound // TODO
       }
    }
@@ -178,40 +180,59 @@ class RecipientController extends Controller with Secured {
     Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
   }
 
-
   */
 
    def alsoUpdateRecipient(username: String) = updateRecipient(username)
 
-   def updateRecipient(username: String) = TODO
+   def updateRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
 
-   /*
+      recipientLookup.findRecipient(username) flatMap {
+         case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
 
-   def updateRecipient(username:String)  = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
-     editRecipientForm.bindFromRequest.fold(
-       errors => {
-         Logger.warn("Update failed: " + errors)
-         BadRequest(views.html.recipient.editrecipient(profileRecipient,errors))
-       },
-       editForm => {
-         val updatedRecipient = profileRecipient.copy(
-           fullname=editForm._3,
-           email=editForm._4 )
+            def badRequest(form: Form[(String,String,Option[String],String)], errorMessage: Option[String]) =
+                Future.successful(
+                   BadRequest(views.html.recipient.editrecipient(
+                      recipient, form, errorMessage )))
 
-         updatedRecipient.update
+            editRecipientForm.bindFromRequest.fold(
+               errors => {
+                  logger.warn("Update failed: " + errors)
+                  badRequest(errors, None)
+               }, {
+                  case ( oldUsername, newUsername, newFullname, newEmail) =>
 
-         Redirect(routes.RecipientController.showEditRecipient(username)).flashing("message" -> "Recipient updated")
-       }
-     )
+                     def editForm = editRecipientForm.fill( (oldUsername, newUsername, newFullname, newEmail) )
+
+                     if(username == oldUsername){
+                        recipient.copy(
+                          fullname = newFullname,
+                          email    = newEmail
+                        ).update.map { _ =>
+                          Redirect(routes.RecipientController.showProfile(username))
+                              .flashing("messageSuccess" -> "Recipient updated")
+                        }
+                    } else {
+                       logger.warn(s"Old username mismatch for [$username] and [$oldUsername]")
+                       badRequest(editForm, None)
+                    }
+               }
+            )
+          case Some(recipient) =>
+             logger.warn(s"Unauthorized to update recipient [$username] as [${request.currentRecipient}]")
+             Future.successful( Unauthorized ) // TODO
+          case _ => Future.successful( NotFound ) // TODO
+      }
    }
-
- */
 
    def showResetPassword = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.recipient.passwordreset(resetPasswordForm))
    }
 
-   def resetPassword = TODO
+   def resetPassword = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+
+      Conflict // TODO
+
+   }
 
 /*
 
@@ -241,39 +262,55 @@ def resetPassword = Action { implicit request =>
 
 */
 
-   def showChangePassword(username:String) = TODO
-
-   def updatePassword(username:String) = TODO
-
-   /*
-
-   def showChangePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
-    Ok(views.html.recipient.passwordchange(changePasswordForm(username)))
-   }
-
-
-   def updatePassword(username:String)  = isProfileRecipient(username) { (profileRecipient) => implicit request =>
-    changePasswordForm(username).bindFromRequest.fold(
-      errors => {
-        BadRequest(views.html.recipient.passwordchange(errors))
-      },
-      resetForm => {
-
-        Logger.info("Password change requested for: " + profileRecipient.username)
-
-        profileRecipient.updatePassword(resetForm._3)
-
-        EmailNotifier.sendPasswordChangeEmail(profileRecipient)
-
-        Redirect(routes.Application.showLoginForm)
-            .withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
+   def showChangePassword(username: String) = (UsernameAction andThen CurrentRecipientAction) { implicit request =>
+      request.currentRecipient match {
+         case Some(recipient) if recipient.username == username =>
+            Ok(views.html.recipient.passwordchange(changePasswordForm))
+         case Some(recipient) =>
+            Unauthorized // TODO
+         case _ =>
+            NotFound // TODO
       }
-    )
    }
 
-   */
+   def updatePassword(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
 
-def verifyEmail(username: String, verificationHash: String) = Action.async { implicit request =>
+      changePasswordForm.bindFromRequest.fold(
+         errors => {
+            Future.successful( BadRequest(views.html.recipient.passwordchange(errors) ))
+         },{
+            case (oldPassword, newPassword, confirmPassword) =>
+               request.currentRecipient match {
+                  case Some(recipient) if recipient.username == username =>
+                     recipient.authenticate(oldPassword.trim) flatMap {
+                        case true =>
+                           logger.info(s"Changing password for $username")
+
+                           recipient.updatePassword( newPassword ) map { _ =>
+
+                              //   EmailNotifier.sendPasswordChangeEmail(profileRecipient) // TODO
+
+                              Redirect(routes.LoginController.showLoginForm)
+                                  .withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
+                           }
+                        case false =>
+                          Future.successful( BadRequest(
+                             views.html.recipient.passwordchange(changePasswordForm,
+                                Some("Authentication failed. Check existing password"))) )
+                     }
+                  case Some(recipient) =>
+                     logger.warn(s"Unauthorized to update password for recipient [$username] as [${request.currentRecipient}]")
+                     Future.successful( Unauthorized(
+                        views.html.recipient.passwordchange(changePasswordForm,
+                           Some("Unauthorized to update password for recipient [$username]") )) )
+                  case _ =>
+                     Future.successful( NotFound ) // TODO
+               }
+         }
+      )
+   }
+
+   def verifyEmail(username: String, verificationHash: String) = Action.async { implicit request =>
 
    def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
             .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
@@ -371,4 +408,3 @@ def resendVerification = Action { implicit request =>
 }
 */
 }
-

@@ -12,13 +12,13 @@ import scala.concurrent.Future
 import models._
 import play.api.http.HeaderNames
 import repositories._
-import controllers.{Secured, WithAnalytics}
+import controllers.{Secured, WithAnalytics, WithLogging}
 
 
 @Singleton
 class TestOnlyRecipientController @Inject() (val configuration: Configuration,
       val recipientLookup: RecipientLookup, val recipientRepository: RecipientRepository)
-      extends Controller with Secured with WithAnalytics {
+      extends Controller with Secured with WithAnalytics with WithLogging {
 
    def findVerification(username: String) = Action.async{ _ =>
       recipientLookup.findRecipient(username.toLowerCase().trim).flatMap {

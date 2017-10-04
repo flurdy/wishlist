@@ -63,7 +63,7 @@ with EmailAddressChecks with WithLogging {
             recipientLookup.findRecipient(registeredForm._1.trim.toLowerCase()) flatMap {
                case None =>
                   recipientFactory.newRecipient( registeredForm ).save.flatMap {
-                     case Right(recipient) =>
+                     recipient =>
                         logger.info("New registration: " + registeredForm._1)
                         emailNotifier.sendNewRegistrationAlert(recipient)
 
@@ -76,16 +76,17 @@ with EmailAddressChecks with WithLogging {
                               }
                            }
                         } else {
+                           logger.info("Email verification not enabled/")
                            Future.successful(
                               Redirect(routes.Application.index()).withSession(
                                  "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered"))
                         }
-                     case Left(e) =>
-                        Logger.error("Not able to save new registration")
-                        throw new IllegalStateException("Not able to save new registration")
+                     // case Left(e) =>
+                     //    Logger.error("Not able to save new registration")
+                     //    throw new IllegalStateException("Not able to save new registration")
                   }
                case _ =>
-                  Logger.info(s"Username taken: [$registeredForm._1]")
+                  logger.info(s"Username taken: [$registeredForm._1]")
                   Future.successful(
                      BadRequest(views.html.register(
                            registerForm.fill((registeredForm._1, registeredForm._2, registeredForm._3,

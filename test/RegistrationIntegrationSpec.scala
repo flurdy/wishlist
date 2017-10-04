@@ -45,6 +45,8 @@ class RegistrationIntegrationSpec extends AsyncFeatureSpec
    with IntegrationPatience with StartAndStopServer
    with RegistrationIntegrationHelper with CookieIntegrationHelper {
 
+   applicationConfiguration = Map(                                  "com.flurdy.wishlist.feature.email.verification.enabled" -> false)
+
    info("As a wish recipient")
    info("I want to register with the Wish application")
    info("so that I can list my wishes")

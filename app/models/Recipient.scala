@@ -7,6 +7,7 @@ import java.math.BigInteger
 import java.security.SecureRandom
 import scala.concurrent.Future
 import repositories._
+import controllers.WithLogging
 
 
 case class Recipient (
@@ -16,13 +17,13 @@ case class Recipient (
       email: String,
       password: Option[String],
       isAdmin: Boolean=false
-){
+) extends WithLogging {
 
    def this(recipientId: Long) = this(Some(recipientId), "", None, "", None, false)
 
    def this(username: String) = this(None, username, None, "", None, false)
 
-   def save()(implicit recipientRepository: RecipientRepository) =
+   def save()(implicit recipientRepository: RecipientRepository): Future[Recipient] =
       recipientRepository.saveRecipient(this)
 
    def authenticate(possiblePassword: String)(implicit recipientRepository: RecipientRepository) =
@@ -46,7 +47,7 @@ case class Recipient (
 
    def findOrGenerateVerificationHash(implicit recipientRepository: RecipientRepository): Future[String] = findVerificationHash.flatMap {
       case Some(verificationHash) => Future.successful( verificationHash )
-      case _ => generateVerificationHash
+      case _ =>  generateVerificationHash
    }
 
    private def findVerificationHash(implicit recipientRepository: RecipientRepository): Future[Option[String]] =
@@ -92,19 +93,21 @@ case class Recipient (
          withWishRecipients  <- reservationRepository.inflateReservationsWishRecipient(withReservers)
       } yield withWishRecipients
 
+  def update()(implicit recipientRepository: RecipientRepository): Future[Recipient] =
+     recipientRepository.updateRecipient(this)
+
+   def updatePassword(newPassword: String)(implicit recipientRepository: RecipientRepository): Future[Recipient] =
+      recipientRepository.updatePassword(this.copy(password = Some(newPassword.bcrypt)))
+
   /*
 
   def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)
 
   def delete = Recipient.delete(this)
 
-  def update = Recipient.update(this)
 
   def resetPassword = Recipient.resetPassword(this)
 
-  def updatePassword(newPassword:String) {
-    Recipient.updatePassword(this.copy(password=Some(newPassword)))
-  }
 
   def isEmailVerified = Recipient.isEmailVerified(this)
 
@@ -152,53 +155,6 @@ object Recipient {
     }
   }
 
-  def encrypt(passwordOption: Option[String]) = {
-    passwordOption.map { password =>
-      Some(BCrypt.hashpw(password,BCrypt.gensalt()))
-    }.getOrElse(None)
-  }
-
-
-  def save(recipient:Recipient) = {
-      Logger.debug("Inserting recipient: "+recipient.username)
-      findByUsername(recipient.username) match {
-          case None => {
-              DB.withConnection { implicit connection =>
-                  val nextRecipientId = SQL("SELECT NEXTVAL('recipient_seq')").as(scalar[Long].single)
-                  SQL(
-                      """
-                          insert into recipient
-                          (recipientid,username,fullname,email,password,isadmin)
-                          values
-                          ({recipientid},{username},{fullname},{email},{password},false)
-                      """
-                  ).on(
-                      'recipientid -> nextRecipientId,
-                      'username -> recipient.username,
-                      'fullname -> recipient.fullname,
-                      'email -> recipient.email,
-                      'password -> encrypt(recipient.password)
-                  ).executeInsert()
-                  recipient.copy(recipientId = Some(nextRecipientId),password=None)
-              }
-          }
-          case Some(existingRecipient) => throw new IllegalArgumentException("Username already exists")
-      }
-  }
-
-    def findByUsername(username:String) : Option[Recipient]= {
-        DB.withConnection { implicit connection =>
-          SQL(
-            """
-              SELECT * FROM recipient
-                WHERE username = {username}
-            """
-          ).on(
-            'username -> username.trim
-          ).as(Recipient.simple.singleOpt)
-        }
-    }
-
     def findByUsernameAndEmail(username:String,email:String) : Option[Recipient]= {
         DB.withConnection { implicit connection =>
           SQL(
@@ -210,19 +166,6 @@ object Recipient {
           ).on(
             'username -> username.trim,
             'email -> email.trim
-          ).as(Recipient.simple.singleOpt)
-        }
-    }
-
-    def findById(recipientId:Long) : Option[Recipient]= {
-        DB.withConnection { implicit connection =>
-          SQL(
-            """
-              SELECT * FROM recipient
-                WHERE recipientid = {recipientid}
-            """
-          ).on(
-            'recipientid -> recipientId
           ).as(Recipient.simple.singleOpt)
         }
     }
@@ -259,45 +202,6 @@ object Recipient {
       ).execute()
     }
   }
-
-
-
-  def update(recipient:Recipient) {
-    Logger.debug("Updating recipient: "+recipient.username)
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            update recipient
-            set fullname = {fullname},
-            email = {email}
-            where recipientid = {recipientid}
-        """
-      ).on(
-        'recipientid -> recipient.recipientId,
-        'fullname -> recipient.fullname,
-        'email -> recipient.email
-      ).executeUpdate()
-    }
-  }
-
-
-
-  def updatePassword(recipient:Recipient) {
-    Logger.debug("Updating password for recipient: "+recipient.username)
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-            update recipient
-            set password = {password}
-            where recipientid = {recipientid}
-        """
-      ).on(
-        'recipientid -> recipient.recipientId,
-        'password -> encrypt(recipient.password)
-      ).executeUpdate()
-    }
-  }
-
 
 
   def generateRandomPassword = {

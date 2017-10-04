@@ -53,15 +53,16 @@ POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/ 		        co
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/delete	controllers.WishController.alsoDeleteLinkFromWish(username, wishlistId: Long, wishId: Long, linkId: Long)
 DELETE /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId          controllers.WishController.deleteLinkFromWish(username, wishlistId: Long, wishId: Long, linkId: Long)
 
-GET	   /recipient/:username/              controllers.RecipientController.showProfile(username)
-GET	   /recipient/:username/edit.html     controllers.RecipientController.showEditRecipient(username)
+GET    /recipient/:username/              controllers.RecipientController.showProfile(username)
+GET    /recipient/:username/edit.html     controllers.RecipientController.showEditRecipient(username)
+GET    /recipient/:username/update 	      controllers.RecipientController.redirectToShowEditRecipient(username)
 POST   /recipient/:username/update 	      controllers.RecipientController.updateRecipient(username)
 PUT    /recipient/:username/     	      controllers.RecipientController.alsoUpdateRecipient(username)
-GET	   /recipient/:username/delete.html   controllers.RecipientController.showDeleteRecipient(username)
+GET    /recipient/:username/delete.html   controllers.RecipientController.showDeleteRecipient(username)
 POST   /recipient/:username/delete 	      controllers.RecipientController.deleteRecipient(username)
 DELETE /recipient/:username/     	      controllers.RecipientController.alsoDeleteRecipient(username)
-GET	   /recipient/:username/password.html controllers.RecipientController.showChangePassword(username)
-POST   /recipient/:username/password	  controllers.RecipientController.updatePassword(username)
+GET    /recipient/:username/password.html controllers.RecipientController.showChangePassword(username)
+POST   /recipient/:username/password	   controllers.RecipientController.updatePassword(username)
 
 GET    /recipient/:username/verify/:verificationHash/ controllers.RecipientController.verifyEmail(username, verificationHash)
 

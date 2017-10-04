@@ -57,6 +57,11 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
       with IntegrationPatience with StartAndStopServer
       with LoginIntegrationHelper with FrontPageIntegrationHelper {
 
+
+   applicationConfiguration = Map(
+         "play.http.router" -> "testonly.Routes",
+         "com.flurdy.wishlist.feature.email.verification.enabled" -> true)
+
    info("As a wish recipient")
    info("I want to login to the Wish application")
    info("so that I can list my wishes")
@@ -66,11 +71,13 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
       scenario("Registration and log in") {
 
          val flow = for {
-            _             <- register("Testerson")
-            frontBefore   <- frontpage()
-            loginResponse <- login("Testerson")
-            session       =  findSessionCookie(loginResponse)
-            frontAfter    <- frontpageWithSession(session)
+            _               <- register("Testerson")
+            frontBefore     <- frontpage()
+            verificationUrl <- findVerificationUrl("Testerson")
+            _               <- verificationUrl.fold(throw new IllegalStateException("no hash found"))( v => verify(v))
+            loginResponse   <- login("Testerson")
+            session         =  findSessionCookie(loginResponse)
+            frontAfter      <- frontpageWithSession(session)
          } yield(frontBefore, loginResponse, frontAfter)
 
          flow map { case(frontBefore, loginResponse, frontAfter) =>

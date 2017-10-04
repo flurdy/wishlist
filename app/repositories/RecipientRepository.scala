@@ -72,7 +72,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def saveRecipient(recipient: Recipient): Future[Either[_,Recipient]] =
+   def saveRecipient(recipient: Recipient): Future[Recipient] =
       Future {
          db.withConnection{ implicit connection =>
             logger.info(s"Saving new recipient: ${recipient.username}")
@@ -86,7 +86,7 @@ trait RecipientRepository extends Repository with WithLogging {
             .executeInsert()
             .map{ recipientId =>
                recipient.copy(recipientId = Some(recipientId))
-            }.toRight(new IllegalStateException("Saving recipient failed"))
+            }.getOrElse( throw new IllegalStateException("Unable to save recipient") )
          }
       }
 
@@ -139,6 +139,7 @@ trait RecipientRepository extends Repository with WithLogging {
             throw new IllegalStateException("No recipient id")
          } { recipientId =>
             db.withConnection { implicit connection =>
+               // logger.info(s"saving verification hash for $recipientId")
                SQL"""
                      INSERT INTO emailverification
                      (recipientid,email,verificationhash)
@@ -207,6 +208,47 @@ trait RecipientRepository extends Repository with WithLogging {
             }
          }
       }
+
+   def updateRecipient(recipient: Recipient): Future[Recipient] =
+      Future {
+         recipient.recipientId.fold{
+            throw new IllegalStateException("No recipient id")
+         } { recipientId =>
+            db.withConnection { implicit connection =>
+               val updated =
+                  SQL"""
+                     update recipient
+                     set fullname = ${recipient.fullname},
+                     email = ${recipient.email}
+                     where recipientid = $recipientId
+                  """
+                  .executeUpdate()
+               if(updated > 0 ) recipient
+               else throw new IllegalStateException("Unable to update recipient")
+            }
+         }
+      }
+
+   def updatePassword(recipient: Recipient): Future[Recipient] =
+      Future {
+         (recipient.recipientId, recipient.password) match {
+            case (Some(recipientId), Some(password)) =>
+               db.withConnection { implicit connection =>
+                  val updated =
+                     SQL"""
+                        update recipient
+                        set password = $password
+                        where recipientid = $recipientId
+                     """
+                     .executeUpdate()
+                  if(updated > 0 ) recipient
+                  else throw new IllegalStateException("Unable to update password")
+               }
+            case _ =>
+               throw new IllegalStateException("No id nor password")
+         }
+      }
+
 }
 
 @Singleton

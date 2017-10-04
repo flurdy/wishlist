@@ -1,5 +1,7 @@
 package controllers
 
+import com.github.t3hnar.bcrypt._
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
@@ -22,13 +24,18 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
       val reservationRepositoryMock = mock[ReservationRepository]
       val controller = new RecipientController(configurationMock, recipientLookupMock)(recipientRepositoryMock, wishlistRepositoryMock, reservationRepositoryMock)
 
-      val recipient = new Recipient("someuser").copy(recipientId = Some(1222), fullname = Some("Some User"))
-      val anotherRecipient = new Recipient("someother").copy(recipientId = Some(5555), fullname = Some("Some Other"))
+      val recipient = new Recipient("someuser")
+                        .copy(recipientId = Some(1222),
+                              fullname = Some("Some User"))
+      val anotherRecipient = new Recipient("someother")
+                        .copy(recipientId = Some(5555), fullname = Some("Some Other"))
 
       when( recipientLookupMock.findRecipient("someuser") )
             .thenReturn( Future.successful( Some( recipient ) ) )
       when( recipientLookupMock.findRecipient("someother") )
             .thenReturn( Future.successful( Some( anotherRecipient ) ) )
+      when( recipientLookupMock.findRecipient("someunknown") )
+            .thenReturn( Future.successful( None ) )
       when( recipientRepositoryMock.findRecipientById(1222) )
             .thenReturn( Future.successful( Some( recipient ) ) )
       when( recipientRepositoryMock.findRecipientById(5555) )
@@ -96,9 +103,27 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
          val result = controller.showEditRecipient(username).apply(
                FakeRequest().withSession("username"  -> "someuser"))
 
-         status(result) mustBe 200
-         ScalaSoup.parse(contentAsString(result))
 
+         (status(result), ScalaSoup.parse(contentAsString(result)))
+
+      }
+   }
+
+   trait UpdateProfileSetup extends Setup {
+      val updatedRecipient = new Recipient("someuser")
+               .copy(recipientId = Some(1222),
+                     fullname = Some("some new name"),
+                     email = "some-new-email@example.com")
+
+      def updateProfile(username: String) = {
+         controller.updateRecipient(username).apply(
+            FakeRequest()
+               .withSession("username"  -> "someuser")
+               .withFormUrlEncodedBody(
+                  "oldusername" -> "someuser",
+                  "username" -> "someuser",
+                  "fullname" -> "some new name",
+                  "email"    -> "some-new-email@example.com"))
       }
    }
 
@@ -194,12 +219,169 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
          }
       }
 
-      "[GET] /recipient/someuser/" should {
-         "show edit recipient page" in new EditProfileSetup {
+      "[GET] /recipient/someuser/edit.html" when given {
+         "a valid username as current recipient" should {
+            "show edit recipient page" in new EditProfileSetup {
 
-            showEditProfile("someother").select("#edit-profile-page").headOption mustBe defined
+               val statusAndBody = showEditProfile("someuser")
 
-            verify( recipientLookupMock ).findRecipient("someother")
+               statusAndBody._1 mustBe 200
+               statusAndBody._2.select("#edit-profile-page").headOption mustBe defined
+
+               verify( recipientLookupMock, times(2) ).findRecipient("someuser")
+            }
+         }
+         "a valid other username" should {
+            "show not authorized page" in new EditProfileSetup {
+
+               showEditProfile("someother")._1 mustBe 401
+
+               verify( recipientLookupMock ).findRecipient("someother")
+            }
+         }
+         "a unknown username" should {
+            "show not found page" in new EditProfileSetup {
+
+               showEditProfile("someunknown")._1 mustBe 404
+
+               verify( recipientLookupMock ).findRecipient("someunknown")
+            }
+         }
+      }
+
+      "[PUT] /recipient/someuser/update" when given {
+        "a valid username as current recipient" should {
+           "update" which {
+               "fullname and email" in new UpdateProfileSetup {
+
+                  when( recipientRepositoryMock.updateRecipient( updatedRecipient ))
+                        .thenReturn( Future.successful( updatedRecipient ))
+
+                  val result = updateProfile("someuser")
+
+                  status(result) mustBe 303
+
+                  verify( recipientRepositoryMock ).updateRecipient(updatedRecipient)
+               }
+            }
+         }
+         "a valid other username" should {
+            "return 401" in new UpdateProfileSetup {
+
+               val result = updateProfile("someother")
+
+               status(result) mustBe 401
+
+               verify( recipientLookupMock ).findRecipient("someother")
+           }
+         }
+         "a unknown username" should {
+           "return 404" in new UpdateProfileSetup {
+
+               val result = updateProfile("someunknown")
+
+               status(result) mustBe 404
+
+
+               verify( recipientLookupMock ).findRecipient("someunknown")
+           }
+        }
+      }
+
+      "GET /recipient/:username/password.html" when given {
+         "username of current recipient" should {
+            "show change password" in new Setup {
+
+               val result = controller.showChangePassword("someuser").apply(
+                     FakeRequest().withSession("username"  -> "someuser"))
+
+               status(result) mustBe 200
+
+            }
+         }
+         "another username than current recipient" should {
+            "not show change password" in new Setup {
+
+               val result = controller.showChangePassword("someotheruser").apply(
+                     FakeRequest().withSession("username"  -> "someuser"))
+
+               status(result) mustBe 401
+
+            }
+         }
+      }
+
+      "POST /recipient/:username/password" when given {
+         "username of current recipient" when given {
+            "valid existing password" which {
+               "matching valid new password and confirm" should {
+                  "update password" in new Setup {
+
+                     when( recipientRepositoryMock.findCredentials(any[Recipient]))
+                        .thenReturn( Future.successful( Some("some-password".bcrypt) ))
+
+                     when( recipientRepositoryMock.updatePassword(any[Recipient]))
+                        .thenReturn( Future.successful(recipient) )
+
+                     val result = controller.updatePassword("someuser").apply(
+                           FakeRequest().withSession("username"  -> "someuser")
+                           .withFormUrlEncodedBody(
+                              "password" -> "some-password",
+                              "newpassword" -> "some-new-password",
+                              "confirm" -> "some-new-password"))
+
+                     status(result) mustBe 303
+
+                  }
+               }
+               "non matching new password and confirm" should {
+                  "not update passwords" in new Setup {
+
+                     val result = controller.updatePassword("someuser").apply(
+                           FakeRequest().withSession("username"  -> "someuser")
+                           .withFormUrlEncodedBody(
+                              "password" -> "some-password",
+                              "newpassword" -> "some-new-password",
+                              "confirm" -> "some-wrong-password"))
+
+                     status(result) mustBe 400
+
+                     verify( recipientRepositoryMock, never ).findCredentials(any[Recipient])
+
+                  }
+               }
+            }
+            "invalid existing password" should {
+               "not update passwords" in new Setup {
+
+                  when( recipientRepositoryMock.findCredentials(any[Recipient]))
+                     .thenReturn( Future.successful( Some("some-password".bcrypt) ))
+
+                  val result = controller.updatePassword("someuser").apply(
+                        FakeRequest().withSession("username"  -> "someuser")
+                        .withFormUrlEncodedBody(
+                           "password" -> "some-wrong-password",
+                           "newpassword" -> "some-new-password",
+                           "confirm" -> "some-new-password"))
+
+                  status(result) mustBe 400
+
+               }
+            }
+         }
+         "another username than ccurent recipient" should {
+            "not update passwords" in new Setup {
+
+               val result = controller.updatePassword("someotheruser").apply(
+                     FakeRequest().withSession("username"  -> "someuser")
+                     .withFormUrlEncodedBody(
+                        "password" -> "some-password",
+                        "newpassword" -> "some-new-password",
+                        "confirm" -> "some-new-password"))
+
+               status(result) mustBe 401
+
+            }
          }
       }
    }
