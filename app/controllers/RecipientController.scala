@@ -44,24 +44,12 @@ trait RecipientForm extends RegisterForm {
     "username" -> nonEmptyText(maxLength = 99),
     "email" -> nonEmptyText(maxLength = 99)
     ) verifying("Email address is not valid", fields => fields match {
-      case (username, email) => {
-         false
-      //   RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined
+      case (_, email) => {
+         isValidEmailAddress(email)
       }
     }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
-      case (username, email) => {
-         false
-      //   RecipientController.ValidUsername.findFirstIn(username.trim).isDefined
-      }
-    }) verifying("Username and email does match or exist", fields => fields match {
-      case (username, email) => {
-         false
-      //   if(RecipientController.ValidEmailAddress.findFirstIn(email.trim).isDefined &&
-            // RecipientController.ValidUsername.findFirstIn(username.trim).isDefined) {
-         //  Recipient.findByUsernameAndEmail(username.trim,email.trim).isDefined
-      //   } else {
-         //  true
-      //   }
+      case (username, _) => {
+         isValidUsername(username)
       }
     })
   )
@@ -228,39 +216,26 @@ class RecipientController extends Controller with Secured {
       Ok(views.html.recipient.passwordreset(resetPasswordForm))
    }
 
-   def resetPassword = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+   def resetPassword = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
 
-      Conflict // TODO
+      resetPasswordForm.bindFromRequest.fold(
+         errors => {
+            Future.successful( BadRequest(views.html.recipient.passwordreset(errors)) )
+         },{
+            case (username, email) =>
 
+               logger.info(s"Requesting password reset for $username")
+               recipientLookup.findRecipient(username) map {
+                  case Some(recipient) if recipient.email.toLowerCase == email.toLowerCase =>
+
+                     // EmailNotifier.sendPasswordResetEmail(recipient) TODO
+                     Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset information sent by email")
+
+                  case _ => NotFound // TODO
+               }
+         }
+      )
    }
-
-/*
-
-def resetPassword = Action { implicit request =>
- resetPasswordForm.bindFromRequest.fold(
-   errors => {
-     BadRequest(views.html.recipient.passwordreset(errors))
-   },
-   resetForm => {
-     Recipient.findByUsernameAndEmail(resetForm._1,resetForm._2) match {
-       case Some(recipient) => {
-         Logger.info("Password reset requested for: " + recipient.recipientId)
-
-         val newPassword = recipient.resetPassword
-
-         EmailNotifier.sendPasswordResetEmail(recipient,newPassword)
-
-         Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset and sent by email")
-       }
-       case None => {
-         NotFound(views.html.error.notfound())
-       }
-     }
-   }
- )
-}
-
-*/
 
    def showChangePassword(username: String) = (UsernameAction andThen CurrentRecipientAction) { implicit request =>
       request.currentRecipient match {
@@ -312,59 +287,32 @@ def resetPassword = Action { implicit request =>
 
    def verifyEmail(username: String, verificationHash: String) = Action.async { implicit request =>
 
-   def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
+      def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
             .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
 
-   logger.info(s"Verifying email for $username")
-   recipientLookup.findRecipient(username) flatMap {
-      case Some(recipient) =>
-         recipient.isVerified.flatMap {
-            case true =>
-               logger.warn(s"Already verified for $username")
-               Future.successful( redirectToLogin )
-            case false =>
-               recipient.doesVerificationMatch(verificationHash).flatMap {
-                  case true =>
-                     logger.debug(s"Verification match for $username")
-                     recipient.setEmailAsVerified(verificationHash).map {
-                        case true  => redirectToLogin
-                        case false => throw new IllegalStateException(s"Unable to set $username as verified")
-                     }
-                  case false =>
-                     logger.warn(s"Verification for $username does not match [$verificationHash]")
-                     Future.successful( BadRequest )
-               }
-         }
-      case _ => Future.successful( NotFound )
+      logger.info(s"Verifying email for $username")
+      recipientLookup.findRecipient(username) flatMap {
+         case Some(recipient) =>
+            recipient.isVerified.flatMap {
+               case true =>
+                  logger.warn(s"Already verified for $username")
+                  Future.successful( redirectToLogin )
+               case false =>
+                  recipient.doesVerificationMatch(verificationHash).flatMap {
+                     case true =>
+                        logger.debug(s"Verification match for $username")
+                        recipient.setEmailAsVerified(verificationHash).map {
+                           case true  => redirectToLogin
+                           case false => throw new IllegalStateException(s"Unable to set $username as verified")
+                        }
+                     case false =>
+                        logger.warn(s"Verification for $username does not match [$verificationHash]")
+                        Future.successful( BadRequest )
+                  }
+            }
+         case _ => Future.successful( NotFound )
+      }
    }
-}
-
-/*
-
-def verifyEmail(username:String,verificationHash:String) = Action { implicit request =>
- Recipient.findByUsername(username) match {
-   case Some(recipient) => {
-     Logger.info("Verifying email for %s".format(username))
-     if(recipient.isEmailVerified) {
-       Logger.warn("Already verified for %s".format(username))
-       Redirect(routes.Application.showLoginForm)
-         .withNewSession.flashing("message" -> "Email address verified. Please log in")
-     } else {
-       if(recipient.doesVerificationMatch(verificationHash)) {
-         recipient.setEmailAsVerified
-         Redirect(routes.Application.showLoginForm)
-           .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
-       } else {
-         Logger.warn("Verifying does not match for %s".format(username))
-         NotFound(views.html.error.notfound())
-       }
-     }
-   }
-   case None => NotFound(views.html.error.notfound())
- }
-}
-
-*/
 
    def showResendVerification = TODO
 

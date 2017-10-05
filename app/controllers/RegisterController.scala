@@ -18,6 +18,12 @@ trait RegisterForm {
    def ValidEmailAddresses: List[Regex]
    def InvalidEmailAddress: Regex
 
+   def isValidEmailAddress(email: String) =
+      ValidEmailAddresses.filterNot( r => r.findFirstIn(email.trim).isDefined ).isEmpty &&
+         InvalidEmailAddress.findFirstIn(email.trim).isEmpty
+
+   def isValidUsername(username: String) = ValidUsername.findFirstIn(username.trim).isDefined
+
    val ValidUsername = """^[a-zA-Z0-9\-_]{3,99}$""".r
 
 	val simpleRegisterForm = Form {
@@ -36,11 +42,10 @@ trait RegisterForm {
         password.trim == confirmPassword.trim
     })  verifying("Registration failed. Email address is not valid", fields => fields match {
       case (_, _, email, _, _) =>
-         ValidEmailAddresses.filterNot( r => r.findFirstIn(email.trim).isDefined ).isEmpty &&
-            InvalidEmailAddress.findFirstIn(email.trim).isEmpty
+         isValidEmailAddress(email)
     }) verifying("Registration failed. Username is not valid. A to Z and numbers only", fields => fields match {
       case (username, _, _, _, _) =>
-         ValidUsername.findFirstIn(username.trim).isDefined
+         isValidUsername(username)
     })
   )
 }

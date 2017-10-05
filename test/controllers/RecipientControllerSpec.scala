@@ -26,9 +26,12 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
       val recipient = new Recipient("someuser")
                         .copy(recipientId = Some(1222),
-                              fullname = Some("Some User"))
+                              fullname = Some("Some User"),
+                              email = "someuser@example.com")
       val anotherRecipient = new Recipient("someother")
-                        .copy(recipientId = Some(5555), fullname = Some("Some Other"))
+                        .copy(recipientId = Some(5555),
+                              fullname = Some("Some Other"),
+                              email = "someother@example.com" )
 
       when( recipientLookupMock.findRecipient("someuser") )
             .thenReturn( Future.successful( Some( recipient ) ) )
@@ -380,6 +383,97 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                         "confirm" -> "some-new-password"))
 
                status(result) mustBe 401
+
+            }
+         }
+      }
+      "GET /password.html" when given {
+         "a non logged in visitors" should {
+            "show password reset page" in new Setup {
+
+               val result = controller.showResetPassword().apply(FakeRequest())
+
+               status(result) mustBe 200
+
+               val body = ScalaSoup.parse(contentAsString(result))
+
+               body.select("#password-reset-page").headOption mustBe defined
+               body.select("#password-reset-page form").headOption mustBe defined
+               body.select("#password-reset-page form #inputUsername").headOption mustBe defined
+               body.select("#password-reset-page form #inputEmail").headOption mustBe defined
+            }
+         }
+         "a logged in recipient" should {
+            "show password reset page for another recipient" in new Setup {
+               val result = controller.showResetPassword().apply(
+                     FakeRequest().withSession("username"  -> "someuser"))
+
+               status(result) mustBe 200
+
+               val body = ScalaSoup.parse(contentAsString(result))
+
+               body.select("#password-reset-page").headOption mustBe defined
+
+            }
+         }
+      }
+      "POST /password" when given {
+         "a registered email address and username and recipient" which is {
+            "an anonymous user" should {
+               "send reset password email" in new Setup {
+
+                  val result = controller.resetPassword().apply(
+                        FakeRequest()
+                        .withFormUrlEncodedBody(
+                           "username" -> "someuser",
+                           "email" -> "someuser@example.com"))
+
+                  status(result) mustBe 303
+
+                  verify( recipientLookupMock ).findRecipient("someuser")
+
+                  // verify( notifierMock ).sendPasswordResetEmail() // TODO
+               }
+            }
+            "a logged in recipient" should {
+               "send reset password email including requestor" in new Setup {
+
+                  val result = controller.resetPassword().apply(
+                        FakeRequest()
+                        .withSession("username"  -> "someuser")
+                        .withFormUrlEncodedBody(
+                           "username" -> "someother",
+                           "email" -> "someother@example.com"))
+
+                  status(result) mustBe 303
+
+                  verify( recipientLookupMock ).findRecipient("someother")
+
+                  // verify( recipientLookupMock ).findRecipient("someuser")
+               }
+            }
+         }
+         "an unknown username" should {
+            "not find a recipient to reset" in new Setup {
+               val result = controller.resetPassword().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someunknown",
+                        "email" -> "someunknown@example.com"))
+
+               status(result) mustBe 404
+
+            }
+         }
+         "an known username but unknown email" should {
+            "not find a recipient to reset" in new Setup {
+               val result = controller.resetPassword().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someuser",
+                        "email" -> "someunknown@example.com"))
+
+               status(result) mustBe 404
 
             }
          }

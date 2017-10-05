@@ -33,7 +33,6 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
 
    feature("search flow") {
 
-
       scenario("find wishlists when not logged in"){
 
          val flow = for {
@@ -57,18 +56,18 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
             When("searching for that wishlist")
             searchResponse.status shouldBe 200
             val searchBody = ScalaSoup.parse(searchResponse.body)
-            val wishlistPage = searchBody.select(s"#list-wishlists-page").headOption
+            val wishlistPage = searchBody.select("#list-wishlists-page").headOption
             wishlistPage shouldBe defined
 
             Then("should find it")
-            val wishlistBox = searchBody.select(s"#wishlist-list").headOption
+            val wishlistBox = searchBody.select("#wishlist-list").headOption
             wishlistBox shouldBe defined
 
-            val wishlistRow = searchBody.select(s"#wishlist-list td:eq(0) a").headOption
+            val wishlistRow = searchBody.select("#wishlist-list td:eq(0) a").headOption
             wishlistRow shouldBe defined
             wishlistRow.value.text shouldBe "Some wishlist"
 
-            val wishlistRow2 = searchBody.select(s"#wishlist-list td:eq(1) a").headOption
+            val wishlistRow2 = searchBody.select("#wishlist-list td:eq(1) a").headOption
             wishlistRow2 shouldBe defined
             wishlistRow2.value.text shouldBe "testerson"
          }
