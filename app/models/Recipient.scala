@@ -99,19 +99,53 @@ case class Recipient (
    def updatePassword(newPassword: String)(implicit recipientRepository: RecipientRepository): Future[Recipient] =
       recipientRepository.updatePassword(this.copy(password = Some(newPassword.bcrypt)))
 
-  /*
+   def delete()(implicit recipientRepository: RecipientRepository,
+                         wishlistRepository: WishlistRepository,
+                         wishRepository: WishRepository,
+                         wishLinkRepository: WishLinkRepository,
+                         wishEntryRepository: WishEntryRepository,
+                         wishLookup: WishLookup,
+                         wishOrganiserRepository: WishlistOrganiserRepository,
+                         reservationRepository: ReservationRepository): Future[Boolean] = {
 
-  def this(recipientId:Long, username:String) = this(Some(recipientId),username,None,"",None,false)
+      val cancelingReservations: Future[List[Unit]] =
+         findReservations flatMap { reservations =>
+            Future.sequence{
+               reservations.map { reservation =>
+                  reservation.cancel
+               }
+            }
+         }
 
-  def delete = Recipient.delete(this)
+      val deletingWishlists: Future[List[Boolean]] =
+         findWishlists flatMap { wishlists =>
+            Future.sequence{
+               wishlists map { wishlist =>
+                  wishlist.delete
+               }
+            }
+         }
 
+      val removeOrganiserFromWishlists: Future[List[Future[Boolean]]] =
+         findOrganisedWishlists flatMap { wishlists =>
+            Future.sequence{
+               wishlists map { wishlist =>
+                  wishlist.findOrganisers map { organisers =>
+                     wishlist.removeOrganiser(this)
+                  }
+               }
+            }
+         }
 
-  def resetPassword = Recipient.resetPassword(this)
+      for {
+         _ <- cancelingReservations
+         _ <- deletingWishlists
+         _ <- removeOrganiserFromWishlists.flatMap(Future.sequence(_))
+         _ <- recipientRepository.deleteRecipient(this)
+      } yield true
+   }
 
-
-  def isEmailVerified = Recipient.isEmailVerified(this)
-
-*/
+  // def resetPassword = Recipient.resetPassword(this)
 
   def isSame(other: Recipient) = isSameId(other) || isSameUsername(other)
 
@@ -183,25 +217,6 @@ object Recipient {
           ).as(Recipient.authenticationMapper.singleOpt)
         }
     }
-
-
-
-  def delete(recipient:Recipient) {
-    Logger.debug("Deleting recipient: "+ recipient.username)
-    Wishlist.findByRecipient(recipient).map { wishlist =>
-      wishlist.delete
-    }
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-                    delete from recipient
-                    where recipientid = {recipientid}
-        """
-      ).on(
-        'recipientid -> recipient.recipientId
-      ).execute()
-    }
-  }
 
 
   def generateRandomPassword = {

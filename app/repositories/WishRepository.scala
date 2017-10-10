@@ -54,11 +54,16 @@ trait WishLookup extends Repository with WishMapper with WithLogging {
             }
          }
       }
-      .map { wish =>
-         logger.debug("FOUND " + wish)
-         wish.copy(links = wish.findLinks)
+   }.flatMap { wishes =>
+      Future.sequence {
+         wishes map { wish: Wish =>
+            wish.findLinks map { linksFound =>
+               wish.copy(links = linksFound)
+            }
+         }
       }
    }
+
    def findWishById(wishId: Long): Future[Option[Wish]] =
       Future {
          db.withConnection { implicit connection =>

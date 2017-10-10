@@ -249,6 +249,21 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
+   def deleteRecipient(recipient: Recipient): Future[Boolean] =
+      Future {
+         recipient.recipientId.fold{
+            throw new IllegalStateException("No recipient id")
+         } { recipientId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                     delete from recipient
+                     where recipientid = $recipientId
+                  """
+               .execute()
+         }
+      }
+   }
+
 }
 
 @Singleton

@@ -77,6 +77,21 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
       }
 
 
+   def removeWishFromAllWishlists(wish: Wish): Future[Boolean] =
+      Future {
+         logger.debug("Deleting wishentry: "+wish.title)
+         wish.wishId.fold {
+            throw new IllegalArgumentException("Can not remove wish from wishlists without id")
+         }{ wishId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                        delete from wishentry
+                        where wishid = $wishId
+                     """
+                     .execute()
+            }
+         }
+      }
 
    def findByIds(wishId: Long, wishlistId: Long): Future[Option[WishEntry]]=
       Future {

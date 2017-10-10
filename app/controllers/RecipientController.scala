@@ -12,7 +12,7 @@ import scala.concurrent.Future
 import models._
 import play.api.http.HeaderNames
 import repositories._
-// import notifiers._
+import notifiers._
 // import scravatar._
 
 trait RecipientForm extends RegisterForm {
@@ -68,45 +68,45 @@ trait RecipientForm extends RegisterForm {
       })
    )
 
+
+   val emailVerificationForm = Form(
+      tuple(
+         "username" -> nonEmptyText(maxLength = 99),
+         "email" -> nonEmptyText(maxLength = 99),
+         "password" -> nonEmptyText(minLength = 4, maxLength = 99)
+      ) verifying("Email address is not valid", fields => fields match {
+         case (_, email, _) =>
+            isValidEmailAddress(email)
+            // ValidEmailAddress.findFirstIn(email.trim).isDefined
+
+      // }) verifying("Authentication failed or username and email does not match", fields => fields match {
+      //    case (username, email, password) =>
+            //  Recipient.findByUsernameAndEmail(username,email).isDefined && Recipient.authenticate(username, password).isDefined
+      })
+   )
+
 }
 
 @Singleton
-class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
-         (implicit val recipientRepository: RecipientRepository, val wishlistRepository: WishlistRepository,
-         val reservationRepository: ReservationRepository)
+class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier)
+         (implicit val recipientRepository: RecipientRepository,
+            val wishlistRepository: WishlistRepository,
+            val wishLinkRepository: WishLinkRepository,
+            val wishLookup: WishLookup,
+            val wishRepository: WishRepository,
+            val wishEntryRepository: WishEntryRepository,
+            val wishOrganiserRepository: WishlistOrganiserRepository,
+            val reservationRepository: ReservationRepository,
+            val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with WishlistForm with RecipientForm with EmailAddressChecks with WithLogging {
 
 /*
-
-object RecipientController {
-
-  val ValidEmailAddress = """^[0-9a-zA-Z]([+-_\.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9}$""".r
-
-  val ValidUsername= """^[0-9a-zA-Z_-]+$""".r
-
-
 
   def gravatarUrl(recipient:Recipient) = Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
 
 }
 
-class RecipientController extends Controller with Secured {
-  import RecipientController._
 
-
-  val emailVerificationForm = Form(
-    tuple(
-      "username" -> nonEmptyText(maxLength = 99),
-      "email" -> nonEmptyText(maxLength = 99),
-      "password" -> nonEmptyText(minLength = 4, maxLength = 99)
-    ) verifying("Email address is not valid", fields => fields match {
-      case (username, email, password) => {
-        ValidEmailAddress.findFirstIn(email.trim).isDefined
-      }
-    }) verifying("Authentication failed or username and email does not match", fields => fields match {
-      case (username, email, password) =>  Recipient.findByUsernameAndEmail(username,email).isDefined && Recipient.authenticate(username, password).isDefined
-    })
-  )
 */
 
    def showProfile(username: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
@@ -145,30 +145,28 @@ class RecipientController extends Controller with Secured {
       }
    }
 
-   def showDeleteRecipient(username: String) = TODO
-
-   /*
-
-   def showDeleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
-     Ok(views.html.recipient.deleterecipient(profileRecipient))
+   def showDeleteRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+      recipientLookup.findRecipient(username) map {
+         case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
+            Ok(views.html.recipient.deleterecipient(recipient))
+          case Some(recipient) => Unauthorized // TODO
+          case _ => NotFound // TODO
+      }
    }
 
-   */
+   def alsoDeleteRecipient(username: String) = deleteRecipient(username)
 
-  def alsoDeleteRecipient(username: String) = deleteRecipient(username)
-
-  def deleteRecipient(username: String) = TODO
-
-  /*
-
-  def deleteRecipient(username:String) = isProfileRecipient(username)  { (profileRecipient) => implicit request =>
-
-    profileRecipient.delete
-
-    Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
-  }
-
-  */
+   def deleteRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+      recipientLookup.findRecipient(username) flatMap {
+         case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
+            Logger.info("Deleting recipient: "+ recipient.username)
+            recipient.delete.map { _ =>
+               Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
+            }
+         case Some(recipient) => Future.successful( Unauthorized ) // TODO
+         case _ => Future.successful( NotFound ) // TODO
+      }
+   }
 
    def alsoUpdateRecipient(username: String) = updateRecipient(username)
 
@@ -314,45 +312,45 @@ class RecipientController extends Controller with Secured {
       }
    }
 
-   def showResendVerification = TODO
-
-   def resendVerification = TODO
-
-/*
-
-def showResendVerification = Action { implicit request =>
- Ok(views.html.recipient.emailverification(emailVerificationForm))
-}
-
-
-def resendVerification = Action { implicit request =>
- emailVerificationForm.bindFromRequest.fold(
-   errors => {
-     BadRequest(views.html.recipient.emailverification(errors))
-   },
-   verificationForm => {
-     Recipient.findByUsernameAndEmail(verificationForm._1,verificationForm._2) match {
-       case Some(recipient) => {
-         Logger.info("Verification resend requested for: " + recipient.recipientId)
-
-         if (recipient.isEmailVerified){
-
-           Redirect(routes.Application.login()).flashing("messageWarning" -> "Email already verified")
-         } else {
-
-           val verificationHash = recipient.generateVerificationHash
-           EmailNotifier.sendEmailVerificationEmail(recipient, verificationHash)
-
-           Redirect(routes.Application.index()).flashing("messageWarning" -> "Verification resent by email")
-         }
-
-       }
-       case None => {
-         NotFound(views.html.error.notfound())
-       }
-     }
+   def showResendVerification = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+     Ok(views.html.recipient.emailverification(emailVerificationForm))
    }
- )
-}
-*/
+
+   def resendVerification = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+      emailVerificationForm.bindFromRequest.fold(
+         errors => {
+            Future.successful( BadRequest(views.html.recipient.emailverification(errors)) )
+         },{
+            case (username, email, password) =>
+               recipientLookup.findRecipient(username.trim) flatMap {
+                  case Some(recipient) if recipient.email.toLowerCase == email.trim.toLowerCase =>
+                     recipient.authenticate(password) flatMap {
+                        case true  =>
+                           if(FeatureToggle.EmailVerification.isEnabled()){
+                              recipient.isVerified flatMap {
+                                 case false =>
+                                    recipient.findOrGenerateVerificationHash.flatMap { verificationHash =>
+                                       emailNotifier.sendEmailVerification(recipient, verificationHash).map { _ =>
+                                            Redirect(routes.Application.index())
+                                               .flashing("message" -> "Verification resent by email")
+                                       }
+                                    }
+                                 case true  =>
+                                    Future.successful(
+                                       Redirect(routes.LoginController.login())
+                                          .flashing("message" -> "Email already verified"))
+                              }
+                           } else
+                              Future.successful(
+                                 Redirect(routes.Application.index())
+                                    .flashing("message" -> "Verification is not needed"))
+                        case false =>
+                           Future.successful( Unauthorized ) // TODO
+                     }
+                  case _ =>
+                     Future.successful( NotFound ) // TODO
+               }
+         }
+      )
+   }
 }

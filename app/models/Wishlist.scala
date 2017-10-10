@@ -19,7 +19,44 @@ case class Wishlist(
     def save(implicit wishlistRepository: WishlistRepository) =
        wishlistRepository.saveWishlist(this)
 
-    def delete(implicit wishlistRepository: WishlistRepository) = wishlistRepository.deleteWishlist(this)
+    def delete(implicit wishlistRepository: WishlistRepository,
+                        reservationRepository: ReservationRepository,
+                        recipientRepository: RecipientRepository,
+                        wishOrganiserRepository: WishlistOrganiserRepository,
+                        wishLookup: WishLookup,
+                        wishLinkRepository: WishLinkRepository,
+                        wishRepository: WishRepository,
+                        wishEntryRepository: WishEntryRepository): Future[Boolean] = {
+      for {
+         _       <- deleteAllWishes
+         _       <- removeAllOrganisers
+         success <- wishlistRepository.deleteWishlist(this)
+      } yield success
+    }
+
+    private def deleteAllWishes(implicit wishLookup: WishLookup,
+           wishRepository: WishRepository,
+           wishLinkRepository: WishLinkRepository,
+           wishEntryRepository: WishEntryRepository): Future[Boolean] = {
+      findWishes flatMap { wishes =>
+         Future.sequence {
+            wishes map { wish =>
+               wish.delete
+            }
+         }.map{ _ => true }
+      }
+   }
+
+    private def removeAllOrganisers
+    (implicit recipientRepository: RecipientRepository,
+              wishOrganiserRepository: WishlistOrganiserRepository)
+              : Future[Boolean] = {
+      findOrganisers flatMap { organisers =>
+         Future.sequence {
+            organisers map ( removeOrganiser(_) )
+         }.map{ _ => true }
+      }
+   }
 
     def findWishes(implicit wishLookup: WishLookup, wishLinkRepository: WishLinkRepository): Future[Seq[Wish]] =
       wishLookup.findWishes(this)
@@ -30,14 +67,13 @@ case class Wishlist(
     def removeWish(wish: Wish)(implicit wishEntryRepository: WishEntryRepository) =
        wishEntryRepository.removeWishFromWishlist(wish, this)
 
-
     def findOrganisers(implicit recipientRepository: RecipientRepository) =
        recipientRepository.findOrganisers(this)
 
     def addOrganiser(organiser: Recipient)(implicit wishOrganiserRepository: WishlistOrganiserRepository): Future[Wishlist] =
        wishOrganiserRepository.addOrganiserToWishlist(organiser,this)
 
-    def removeOrganiser(organiser:Recipient)(implicit wishOrganiserRepository: WishlistOrganiserRepository) =
+    def removeOrganiser(organiser: Recipient)(implicit wishOrganiserRepository: WishlistOrganiserRepository) =
        wishOrganiserRepository.removeOrganiserFromWishlist(organiser,this)
 
     def isOrganiser(organiser: Recipient)(implicit wishlistLookup: WishlistLookup) =

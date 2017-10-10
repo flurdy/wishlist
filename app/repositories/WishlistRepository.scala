@@ -135,10 +135,10 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def deleteWishlist(wishlist: Wishlist): Future[Either[Throwable,Boolean]] =
+   def deleteWishlist(wishlist: Wishlist): Future[Boolean] =
       Future {
-         wishlist.wishlistId.fold[Either[Throwable,Boolean]] {
-            Left(new IllegalArgumentException("Can not delete wishlist without an id"))
+         wishlist.wishlistId.fold[Boolean] {
+            throw new IllegalArgumentException("Can not delete wishlist without an id")
          } { wishlistId =>
             db.withConnection{ implicit connection =>
                logger.info(s"Deleting wishlist [${wishlist.wishlistId}] for [${wishlist.recipient.username}]")
@@ -160,8 +160,8 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
                      where wishlistid = $wishlistId
                   """
                .executeUpdate() match {
-                  case 0 => Right(false)
-                  case _ => Right(true)
+                  case 0 => false
+                  case _ => true
                }
             }
          }

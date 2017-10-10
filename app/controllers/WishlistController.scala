@@ -88,9 +88,13 @@ trait WishlistActions {
 class WishlistController @Inject() (val configuration: Configuration,
    val recipientLookup: RecipientLookup)
 (implicit val wishlistRepository: WishlistRepository,
-      val wishlistOrganiserRepository: WishlistOrganiserRepository, val wishlistLookup: WishlistLookup,
-      val wishLookup: WishLookup, val wishLinkRepository: WishLinkRepository,
-      val wishEntryRepository: WishEntryRepository, val recipientRepository: RecipientRepository)
+      val wishRepository: WishRepository,
+      val wishlistOrganiserRepository: WishlistOrganiserRepository,
+      val wishlistLookup: WishlistLookup, val wishLookup: WishLookup,
+      val wishLinkRepository: WishLinkRepository,
+      val wishEntryRepository: WishEntryRepository,
+      val recipientRepository: RecipientRepository,
+      val reservationRepository: ReservationRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WishlistForm with WishlistActions with WishActions with WithLogging {
 
 
@@ -183,11 +187,11 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
          andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
        request.wishlist.delete.map {
-          case Right(_) =>
+          case true =>
              Redirect(routes.Application.index())
                    .flashing("messageWarning" -> "Wishlist deleted")
-          case Left(e) =>
-             logger.error("Failed to delete wishlist",e)
+          case false =>
+             logger.error("Failed to delete wishlist")
              InternalServerError("Failed to delete wishlist")
        }
     }

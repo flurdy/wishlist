@@ -1,7 +1,7 @@
 package controllers
 
 import com.github.t3hnar.bcrypt._
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any,anyString}
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
@@ -12,6 +12,7 @@ import scala.concurrent.Future
 import com.flurdy.wishlist.ScalaSoup
 import models._
 import repositories._
+import notifiers._
 
 
 class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
@@ -21,8 +22,24 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
       val recipientRepositoryMock = mock[RecipientRepository]
       val recipientLookupMock = mock[RecipientLookup]
       val wishlistRepositoryMock = mock[WishlistRepository]
+      val wishLinkRepositoryMock = mock[WishLinkRepository]
+      val wishLookupMock = mock[WishLookup]
+      val wishRepositoryMock = mock[WishRepository]
+      val wishEntryRepositoryMock = mock[WishEntryRepository]
+      val wishlistOrganiserRepositoryMock = mock[WishlistOrganiserRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
-      val controller = new RecipientController(configurationMock, recipientLookupMock)(recipientRepositoryMock, wishlistRepositoryMock, reservationRepositoryMock)
+      val featureTogglesMock = mock[FeatureToggles]
+      val emailNotifierMock = mock[EmailNotifier]
+      val controller = new RecipientController(configurationMock, recipientLookupMock, emailNotifierMock)(
+            recipientRepositoryMock,
+            wishlistRepositoryMock,
+            wishLinkRepositoryMock,
+            wishLookupMock,
+            wishRepositoryMock,
+            wishEntryRepositoryMock,
+            wishlistOrganiserRepositoryMock,
+            reservationRepositoryMock,
+            featureTogglesMock)
 
       val recipient = new Recipient("someuser")
                         .copy(recipientId = Some(1222),
@@ -475,6 +492,119 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
                status(result) mustBe 404
 
+            }
+         }
+
+      }
+      "POST /recipient/verify" should {
+         "send email notification" when given {
+            "valid username, email, password and recipient is unverified" in new Setup {
+
+               when(recipientRepositoryMock.findCredentials(recipient))
+                  .thenReturn( Future.successful( Some( "some-password".bcrypt ) ) )
+               when(featureTogglesMock.isEnabled( FeatureToggle.EmailVerification ))
+                  .thenReturn(true)
+               when(recipientRepositoryMock.isEmailVerified(recipient))
+                  .thenReturn( Future.successful(false))
+               when(recipientRepositoryMock.findVerificationHash(recipient))
+                  .thenReturn( Future.successful( Some("some-verification-hash")))
+               when( emailNotifierMock.sendEmailVerification(recipient, "some-verification-hash"))
+                  .thenReturn( Future.successful(()))
+
+               val result = controller.resendVerification().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someuser",
+                        "email"    -> "someuser@example.com",
+                        "password" -> "some-password"))
+
+               status(result) mustBe 303
+
+               verify( emailNotifierMock )
+                  .sendEmailVerification(recipient, "some-verification-hash")
+            }
+         }
+         "not send email notification" when given {
+            "unknown username" in new Setup {
+
+               val result = controller.resendVerification().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someunknown",
+                        "email"    -> "someunknown@example.com",
+                        "password" -> "some-password"))
+
+               status(result) mustBe 404
+
+               verifyZeroInteractions( emailNotifierMock )
+            }
+            "invalid email" in new Setup {
+
+               val result = controller.resendVerification().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someuser",
+                        "email"    -> "someunknown@example.com",
+                        "password" -> "some-password"))
+
+               status(result) mustBe 404
+
+               verifyZeroInteractions( emailNotifierMock )
+            }
+            "invalid password"  in new Setup {
+
+               when(recipientRepositoryMock.findCredentials(recipient))
+                     .thenReturn( Future.successful( Some( "some-password".bcrypt ) ) )
+
+               val result = controller.resendVerification().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someuser",
+                        "email"    -> "someuser@example.com",
+                        "password" -> "some-other-password"))
+
+               status(result) mustBe 401
+
+               verify(recipientRepositoryMock).findCredentials(recipient)
+               verifyZeroInteractions( emailNotifierMock )
+            }
+
+            "verification is not enabled" in new Setup {
+
+               when(recipientRepositoryMock.findCredentials(recipient))
+                  .thenReturn( Future.successful( Some( "some-password".bcrypt ) ) )
+               when(featureTogglesMock.isEnabled( FeatureToggle.EmailVerification ))
+                  .thenReturn(false)
+
+               val result = controller.resendVerification().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someuser",
+                        "email"    -> "someuser@example.com",
+                        "password" -> "some-password"))
+
+               status(result) mustBe 303
+               verifyZeroInteractions( emailNotifierMock )
+            }
+
+            "email is already verified" in new Setup {
+
+               when(recipientRepositoryMock.findCredentials(recipient))
+                  .thenReturn( Future.successful( Some( "some-password".bcrypt ) ) )
+               when(featureTogglesMock.isEnabled( FeatureToggle.EmailVerification ))
+                  .thenReturn(true)
+               when(recipientRepositoryMock.isEmailVerified(recipient))
+                  .thenReturn( Future.successful(true))
+
+               val result = controller.resendVerification().apply(
+                     FakeRequest()
+                     .withFormUrlEncodedBody(
+                        "username" -> "someuser",
+                        "email"    -> "someuser@example.com",
+                        "password" -> "some-password"))
+
+               status(result) mustBe 303
+               verifyZeroInteractions( emailNotifierMock )
             }
          }
       }
