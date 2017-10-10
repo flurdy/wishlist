@@ -27,13 +27,24 @@ trait EmailNotifier extends WithLogging {
       Future.successful(())
    }
 
-   def sendEmailVerification(recipient:Recipient, verificationHash: String): Future[Unit] = {
+   def sendEmailVerification(recipient: Recipient, verificationHash: String): Future[Unit] = {
       // TODO !
       logger.warn("TODO")
       logger.info(s"Verification: " + controllers.routes.RecipientController.verifyEmail(recipient.username, verificationHash).url)
       Future.successful(())
    }
 
+   def sendPasswordResetEmail( recipient: Recipient): Future[Unit] = {
+      // TODO !
+      logger.warn("TODO")
+      Future.successful(())
+   }
+
+   def sendPasswordChangedNotification(recipient: Recipient): Future[Unit] = {
+      // TODO !
+      logger.warn("TODO")
+      Future.successful(())
+   }
 
 }
 

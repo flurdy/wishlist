@@ -1,16 +1,15 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.concurrent.Execution.Implicits._
-
-import scala.concurrent.Future
-import models._
 import play.api.http.HeaderNames
+import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.Future
+
+import models._
 import repositories._
 import notifiers._
 // import scravatar._
@@ -32,10 +31,6 @@ trait RecipientForm extends RegisterForm {
       case (_, username, _, _) => {
         ValidUsername.findFirstIn(username.trim).isDefined
       }
-    // }) verifying("Username is already taken", fields => fields match {
-    //   case (oldusername, username, fullname, email) => {
-    //     oldusername == username || !Recipient.findByUsername(username.trim).isDefined
-    //   }
     })
   )
 
@@ -48,9 +43,8 @@ trait RecipientForm extends RegisterForm {
          isValidEmailAddress(email)
       }
     }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
-      case (username, _) => {
+      case (username, _) =>
          isValidUsername(username)
-      }
     })
   )
 
@@ -60,11 +54,8 @@ trait RecipientForm extends RegisterForm {
          "newpassword" -> nonEmptyText(minLength = 4, maxLength = 99),
          "confirm" -> nonEmptyText(minLength = 4, maxLength = 99)
       ) verifying("Passwords do not match", fields => fields match {
-         case (_, newpassword, confirmPassword) => {
+         case (_, newpassword, confirmPassword) =>
             newpassword.trim == confirmPassword.trim
-         }
-      // }) verifying("Current password is invalid", fields => fields match {
-      //    case (password, newpassword, confirmPassword) =>  Recipient.authenticate(username, password).isDefined
       })
    )
 
@@ -77,11 +68,6 @@ trait RecipientForm extends RegisterForm {
       ) verifying("Email address is not valid", fields => fields match {
          case (_, email, _) =>
             isValidEmailAddress(email)
-            // ValidEmailAddress.findFirstIn(email.trim).isDefined
-
-      // }) verifying("Authentication failed or username and email does not match", fields => fields match {
-      //    case (username, email, password) =>
-            //  Recipient.findByUsernameAndEmail(username,email).isDefined && Recipient.authenticate(username, password).isDefined
       })
    )
 
@@ -221,15 +207,14 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
             Future.successful( BadRequest(views.html.recipient.passwordreset(errors)) )
          },{
             case (username, email) =>
-
                logger.info(s"Requesting password reset for $username")
-               recipientLookup.findRecipient(username) map {
-                  case Some(recipient) if recipient.email.toLowerCase == email.toLowerCase =>
+               recipientLookup.findRecipient(username.trim) flatMap {
+                  case Some(recipient) if recipient.email.toLowerCase == email.trim.toLowerCase =>
 
-                     // EmailNotifier.sendPasswordResetEmail(recipient) TODO
-                     Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset information sent by email")
-
-                  case _ => NotFound // TODO
+                     emailNotifier.sendPasswordResetEmail(recipient).map { _ =>
+                        Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset information sent by email")
+                     }
+                  case _ => Future.successful( NotFound ) // TODO
                }
          }
       )
@@ -239,10 +224,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       request.currentRecipient match {
          case Some(recipient) if recipient.username == username =>
             Ok(views.html.recipient.passwordchange(changePasswordForm))
-         case Some(recipient) =>
-            Unauthorized // TODO
-         case _ =>
-            NotFound // TODO
+         case Some(recipient) => Unauthorized // TODO
+         case _ => NotFound // TODO
       }
    }
 
@@ -259,12 +242,13 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                         case true =>
                            logger.info(s"Changing password for $username")
 
-                           recipient.updatePassword( newPassword ) map { _ =>
-
-                              //   EmailNotifier.sendPasswordChangeEmail(profileRecipient) // TODO
-
-                              Redirect(routes.LoginController.showLoginForm)
-                                  .withNewSession.flashing("messageWarning" -> "Password changed successfully. Please log in again")
+                           recipient.updatePassword( newPassword ) flatMap { _ =>
+                              emailNotifier.sendPasswordChangedNotification(recipient) map { _ =>
+                                 Redirect(routes.LoginController.showLoginForm)
+                                    .withNewSession
+                                    .flashing("messageWarning" ->
+                                       "Password changed successfully. Please log in again")
+                              }
                            }
                         case false =>
                           Future.successful( BadRequest(
@@ -308,7 +292,7 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                         Future.successful( BadRequest )
                   }
             }
-         case _ => Future.successful( NotFound )
+         case _ => Future.successful( NotFound ) // TODO
       }
    }
 

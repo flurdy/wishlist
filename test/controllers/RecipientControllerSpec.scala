@@ -343,6 +343,9 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                      when( recipientRepositoryMock.updatePassword(any[Recipient]))
                         .thenReturn( Future.successful(recipient) )
 
+                     when( emailNotifierMock.sendPasswordChangedNotification(recipient) )
+                           .thenReturn( Future.successful( () ))
+
                      val result = controller.updatePassword("someuser").apply(
                            FakeRequest().withSession("username"  -> "someuser")
                            .withFormUrlEncodedBody(
@@ -439,6 +442,9 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
             "an anonymous user" should {
                "send reset password email" in new Setup {
 
+                  when( emailNotifierMock.sendPasswordResetEmail(recipient) )
+                        .thenReturn( Future.successful( () ))
+
                   val result = controller.resetPassword().apply(
                         FakeRequest()
                         .withFormUrlEncodedBody(
@@ -449,11 +455,14 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
                   verify( recipientLookupMock ).findRecipient("someuser")
 
-                  // verify( notifierMock ).sendPasswordResetEmail() // TODO
+                  verify( emailNotifierMock ).sendPasswordResetEmail(recipient)
                }
             }
             "a logged in recipient" should {
                "send reset password email including requestor" in new Setup {
+
+                  when( emailNotifierMock.sendPasswordResetEmail(anotherRecipient) )
+                        .thenReturn( Future.successful( () ))
 
                   val result = controller.resetPassword().apply(
                         FakeRequest()
@@ -466,7 +475,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
                   verify( recipientLookupMock ).findRecipient("someother")
 
-                  // verify( recipientLookupMock ).findRecipient("someuser")
+                  verify( emailNotifierMock ).sendPasswordResetEmail(anotherRecipient)
                }
             }
          }
