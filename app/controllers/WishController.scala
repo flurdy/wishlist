@@ -166,7 +166,8 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
             }, {
             case (title, description) =>
                logger.info(s"Updating wish [${wishId}] for [${username}]")
-               request.wish.copy ( title = title , description = description).update.map { wish =>
+               request.wish.copy ( title = title , description = description)
+                           .update.map { wish =>
                   Redirect(routes.WishlistController.showWishlist(username,wishlistId))
                         .flashing("messageSuccess" -> "Wish updated")
                }
@@ -303,5 +304,4 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
          }
       )
    }
-
 }

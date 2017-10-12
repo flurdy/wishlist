@@ -115,7 +115,7 @@ with ReservationMapper {
                      delete  from reservation
                      where reservationid = $reservationId
                   """
-                  .execute()
+                  .executeUpdate()
             }
          }
       }

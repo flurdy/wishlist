@@ -4,16 +4,24 @@ import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
 import play.api.libs.ws.WSResponse
+import scala.concurrent.{ExecutionContext, Future}
 
 trait WishlistIntegrationHelper extends IntegrationHelper {
 
    def wishlistRootUrl(username: String)  = s"$baseUrl/recipient/${username.trim.toLowerCase}/wishlist"
 
-   def createWishlist(username: String, session: Option[String]) = {
+   def createWishlist(username: String, session: Option[String]): Future[WSResponse] = {
       createWishlistWithTitle(username, "Some wishlist", session)
    }
 
-   def createWishlistWithTitle(username: String, title: String, session: Option[String]) = {
+   def createWishlistAndReturnId(username: String, session: Option[String])(implicit ec: ExecutionContext): Future[Option[Long]] =
+      for {
+         createResponse   <- createWishlist(username, session)
+         wishlistLocation =  createResponse.header("Location").headOption
+         wishlistId       =  wishlistLocation.map(_.split("/").last.toLong)
+      } yield wishlistId
+
+   def createWishlistWithTitle(username: String, title: String, session: Option[String]): Future[WSResponse] = {
       val createData = Map(
          "title" -> Seq(title),
          "description" -> Seq("Some description")
@@ -31,12 +39,6 @@ trait WishlistIntegrationHelper extends IntegrationHelper {
       wsWithSession(s"$root/$wishlistId/", session).withFollowRedirects(true).get()
    }
 
-   def addWish(wishTitle: String,  username: String, wishlistId: Long, session: Option[String]) = {
-      val root = wishlistRootUrl(username)
-      val wishData = Map("title" -> Seq(wishTitle))
-      wsWithSession(s"$root/$wishlistId/wish", session).withFollowRedirects(false).post(wishData)
-   }
-
 }
 
 class WishlistIntegrationSpec extends AsyncFeatureSpec
@@ -45,7 +47,8 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
       with RegistrationIntegrationHelper
       with LoginIntegrationHelper
       with CookieIntegrationHelper
-      with WishlistIntegrationHelper {
+      with WishlistIntegrationHelper
+      with WishIntegrationHelper {
 
    info("As a wish recipient")
    info("I want a wishlist")
@@ -89,7 +92,7 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
             wishlistLocation = createWishlistResponse.header("Location").headOption.value
             wishlistId       = wishlistLocation.split("/").last.toLong
             showWishlistResponse1   <- showWishlist("Testerson", wishlistId, session)
-            addWishResponse <- addWish("A handbag", "Testerson", wishlistId, session)
+            addWishResponse <- addWish("A handbag", wishlistId, "Testerson", session)
             showWishlistResponse2   <- showWishlist("Testerson", wishlistId, session)
 
          } yield (session, wishlistLocation, wishlistId, addWishResponse, showWishlistResponse2, showWishlistResponse1)

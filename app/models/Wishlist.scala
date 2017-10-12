@@ -3,6 +3,7 @@ package models
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import repositories._
+import controllers.WithLogging
 
 case class Wishlist(
     wishlistId: Option[Long],
@@ -10,7 +11,7 @@ case class Wishlist(
     description: Option[String],
     recipient: Recipient,
     organisers: Seq[Recipient] = Seq.empty
-) {
+) extends WithLogging {
 
     def this(wishlistId: Long, recipient: Recipient) = this(Some(wishlistId),"",None, recipient)
 
@@ -26,18 +27,18 @@ case class Wishlist(
                         wishLookup: WishLookup,
                         wishLinkRepository: WishLinkRepository,
                         wishRepository: WishRepository,
-                        wishEntryRepository: WishEntryRepository): Future[Boolean] = {
+                        wishEntryRepository: WishEntryRepository): Future[Boolean] =
       for {
-         _       <- deleteAllWishes
-         _       <- removeAllOrganisers
+         _       <- deleteAllWishes()
+         _       <- removeAllOrganisers()
          success <- wishlistRepository.deleteWishlist(this)
       } yield success
-    }
 
-    private def deleteAllWishes(implicit wishLookup: WishLookup,
+    private def deleteAllWishes()(implicit wishLookup: WishLookup,
            wishRepository: WishRepository,
            wishLinkRepository: WishLinkRepository,
-           wishEntryRepository: WishEntryRepository): Future[Boolean] = {
+           wishEntryRepository: WishEntryRepository,
+           reservationRepository: ReservationRepository): Future[Boolean] =
       findWishes flatMap { wishes =>
          Future.sequence {
             wishes map { wish =>
@@ -45,18 +46,15 @@ case class Wishlist(
             }
          }.map{ _ => true }
       }
-   }
 
-    private def removeAllOrganisers
-    (implicit recipientRepository: RecipientRepository,
-              wishOrganiserRepository: WishlistOrganiserRepository)
-              : Future[Boolean] = {
+    private def removeAllOrganisers()(implicit recipientRepository: RecipientRepository,
+                                             wishOrganiserRepository: WishlistOrganiserRepository)
+                                               : Future[Boolean] =
       findOrganisers flatMap { organisers =>
          Future.sequence {
             organisers map ( removeOrganiser(_) )
          }.map{ _ => true }
       }
-   }
 
     def findWishes(implicit wishLookup: WishLookup, wishLinkRepository: WishLinkRepository): Future[Seq[Wish]] =
       wishLookup.findWishes(this)
@@ -64,8 +62,12 @@ case class Wishlist(
     def update(implicit wishlistRepository: WishlistRepository) =
        wishlistRepository.updateWishlist(this)
 
-    def removeWish(wish: Wish)(implicit wishEntryRepository: WishEntryRepository) =
-       wishEntryRepository.removeWishFromWishlist(wish, this)
+    def removeWish(wish: Wish)(implicit wishEntryRepository: WishEntryRepository, wishRepository: WishRepository, wishLinkRepository: WishLinkRepository, reservationRepository: ReservationRepository) =
+      for {
+         _ <- wishEntryRepository.removeWishFromWishlist(wish, this)
+         _ <- wish.delete
+      } yield this
+
 
     def findOrganisers(implicit recipientRepository: RecipientRepository) =
        recipientRepository.findOrganisers(this)

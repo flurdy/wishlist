@@ -88,8 +88,17 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       when( wishRepositoryMock.updateWish(updatedWish))
             .thenReturn( Future.successful(updatedWish))
 
-      when (wishEntryRepositoryMock.removeWishFromWishlist(unreservedWish, wishlist))
+      when( wishRepositoryMock.deleteWish(unreservedWish))
+            .thenReturn( Future.successful(true) )
+
+      when( wishEntryRepositoryMock.removeWishFromWishlist(unreservedWish, wishlist))
             .thenReturn( Future.successful(wishlist))
+
+      when( wishEntryRepositoryMock.removeWishFromAllWishlists(unreservedWish))
+            .thenReturn( Future.successful(true))
+
+      when( wishLinkRepositoryMock.findLinks(unreservedWish))
+            .thenReturn( Future.successful( List() ))
 
       def showSessionWishlist(sessionUsername: String) = {
          val result = wishlistController.showWishlist("someuser", 123)

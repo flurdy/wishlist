@@ -34,7 +34,7 @@ case class Wish(
    def reserve(reserver: Recipient)(implicit reservationRepository: ReservationRepository) =
       new Reservation(reserver, this).save
 
-   def delete(implicit wishRepository: WishRepository, wishLinkRepository: WishLinkRepository, wishEntryRepository: WishEntryRepository): Future[Boolean] =
+   def delete(implicit wishRepository: WishRepository, wishLinkRepository: WishLinkRepository, wishEntryRepository: WishEntryRepository, reservationRepository: ReservationRepository): Future[Boolean] =
        for {
           _ <- cancelingReservation
           _ <- removeLinks
@@ -42,27 +42,23 @@ case class Wish(
           success <- wishRepository.deleteWish(this)
        } yield success
 
-   private def cancelingReservation: Future[Boolean] = {
-      ???
-   }
+   private def cancelingReservation()(implicit wishRepository: WishRepository, reservationRepository: ReservationRepository) =
+      reservation.fold(Future.successful(()))( r => r.cancel )
 
    private def removeLinks(implicit wishLinkRepository: WishLinkRepository): Future[Boolean] =
       findLinks flatMap { links: List[WishLink] =>
          Future.sequence {
-            links map { link: WishLink =>
-            // _.delete ) // TODO
-               Future.successful( true )
-            }
+            links map ( _.delete )
          }
       } map ( _ => true )
 
    private def deleteWishEntries(implicit wishEntryRepository: WishEntryRepository): Future[Boolean] =
-      wishEntryRepository.removeWishFromAllWishlists(this)
+       wishEntryRepository.removeWishFromAllWishlists(this)
 
    def update(implicit wishRepository: WishRepository) =
        wishRepository.updateWish(this)
 
-   def removeFromWishlist(wishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository, wishLinkRepository: WishLinkRepository, wishRepository: WishRepository) =
+   def removeFromWishlist(wishlist: Wishlist)(implicit wishEntryRepository: WishEntryRepository, wishLinkRepository: WishLinkRepository, wishRepository: WishRepository, reservationRepository: ReservationRepository) =
       wishlist.removeWish(this) flatMap { _ =>
          delete
       }
@@ -73,7 +69,8 @@ case class Wish(
    def findLink(linkId: Long)(implicit wishLinkRepository: WishLinkRepository): Future[Option[WishLink]] =
       wishLinkRepository.findLink(this,linkId)
 
-   def findLinks(implicit wishLinkRepository: WishLinkRepository): Future[List[WishLink]] = Future.successful(List()) // TODO WishLink.findWishLinks(this)
+   def findLinks(implicit wishLinkRepository: WishLinkRepository): Future[List[WishLink]] =
+      wishLinkRepository.findLinks(this)
 
    def moveToWishlist(targetWishlist: Wishlist)(implicit wishRepository: WishRepository,
             wishEntryRepository: WishEntryRepository, reservationRepository: ReservationRepository) =

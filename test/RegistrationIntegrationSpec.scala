@@ -5,6 +5,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
 import org.scalatestplus.play._
 import play.api.http._
+import play.api.libs.ws.WSResponse
 import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.test._
@@ -17,7 +18,7 @@ trait RegistrationIntegrationHelper extends IntegrationHelper {
 
    val registerUrl = s"$baseUrl/register"
 
-   def register(username: String) = {
+   def register(username: String): Future[WSResponse] = {
       val registerFormData = Map(
          "fullname" -> Seq("Test Testerson"),
          "username" -> Seq(username),

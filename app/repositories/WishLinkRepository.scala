@@ -65,6 +65,21 @@ trait WishLinkRepository extends Repository with WishLinkMapper with WithLogging
          }
       }
 
+   def findLinks(wish: Wish): Future[List[WishLink]] =
+      Future {
+         wish.wishId.fold{
+            throw new IllegalArgumentException("No wish id")
+         } { wishId =>
+            db.withConnection { implicit connection =>
+               SQL"""
+                     select * from wishlink
+                     where wishid = $wishId
+                  """
+                  .as(mapToWishLink(wish) *)
+            }
+         }
+      }
+
    def deleteLink(wishLink: WishLink) =
       Future {
          wishLink.wish.wishId.fold{

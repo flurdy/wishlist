@@ -37,8 +37,8 @@ DELETE /recipient/:username/wishlist/:wishlistId/organiser/:organiser        con
 POST   /recipient/:username/wishlist/:wishlistId/order 		            controllers.WishlistController.updateWishlistOrder(username, wishlistId: Long)
 
 POST   /recipient/:username/wishlist/:wishlistId/wish                   controllers.WishController.addWishToWishlist(username, wishlistId: Long)
-# GET  /recipient/:username/wishlist/:wishlistId/wish/:wishId   		controllers.WishController.showWish(username, wishlistId: Long, wishId: Long)
-POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/move		controllers.WishController.moveWishToWishlist(username, wishlistId: Long, wishId: Long)
+# GET  /recipient/:username/wishlist/:wishlistId/wish/:wishId           controllers.WishController.showWish(username, wishlistId: Long, wishId: Long)
+POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/move      controllers.WishController.moveWishToWishlist(username, wishlistId: Long, wishId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/update    controllers.WishController.updateWish(username, wishlistId: Long, wishId: Long)
 PUT    /recipient/:username/wishlist/:wishlistId/wish/:wishId           controllers.WishController.alsoUpdateWish(username, wishlistId: Long, wishId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/delete    controllers.WishController.alsoRemoveWishFromWishlist(username, wishlistId: Long, wishId: Long)

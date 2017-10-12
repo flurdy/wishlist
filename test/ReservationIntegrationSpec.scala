@@ -10,7 +10,8 @@ import scala.concurrent.ExecutionContext
 trait ReservationIntegrationHelper extends RegistrationIntegrationHelper
       with LoginIntegrationHelper
       with CookieIntegrationHelper
-      with WishlistIntegrationHelper {
+      with WishlistIntegrationHelper
+      with WishIntegrationHelper {
 
    def createRecipientWishlist(username: String)(implicit ec: ExecutionContext) =
       for {
@@ -23,7 +24,7 @@ trait ReservationIntegrationHelper extends RegistrationIntegrationHelper
    def createWishlistWithWish(username: String, wishTitle: String)(implicit ec: ExecutionContext) =
       for {
          (session, wishlistId) <- createRecipientWishlist(username)
-         addWishResponse  <- addWish("A handbag", "Testerson", wishlistId, session)
+         addWishResponse  <- addWish("A handbag", wishlistId, "Testerson", session)
          wishLocation     =  addWishResponse.header("Location").headOption.value
          wishId           =  wishLocation.split("""\?wish=""").last.toLong
       } yield (session, wishlistId, addWishResponse, wishId)

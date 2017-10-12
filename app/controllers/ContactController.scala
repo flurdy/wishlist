@@ -71,8 +71,6 @@ extends Controller with Secured with WithAnalytics with RegisterForm with Contac
          emailNotifier.sendContactEmail( contactFields._1, contactFields._2,
                                          contactFields._3, contactFields._4, contactFields._5, request.currentRecipient )
 
-      //   EmailAl erter.sendContactMessage(contactFields._1, contactFields._2, contactFields._3, contactFields._4, contactFields._5, findCurrentRecipient)
-
         Redirect(routes.Application.index()).flashing("message"->"Your message was sent")
 
       }

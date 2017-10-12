@@ -37,17 +37,18 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
             db.withConnection{ implicit connection =>
                val maxOrdinal =
                   SQL"""
-                           SELECT COALESCE(MAX(ordinal),0) + 1 from wishentry
-                           where wishlistid = $wishlistId
-                        """
-                        .as(scalar[Int].single)
+                        SELECT COALESCE(MAX(ordinal),0) + 1 from wishentry
+                        where wishlistid = $wishlistId
+                     """
+                     .as(scalar[Int].single)
+
                SQL"""
-                           insert into wishentry
-                           (wishid,wishlistid,ordinal)
-                           values
-                           ($wishId,$wishlistId,$maxOrdinal)
-                        """
-                     .executeInsert()
+                     insert into wishentry
+                     (wishid,wishlistid,ordinal)
+                     values
+                     ($wishId,$wishlistId,$maxOrdinal)
+                  """
+                  .executeInsert()
                wishEntry
             }
          case _ =>
@@ -57,22 +58,21 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
 
    def removeWishFromWishlist(wish: Wish, wishlist: Wishlist): Future[Wishlist] =
       Future {
-         logger.debug("Deleting wishentry: "+wish.title)
          (wish.wishId, wishlist.wishlistId) match {
          case (Some(wishId), Some(wishlistId)) =>
             db.withConnection { implicit connection =>
                SQL"""
-                        delete from wishentry
-                        where wishid = $wishId
-                        and wishlistid = $wishlistId
-                     """
-                     .execute()
+                     delete from wishentry
+                     where wishid = $wishId
+                     and wishlistid = $wishlistId
+                  """
+                  .executeUpdate()
             }
          case _ =>
             throw new IllegalArgumentException("Can not remove wish to wishlist without ids")
          }
-      }.map {
-         if(_) wishlist
+      }.map { d =>
+         if(d > 0) wishlist
          else throw new IllegalStateException("Unable to remove wish from wishlist")
       }
 
@@ -88,10 +88,10 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
                         delete from wishentry
                         where wishid = $wishId
                      """
-                     .execute()
+                     .executeUpdate()
             }
          }
-      }
+      }.map( _ > 0 )
 
    def findByIds(wishId: Long, wishlistId: Long): Future[Option[WishEntry]]=
       Future {

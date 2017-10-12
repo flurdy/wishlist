@@ -62,7 +62,7 @@ trait RecipientRepository extends Repository with WithLogging {
    def findRecipientById(recipientId: Long) =
       Future {
          db.withConnection { implicit connection =>
-            logger.trace(s"Looking up recipient id: ${recipientId}")
+            // logger.trace(s"Looking up recipient id: ${recipientId}")
             SQL"""
                   select *
                   from recipient
@@ -75,7 +75,7 @@ trait RecipientRepository extends Repository with WithLogging {
    def saveRecipient(recipient: Recipient): Future[Recipient] =
       Future {
          db.withConnection{ implicit connection =>
-            logger.info(s"Saving new recipient: ${recipient.username}")
+            // logger.info(s"Saving new recipient: ${recipient.username}")
             val nextRecipientId = SQL("SELECT NEXTVAL('recipient_seq')").as(scalar[Long].single)
             SQL"""
                   insert into recipient

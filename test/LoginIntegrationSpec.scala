@@ -11,7 +11,7 @@ trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIn
    val loginUrl  = s"$baseUrl/login"
    val logoutUrl = s"$baseUrl/logout"
 
-   def login(username: String) = {
+   def login(username: String): Future[WSResponse] = {
       val loginFormData = Map(
          "username" -> Seq(username),
          "password" -> Seq("simsalabim")
@@ -19,7 +19,7 @@ trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIn
       getWsClient().url(loginUrl).withFollowRedirects(false).post(loginFormData)
    }
 
-   def registerAndLogin(username: String)(implicit ec: ExecutionContext) =
+   def registerAndLogin(username: String)(implicit ec: ExecutionContext): Future[Option[String]] =
       for {
          _                <- register(username)
          loginResponse    <- login(username)
