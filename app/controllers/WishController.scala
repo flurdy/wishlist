@@ -231,9 +231,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
            }
          } else Future.successful(Unauthorized)
       }
-
    }
-
 
    def addLinkToWish(username:String, wishlistId: Long, wishId: Long) =
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction

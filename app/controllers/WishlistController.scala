@@ -103,8 +103,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
         editWishlistForm.bindFromRequest.fold(
             errors => {
               logger.warn("Create failed: " + errors)
-              Future.successful(BadRequest)
-              // TODO (views.html.wishlist.createwishlist(errors))
+              Future.successful(BadRequest(views.html.wishlist.createwishlist(errors)))
             },
            titleForm => {
              request.currentRecipient match {
@@ -121,7 +120,9 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                                  .flashing("messageSuccess" -> "Wishlist created")
                            }
                         case _ =>
-                           throw new IllegalStateException("Not able to save new wishlist")
+                          logger.warn("Not able to save new wishlist")
+                             InternalServerError(views.html.wishlist.createwishlist(
+                                editWishlistForm, errorMessage = Some("Not able to save new wishlist")))
                      }
                   case _ =>
                      logger.warn(s"Recipient ${username} can not create a wishlist for ${request.username}")

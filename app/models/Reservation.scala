@@ -1,11 +1,5 @@
 package models
 
-
-// import play.api.Play.current
-// import play.api.db.DB
-// import anorm._
-// import anorm.SqlParser._
-// import play.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import repositories._
@@ -40,14 +34,6 @@ case class Reservation(
 /*
 
 object Reservation {
-
-
-  	def create(reservation:Option[Long]) = {
-  		reservation map { reservationId =>
-  			new Reservation(reservationId)
-  		}
-  	}
-
 
 
   def findByWish(wishId:Long) : Option[Reservation]= {

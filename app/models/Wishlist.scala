@@ -47,9 +47,9 @@ case class Wishlist(
          }.map{ _ => true }
       }
 
-    private def removeAllOrganisers()(implicit recipientRepository: RecipientRepository,
-                                             wishOrganiserRepository: WishlistOrganiserRepository)
-                                               : Future[Boolean] =
+    private def removeAllOrganisers()
+      (implicit recipientRepository: RecipientRepository,
+                wishOrganiserRepository: WishlistOrganiserRepository) : Future[Boolean] =
       findOrganisers flatMap { organisers =>
          Future.sequence {
             organisers map ( removeOrganiser(_) )
@@ -62,7 +62,9 @@ case class Wishlist(
     def update(implicit wishlistRepository: WishlistRepository) =
        wishlistRepository.updateWishlist(this)
 
-    def removeWish(wish: Wish)(implicit wishEntryRepository: WishEntryRepository, wishRepository: WishRepository, wishLinkRepository: WishLinkRepository, reservationRepository: ReservationRepository) =
+    def removeWish(wish: Wish)(implicit wishEntryRepository: WishEntryRepository,
+             wishRepository: WishRepository, wishLinkRepository: WishLinkRepository,
+             reservationRepository: ReservationRepository) =
       for {
          _ <- wishEntryRepository.removeWishFromWishlist(wish, this)
          _ <- wish.delete
@@ -95,24 +97,6 @@ case class Wishlist(
     require(recipient != null)
 }
 /*
-object Wishlist {
-
-  val simple = {
-    get[Long]("wishlistid") ~
-      get[String]("title") ~
-      get[Option[String]]("description") ~
-      get[Long]("recipientid") map {
-      case wishlistid~title~description~recipientid=> {
-        Recipient.findById(recipientid) match {
-            case Some(recipient) => Wishlist( Some(wishlistid), title, description, recipient)
-            case None => {
-                Logger.error("Wishlist %d recipient %d not found".format(wishlistid,recipientid))
-                null
-            }
-        }
-      }
-    }
-  }
 
     def findWishesForWishlist(wishlist:Wishlist) : Seq[Wish] = {
         DB.withConnection { implicit connection =>
@@ -134,7 +118,5 @@ object Wishlist {
         }
     }
 
-
-}
 
 */

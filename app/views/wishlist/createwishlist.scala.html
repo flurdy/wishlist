@@ -1,39 +1,42 @@
-@(editWishlistForm:Form[(String,Option[String])])(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(editWishlistForm: Form[(String,Option[String])], errorMessage: Option[String] = None)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
 
 @import helper._
 
 @nautical("") {
 	<li><wishlist</li>
 }{
-	
+
 	<div>
 
-
 	    @for(error <- editWishlistForm.errors){
-	    <p class="alert alert-error">
-	    	<button type="button" class="close" data-dismiss="alert">×</button>
-	        @error.message: @error.key
-	    </p>
+   	    <p class="alert alert-error">
+   	    	<button type="button" class="close" data-dismiss="alert">×</button>
+   	        @error.message: @error.key
+   	    </p>
 	    }
-	    
 
+	    @for(error <- errorMessage){
+   	    <p class="alert alert-error">
+   	    	<button type="button" class="close" data-dismiss="alert">×</button>
+   	        @error
+   	    </p>
+	    }
 
-		
 
 		<div class="well" >
 
-			@form(action = routes.WishController.createWishlist(currentRecipient.get.username), 'class -> "form-horizontal"){
+			@form(action = routes.WishlistController.createWishlist(currentRecipient.get.username), 'class -> "form-horizontal"){
 
 				<div class="control-group">
     				<label class="control-label" for="inputTitle">Title</label>
-					<div class="controls"> 
+					<div class="controls">
 						<input type="text" class="input-xlarge" id="inputTitle" name="title" placeholder="Title of wishlist" value="@editWishlistForm("title").value"/>
 					</div>
 				</div>
 
 				<div class="control-group">
     				<label class="control-label" for="inputDescription">Description</label>
-					<div class="controls"> 
+					<div class="controls">
 						<textarea class="input-xlarge" id="inputDescription" name=" description" placeholder="Describe wishlist" rows="6">@editWishlistForm("description").value</textarea>
 					</div>
 				</div>
@@ -47,12 +50,7 @@
 					</div>
 				</div>
 			}
-
 		</div>
-
-
-
-	
 	</div>
 
 }

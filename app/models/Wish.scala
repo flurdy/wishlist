@@ -81,51 +81,12 @@ case class Wish(
 }
 
 
-case class WishLink(
-  linkId : Long,
-  wish : Wish,
-  url : String
-){
+case class WishLink( linkId : Long, wish : Wish, url : String ){
 
    def delete(implicit wishLinkRepository: WishLinkRepository) =
       wishLinkRepository.deleteLink(this)
 
 }
-
-/*
-
-object WishLink {
-
-  val simple = {
-    get[Long]("linkid") ~
-    get[Long]("wishid") ~
-    get[String]("url") map {
-      case linkid~wishid~url => {
-        WishLink( linkid,  new Wish(wishid), url )
-      }
-    }
-  }
-
-
-  def findWishLinks(wish:Wish): List[WishLink] = {
-    DB.withConnection { implicit connection =>
-        SQL(
-          """
-              SELECT *
-              FROM wishlink
-              where wishid = {wishid}
-              ORDER BY linkid
-          """
-        ).on(
-            'wishid -> wish.wishId.get
-        ).as(WishLink.simple *)
-    }
-  }
-
-}
-
-
-*/
 
 
 case class WishEntry(
@@ -142,29 +103,3 @@ case class WishEntry(
    require(wish != null && wishlist != null && wish.wishId.isDefined && wishlist.wishlistId.isDefined)
 
 }
-
-/*
-
-object WishEntry {
-
-
-  val simple = {
-    get[Long]("wishid") ~
-    get[Long]("wishlistid") ~
-    get[Option[Int]]("ordinal") ~
-    get[String]("title") ~
-    get[Option[String]]("description") ~
-    get[Option[Long]]("reservationid") ~
-    get[Long]("recipientid") map {
-      case wishid~wishlistid~ordinal~title~description~reservationid~recipientid => {
-       WishEntry(
-            new Wish( wishid, title, description, Reservation.create(reservationid), new Recipient(recipientid)),
-            new Wishlist(wishlistid),
-            ordinal)
-      }
-    }
-  }
-
-}
-
-*/
