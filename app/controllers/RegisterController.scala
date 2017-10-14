@@ -86,9 +86,6 @@ with EmailAddressChecks with WithLogging {
                               Redirect(routes.Application.index()).withSession(
                                  "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered"))
                         }
-                     // case Left(e) =>
-                     //    Logger.error("Not able to save new registration")
-                     //    throw new IllegalStateException("Not able to save new registration")
                   }
                case _ =>
                   logger.info(s"Username taken: [$registeredForm._1]")

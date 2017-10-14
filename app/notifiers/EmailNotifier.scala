@@ -1,75 +1,105 @@
 package notifiers
 
 import com.google.inject.ImplementedBy
-import javax.inject.Singleton
+import javax.inject.{Inject,Singleton}
+import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.mailer._
 import scala.concurrent.Future
-import models.Recipient
-// import play.api.libs.mailer._
 // import play.api.{Mode, Play}
 // import play.core.Router
 import controllers.WithLogging
+import models._
 
 
 @ImplementedBy(classOf[DefaultEmailNotifier])
 trait EmailNotifier extends WithLogging {
 
+   def emailDispatcher: EmailDispatcher
+   def emailTemplates: EmailTemplates
+
    def sendContactEmail(name: String, email: String, username: Option[String],
                      subject: Option[String], message: String,
                      currentRecipient: Option[Recipient]): Future[Unit] = {
-      // TODO !
-      logger.warn("TODO")
-      Future.successful(())
+      val emailMessage = emailTemplates.contactMessageText(
+         name, email, username, subject, message, currentRecipient)
+      emailDispatcher.sendContactEmail(emailMessage)
    }
 
    def sendNewRegistrationAlert(recipient: Recipient): Future[Unit] = {
-      // TODO !
-      logger.warn("TODO")
-      Future.successful(())
+      val emailMessage = emailTemplates.registrationAlertText(recipient.username)
+      emailDispatcher.sendAlertEmail(emailMessage)
+   }
+
+   def sendRecipientDeletedAlert(recipient: Recipient): Future[Unit] = {
+      val emailMessage = emailTemplates.deleteRecipientAlertText(recipient.username)
+      emailDispatcher.sendAlertEmail(emailMessage)
+   }
+
+   def sendRecipientDeletedNotification(recipient: Recipient): Future[Unit] = {
+      val emailMessage = emailTemplates.deleteRecipientNotificationText(recipient.username)
+      emailDispatcher.sendNotificationEmail(recipient.email, emailMessage)
    }
 
    def sendEmailVerification(recipient: Recipient, verificationHash: String): Future[Unit] = {
-      // TODO !
-      logger.warn("TODO")
-      logger.info(s"Verification: " + controllers.routes.RecipientController.verifyEmail(recipient.username, verificationHash).url)
-      Future.successful(())
+      val emailMessage = emailTemplates.emailVerificationText(recipient.username, verificationHash)
+      logger.info(s"Verification: $verificationHash")
+      emailDispatcher.sendNotificationEmail( recipient.email, emailMessage)
    }
 
-   def sendPasswordResetEmail( recipient: Recipient): Future[Unit] = {
-      // TODO !
-      logger.warn("TODO")
-      Future.successful(())
+   def sendPasswordResetEmail(recipient: Recipient): Future[Unit] = {
+      recipient.password.fold(Future.successful(())){ password =>
+         val emailMessage = emailTemplates.newPasswordText(password)
+         emailDispatcher.sendNotificationEmail( recipient.email, emailMessage)
+      }
    }
 
    def sendPasswordChangedNotification(recipient: Recipient): Future[Unit] = {
-      // TODO !
-      logger.warn("TODO")
-      Future.successful(())
+      val emailMessage = emailTemplates.changePasswordText
+      emailDispatcher.sendNotificationEmail( recipient.email, emailMessage)
    }
 
 }
 
 @Singleton
-class DefaultEmailNotifier extends EmailNotifier
+class DefaultEmailNotifier @Inject() (val emailDispatcher: EmailDispatcher, val emailTemplates: EmailTemplates) extends EmailNotifier
 
-/*
 
-object EmailConfiguration {
 
-  def hostname = Play.configuration.getString("net.hostname").getOrElse("localhost")
-  def emailFrom = Play.configuration.getString("mail.from").getOrElse("wish@example.com")
-  def alertRecipient = Play.configuration.getString("mail.alerts").getOrElse("wish@example.org")
+@ImplementedBy(classOf[SmtpEmailDispatcher])
+trait EmailDispatcher {
+
+   def emailConfig: EmailConfig
+
+   def sendEmail(sender: String, recipient: String, emailMessage: EmailMessage): Future[Unit]
+
+   def sendNotificationEmail(recipient: String, emailMessage: EmailMessage) =
+      sendEmail(emailConfig.emailSender, recipient, emailMessage)
+
+   def sendAlertEmail(emailMessage: EmailMessage) =
+      sendEmail(emailConfig.emailSender, emailConfig.alertRecipient, emailMessage)
+
+   def sendContactEmail(emailMessage: EmailMessage) =
+      sendEmail(emailConfig.emailSender, emailConfig.alertRecipient, emailMessage)
 
 }
 
-trait EmailDispatcher {
+@Singleton
+class SmtpEmailDispatcher @Inject() (val emailConfig: EmailConfig) extends EmailDispatcher with WithLogging {
 
-  def sendEmail(recipient:String,subjectAndBody:(String,String))
-
-  def sendAlertEmail(subjectAndBody:(String,String)) {
-    sendEmail(EmailConfiguration.alertRecipient,subjectAndBody)
+   override def sendEmail(sender: String, recipient: String, emailMessage: EmailMessage) = {
+      // val mail = Email(
+      //            EmailTemplate.subjectPrefix + subjectAndBody._1,
+      //            EmailConfiguration.emailFrom,
+      //            Seq(recipient),
+      //            bodyText = Some(subjectAndBody._2 + EmailTemplate.footer) )
+      // mailerClient.send(mail)
+      logger.info(s"Email sent: [${emailMessage.subject}] to [$recipient]")
+      Future.successful(())
   }
 
 }
+
+/*
 
 object MockEmailDispatcher extends EmailDispatcher {
 
@@ -87,20 +117,6 @@ trait MailerComponent {
 }
 
 
-object SmtpEmailDispatcher extends EmailDispatcher with MailerComponent{
-
-  override def sendEmail(recipient:String, subjectAndBody:(String,String)) {
-    val mail = Email(
-                    EmailTemplate.subjectPrefix + subjectAndBody._1,
-                    EmailConfiguration.emailFrom,
-                    Seq(recipient),
-                    bodyText = Some(subjectAndBody._2 + EmailTemplate.footer) )
-    mailerClient.send(mail)
-    Logger.info("Email sent: [%s] to [%s]" .format(subjectAndBody._1,recipient))
-  }
-
-}
-
 
 
 trait EmailService {
@@ -115,49 +131,6 @@ trait EmailService {
         case _ => SmtpEmailDispatcher
       }
     } else MockEmailDispatcher
-  }
-
-}
-
-
-
-object EmailNotifier extends EmailService {
-
-  def sendPasswordResetEmail(recipient: Recipient, newPassword: String) {
-    dispatcher.sendEmail(recipient.email,EmailTemplate.newPasswordText(recipient, newPassword))
-  }
-
-  def sendPasswordChangeEmail(recipient: Recipient) {
-    dispatcher.sendEmail(recipient.email,EmailTemplate.changePasswordText(recipient))
-  }
-
-
-  def sendRecipientDeletedNotification(recipient: Recipient) {
-    dispatcher.sendEmail(recipient.email,EmailTemplate.deleteRecipientNotificationText(recipient))
-  }
-
-  def sendEmailVerificationEmail(recipient:Recipient, verificationHash: String) {
-    val verificationUrl = EmailConfiguration.hostname + "/recipient/" + recipient.username + "/verify/" + verificationHash +"/"
-    dispatcher.sendEmail(recipient.email, EmailTemplate.emailVerificationText(recipient.username, verificationUrl))
-  }
-
-}
-
-
-
-
-object EmailAlerter extends EmailService {
-
-  def sendNewRegistrationAlert(recipient: Recipient) {
-    dispatcher.sendAlertEmail(EmailTemplate.registrationText(recipient))
-  }
-
-  def sendRecipientDeletedAlert(recipient: Recipient) {
-    dispatcher.sendAlertEmail(EmailTemplate.deleteRecipientAlertText(recipient))
-  }
-
-  def sendContactMessage(name:String,email:String,username:Option[String],subject:Option[String],message:String,currentRecipient:Option[Recipient]) {
-    dispatcher.sendAlertEmail(EmailTemplate.contactMessageText(name,email,username,subject,message,currentRecipient))
   }
 
 }

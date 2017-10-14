@@ -1,95 +1,94 @@
 package notifiers
 
-import models.Recipient
+import com.google.inject.ImplementedBy
+import javax.inject._
+import models._
+
+case class EmailMessage(subject: String, body: String)
+case class EmailModel(message: EmailMessage, recipient: String, sender: String)
+
+@ImplementedBy(classOf[DefaultEmailTemplates])
+trait EmailTemplates {
+
+   def emailConfig: EmailConfig
+
+   val subjectPrefix = "Wish: "
+
+   lazy val footer =
+      s"""
+         |
+         |
+         | Sent by Wish.
+         | Wish: create, share and find wish lists online.
+         | Visit: http://${emailConfig.hostname}
+      """.stripMargin
+
+   def registrationAlertText(username: String) =
+      EmailMessage("Alert: New registration",
+         s"Recipient $username has registered with Wish")
+
+   def deleteRecipientAlertText(username: String) =
+      EmailMessage("Alert: Recipient deleted",
+         s"Recipient $username has been deleted from Wish.")
+
+   def deleteRecipientNotificationText(username: String) =
+      EmailMessage("Recipient deleted",
+         s"""
+            | Recipient $username has been deleted from Wish.
+            |
+            | We are sorry to see you leave.
+         """.stripMargin)
+
+   def newPasswordText(newPassword: String) =
+      EmailMessage("Password reset",
+         s"""
+            | Your new password is : $newPassword
+            |
+            | If you didn't request this password reset for Wish, please let us know at http://${emailConfig.hostname}
+         """.stripMargin)
 
 
-object EmailTemplate {
+   lazy val changePasswordText =
+      EmailMessage("Password changed",
+         s"""
+            | Your password for Wish has just been changed.
+            |
+            | If you didn't request this password change for Wish, please let us know at http://${emailConfig.hostname}
+         """.stripMargin)
 
-  def subjectPrefix = "Wish: "
+   def emailVerificationText(username: String, verificationUrl: String) =
+      EmailMessage("Please verify your email address",
+         s"""
+            | Hi, welcome to Wish.
+            |
+            | Please verify your email address by clicking on the link below:
+            | $verificationUrl
+            |
+            |
+            | If you didn't register with Wish, please let us know at http://${emailConfig.hostname}
+         """.stripMargin)
 
-  def footer = {
-    """
-
-
-      Sent by Wish.
-      Host: %s
-    """.format(EmailConfiguration.hostname)
-  }
-
-
-  def registrationText(recipient: Recipient) = {
-    ("New registration", "Recipient " + recipient.username + " has registered with Wish")
-  }
-
-
-  def deleteRecipientAlertText(recipient: Recipient) = {
-    ("Recipient deleted",
-      """
-
-        Recipient %s has been deleted from Wish.
-
-
-      """.format(recipient.username))
-  }
-
-  def deleteRecipientNotificationText(recipient: Recipient) = {
-    ("Recipient deleted",
-      """
-         Recipient %s has been deleted from Wish.
-
-         We are sorry to see you leave.
-
-      """.format(recipient.username) )
-  }
-
-  def newPasswordText(recipient: Recipient, newPassword: String): (String, String) = {
-    ("Password reset",
-      """
-        Your new password is : %s
-
-        If you didn't request this password reset for Wish, please let us know at %s
-      """.format(newPassword,EmailConfiguration.hostname))
-  }
-
-
-  def changePasswordText(recipient: Recipient): (String, String) = {
-    ("Password changed",
-      """
-        Your password for Wish has just been changed.
-
-        If you didn't request this password change for Wish, please let us know at %s
-      """.format(EmailConfiguration.hostname))
-  }
-
-  def emailVerificationText(username: String, verificationUrl: String): (String, String) = {
-    ("Please verify your email address",
-      """
-        Hi, welcome to Wish.
-
-        Please verify your email address by going to this website:
-        %s
-
-
-        If you didn't register with Wish, please let us know at %s
-      """.format(verificationUrl,EmailConfiguration.hostname))
-  }
-
-  def contactMessageText(name:String,email:String,username:Option[String],subject:Option[String],message:String,currentRecipient:Option[Recipient]) : (String,String) = {
-    val actualSubject = subject.getOrElse("No subject entered")
-    val actualUsername = username.getOrElse("No username entered")
-    val actualRecipient = currentRecipient.map(recipient => recipient.username ).getOrElse("No current recipient")
-    ("Contact message",
-      """
-        Current recipient: %s
-        Name: %s
-        Email: %s
-        Username: %s
-
-        Subject: %s
-
-        Message:
-%s
-      """.format(actualRecipient,name,email,actualUsername,actualSubject,message))
-  }
-
+   def contactMessageText(name: String, email: String, username: Option[String],
+                           subject: Option[String], message: String,
+                           currentRecipient: Option[Recipient]) = {
+      val actualSubject = subject.getOrElse("No subject entered")
+      val actualUsername = username.getOrElse("No username entered")
+      val actualRecipient = currentRecipient.map( _.username )
+                                            .getOrElse("No current recipient")
+      EmailMessage("Contact message",
+         s"""
+            | Current recipient: $actualRecipient
+            | Name: $name
+            | Email: $email
+            | Username: $actualUsername
+            |
+            | Subject: $actualSubject
+            |
+            | Message:
+            | $message
+         """.stripMargin)
+   }
 }
+
+@Singleton
+class DefaultEmailTemplates @Inject() (val emailConfig: EmailConfig) extends EmailTemplates

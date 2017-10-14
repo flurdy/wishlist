@@ -16,6 +16,8 @@ libraryDependencies ++= {
       filters,
       ws exclude("commons-logging","commons-logging"),
       "com.github.t3hnar" %% "scala-bcrypt" % "3.0",
+      "com.typesafe.play" %% "play-mailer" % "6.0.1",
+      "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
       // "commons-logging" % "commons-logging" % "1.1.3",
       // "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
       // "com.heroku.sdk" % "heroku-jdbc" % "0.1.1",

@@ -93,11 +93,19 @@ case class Recipient (
          withWishRecipients  <- reservationRepository.inflateReservationsWishRecipient(withReservers)
       } yield withWishRecipients
 
-  def update()(implicit recipientRepository: RecipientRepository): Future[Recipient] =
+   def update()(implicit recipientRepository: RecipientRepository): Future[Recipient] =
      recipientRepository.updateRecipient(this)
 
    def updatePassword(newPassword: String)(implicit recipientRepository: RecipientRepository): Future[Recipient] =
       recipientRepository.updatePassword(this.copy(password = Some(newPassword.bcrypt)))
+
+   private def generateRandomPassword = {
+      val source = new BigInteger(130,  new SecureRandom()).toString(32)
+      source.substring(0,3)+"-"+source.substring(4,7)+"-"+source.substring(8,11)+"-"+source.substring(12,15)
+   }
+
+   def resetPassword()(implicit recipientRepository: RecipientRepository) : Future[Recipient] =
+      updatePassword( generateRandomPassword )
 
    def delete()(implicit recipientRepository: RecipientRepository,
                          wishlistRepository: WishlistRepository,
@@ -218,17 +226,6 @@ object Recipient {
         }
     }
 
-
-  def generateRandomPassword = {
-    val source = new BigInteger(130,  new SecureRandom()).toString(32)
-    source.substring(0,3)+"-"+source.substring(4,7)+"-"+source.substring(8,11)+"-"+source.substring(12,15)
-  }
-
-  def resetPassword(recipient:Recipient) : String = {
-      val newPassword = generateRandomPassword
-      updatePassword( recipient.copy(password=Option(newPassword)) )
-      newPassword
-  }
 
 
 

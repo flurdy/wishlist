@@ -146,6 +146,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       recipientLookup.findRecipient(username) flatMap {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
             Logger.info("Deleting recipient: "+ recipient.username)
+            emailNotifier.sendRecipientDeletedAlert(recipient)
+            emailNotifier.sendRecipientDeletedNotification(recipient)
             recipient.delete.map { _ =>
                Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
             }
