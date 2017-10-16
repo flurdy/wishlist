@@ -104,8 +104,10 @@ case class Recipient (
       source.substring(0,3)+"-"+source.substring(4,7)+"-"+source.substring(8,11)+"-"+source.substring(12,15)
    }
 
-   def resetPassword()(implicit recipientRepository: RecipientRepository) : Future[Recipient] =
-      updatePassword( generateRandomPassword )
+   def resetPassword()(implicit recipientRepository: RecipientRepository) : Future[(Recipient, String)] = {
+      val newPassword = generateRandomPassword
+      updatePassword( generateRandomPassword ) map ( (_, newPassword ) )
+   }
 
    def delete()(implicit recipientRepository: RecipientRepository,
                          wishlistRepository: WishlistRepository,

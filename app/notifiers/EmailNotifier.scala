@@ -46,11 +46,9 @@ trait EmailNotifier extends WithLogging {
       emailDispatcher.sendNotificationEmail( recipient.email, emailMessage)
    }
 
-   def sendPasswordResetEmail(recipient: Recipient): Future[Unit] = {
-      recipient.password.fold(Future.successful(())){ password =>
-         val emailMessage = emailTemplates.newPasswordText(password)
-         emailDispatcher.sendNotificationEmail( recipient.email, emailMessage)
-      }
+   def sendPasswordResetEmail(recipient: Recipient, password: String): Future[Unit] = {
+      val emailMessage = emailTemplates.newPasswordText(password)
+      emailDispatcher.sendNotificationEmail( recipient.email, emailMessage)
    }
 
    def sendPasswordChangedNotification(recipient: Recipient): Future[Unit] = {

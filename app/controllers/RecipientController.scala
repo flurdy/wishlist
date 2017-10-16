@@ -213,8 +213,10 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                recipientLookup.findRecipient(username.trim) flatMap {
                   case Some(recipient) if recipient.email.toLowerCase == email.trim.toLowerCase =>
 
-                     emailNotifier.sendPasswordResetEmail(recipient).map { _ =>
-                        Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset information sent by email")
+                     recipient.resetPassword() flatMap { case (_, newPassword) =>
+                        emailNotifier.sendPasswordResetEmail(recipient, newPassword).map { _ =>
+                           Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset information sent by email")
+                        }
                      }
                   case _ => Future.successful( NotFound ) // TODO
                }

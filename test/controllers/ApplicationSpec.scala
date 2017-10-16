@@ -21,6 +21,7 @@ import repositories._
 trait BaseUnitSpec extends PlaySpec with MockitoSugar with ScalaFutures {
      def beAbleTo    = afterWord("be able to")
      def calling     = afterWord("calling")
+     def _contain     = afterWord("contain")
      def does        = afterWord("does")
      def is          = afterWord("is")
      def fail        = afterWord("fail")
@@ -29,8 +30,9 @@ trait BaseUnitSpec extends PlaySpec with MockitoSugar with ScalaFutures {
      def notBeAbleTo = afterWord("not be able to")
      def pass        = afterWord("pass")
      def posting     = afterWord("posting")
-     def requesting  = afterWord("requesting")
      def redirect    = afterWord("redirect")
+     def requesting  = afterWord("requesting")
+     def respondWith = afterWord("respond with")
      def show        = afterWord("show")
 }
 

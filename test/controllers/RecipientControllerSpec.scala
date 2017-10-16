@@ -1,7 +1,7 @@
 package controllers
 
 import com.github.t3hnar.bcrypt._
-import org.mockito.ArgumentMatchers.{any,anyString}
+import org.mockito.ArgumentMatchers.{any,anyString,eq=>eqTo}
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
@@ -442,8 +442,11 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
             "an anonymous user" should {
                "send reset password email" in new Setup {
 
-                  when( emailNotifierMock.sendPasswordResetEmail(recipient) )
+                  when( emailNotifierMock.sendPasswordResetEmail(eqTo(recipient), anyString) )
                         .thenReturn( Future.successful( () ))
+
+                  when( recipientRepositoryMock.updatePassword(any[Recipient]))
+                     .thenReturn( Future.successful(recipient) )
 
                   val result = controller.resetPassword().apply(
                         FakeRequest()
@@ -455,14 +458,17 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
                   verify( recipientLookupMock ).findRecipient("someuser")
 
-                  verify( emailNotifierMock ).sendPasswordResetEmail(recipient)
+                  verify( emailNotifierMock ).sendPasswordResetEmail(eqTo(recipient), anyString)
                }
             }
             "a logged in recipient" should {
                "send reset password email including requestor" in new Setup {
 
-                  when( emailNotifierMock.sendPasswordResetEmail(anotherRecipient) )
-                        .thenReturn( Future.successful( () ))
+                  when( emailNotifierMock.sendPasswordResetEmail(eqTo(anotherRecipient), anyString) )
+                     .thenReturn( Future.successful( () ))
+
+                  when( recipientRepositoryMock.updatePassword(any[Recipient]))
+                     .thenReturn( Future.successful(recipient) )
 
                   val result = controller.resetPassword().apply(
                         FakeRequest()
@@ -475,7 +481,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
                   verify( recipientLookupMock ).findRecipient("someother")
 
-                  verify( emailNotifierMock ).sendPasswordResetEmail(anotherRecipient)
+                  verify( emailNotifierMock ).sendPasswordResetEmail(eqTo(anotherRecipient), anyString)
                }
             }
          }

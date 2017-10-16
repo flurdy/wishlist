@@ -8,6 +8,8 @@ scalaVersion := "2.11.8"
 
 libraryDependencies ++= {
    val enumeratumVersion = "1.5.8"
+   val playMailerVersion = "6.0.1"
+   // val playMailerVersion = "5.0.0"
    Seq(
       jdbc,
       "com.typesafe.play" %% "anorm" % "2.5.0",
@@ -16,14 +18,13 @@ libraryDependencies ++= {
       filters,
       ws exclude("commons-logging","commons-logging"),
       "com.github.t3hnar" %% "scala-bcrypt" % "3.0",
-      "com.typesafe.play" %% "play-mailer" % "6.0.1",
-      "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",
+      "com.typesafe.play" %% "play-mailer" % playMailerVersion,
+      // "com.typesafe.play" %% "play-mailer-guice" % playMailerVersion,
       // "commons-logging" % "commons-logging" % "1.1.3",
       // "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
       // "com.heroku.sdk" % "heroku-jdbc" % "0.1.1",
       // "org.mindrot" % "jbcrypt" % "0.3m",
       // "com.andersen-gott" %% "scravatar" % "1.0.3",
-      // "com.typesafe.play" %% "play-mailer" % "3.0.1",
       "com.beachape" %% "enumeratum" % enumeratumVersion,
       "com.beachape" %% "enumeratum-play" % enumeratumVersion,
       "com.beachape" %% "enumeratum-play-json" % enumeratumVersion,
