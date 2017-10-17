@@ -8,8 +8,8 @@ scalaVersion := "2.11.8"
 
 libraryDependencies ++= {
    val enumeratumVersion = "1.5.8"
-   val playMailerVersion = "6.0.1"
-   // val playMailerVersion = "5.0.0"
+   // val playMailerVersion = "6.0.1"
+   val playMailerVersion = "5.0.0"
    Seq(
       jdbc,
       "com.typesafe.play" %% "anorm" % "2.5.0",

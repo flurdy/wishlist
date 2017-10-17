@@ -69,12 +69,12 @@ extends Controller with Secured with WithAnalytics with RegisterForm with Contac
       contactFields => {
 
          emailNotifier.sendContactEmail( contactFields._1, contactFields._2,
-                                         contactFields._3, contactFields._4, contactFields._5, request.currentRecipient )
+                                         contactFields._3, contactFields._4,
+                                         contactFields._5, request.currentRecipient )
 
         Redirect(routes.Application.index()).flashing("message"->"Your message was sent")
 
       }
     )
   }
-
 }
