@@ -21,24 +21,25 @@
 			}
 		}
 
-		<div class="well" id="wishlist-list">
+      @if( !wishlists.isEmpty){
+         <div class="well" id="wishlist-list">
 
             <h4>Wishlists</h4>
-			<table class="table table-striped table-hover">
-				<tbody>
-				@for(wishlist <- wishlists){
-					@for(wishlistId <- wishlist.wishlistId){
-						<tr>
-							<td>
-								<a href="@routes.WishlistController.showWishlist(wishlist.recipient.username, wishlistId)">@wishlist.title</a>
-							</td>
-						</tr>
-					}
-				}
-				</tbody>
-			</table>
-		</div>
-
+   			<table class="table table-striped table-hover">
+   				<tbody>
+   				@for(wishlist <- wishlists){
+   					@for(wishlistId <- wishlist.wishlistId){
+   						<tr>
+   							<td>
+   								<a href="@routes.WishlistController.showWishlist(wishlist.recipient.username, wishlistId)">@wishlist.title</a>
+   							</td>
+   						</tr>
+   					}
+   				}
+   				</tbody>
+   			</table>
+   		</div>
+      }
         @for(currentR <- currentRecipient){
 			@if(recipient.isSameUsername(currentR)){
 

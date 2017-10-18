@@ -27,6 +27,7 @@ sealed trait FeatureToggle extends EnumEntry {
 object FeatureToggle extends Enum[FeatureToggle] {
    val values = findValues
    case object EmailVerification extends FeatureToggle with Dotcase
+   case object Gravatar extends FeatureToggle with Dotcase
 }
 
 trait WithFeatureToggles {

@@ -8,11 +8,11 @@ import play.api.data.Forms._
 import play.api.http.HeaderNames
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
-
+import com.flurdy.sander.primitives._
 import models._
 import repositories._
 import notifiers._
-// import scravatar._
+import scravatar._
 
 trait RecipientForm extends RegisterForm {
 
@@ -86,14 +86,10 @@ class RecipientController @Inject() (val configuration: Configuration, val recip
             val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with WishlistForm with RecipientForm with EmailAddressChecks with WithLogging {
 
-/*
-
-  def gravatarUrl(recipient:Recipient) = Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
-
-}
-
-
-*/
+   private def generateGravatarUrl(recipient:Recipient) =
+      FeatureToggle.Gravatar.isEnabled().some.map { _ =>
+         Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
+      }
 
    def showProfile(username: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) flatMap {
@@ -102,13 +98,13 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                wishlists    <- recipient.findAndInflateWishlists
                organised    <- recipient.findAndInflateOrganisedWishlists
                reservations <- recipient.findAndInflateReservations
-               gravatarUrl  =  None
+               gravatarUrl  =  generateGravatarUrl(recipient)
             } yield Ok(views.html.recipient.profile(recipient, wishlists,
                   organised, reservations, editWishlistForm, gravatarUrl ))
          case Some(recipient) =>
             for {
              wishlists    <- recipient.findAndInflateWishlists
-             gravatarUrl  =  None
+             gravatarUrl  =  generateGravatarUrl(recipient)
             } yield Ok(views.html.recipient.profile(recipient, wishlists,
                   organisedWishlists = Nil, reservations = Nil, editWishlistForm, gravatarUrl ))
          case _ => Future.successful( NotFound ) // TODO
