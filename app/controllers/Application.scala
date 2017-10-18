@@ -29,17 +29,20 @@ extends Controller with Secured with WithAnalytics with WishlistForm with WithLo
 
    def index = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
       request.currentRecipient match {
-         case Some(recipient) =>
-            recipient.inflate.flatMap{
-               _.findAndInflateWishlists.map { wishlists =>
-                  Ok(views.html.indexrecipient(editWishlistForm, wishlists))
-                        .withSession(request.session)
-               }
+         case Some(currentRecipient) =>
+            recipientLookup.findRecipient(currentRecipient.username) flatMap {
+               case Some(recipient) =>
+                  recipient.inflate.flatMap {
+                     _.findAndInflateWishlists.map { wishlists =>
+                        Ok(views.html.indexrecipient(editWishlistForm, wishlists))
+                              .withSession(request.session)
+                     }
+                  }
+               case _ => Future.successful( Redirect(routes.LoginController.logout) )
             }
          case None => Future.successful( Ok(views.html.indexanon()) )
       }
    }
-
 
    def redirectToIndex = Action { implicit request =>
       Redirect(routes.Application.index())
@@ -47,10 +50,6 @@ extends Controller with Secured with WithAnalytics with WishlistForm with WithLo
 
    def about = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.about())
-   }
-
-   def logout = Action {
-      Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")
    }
 
 }

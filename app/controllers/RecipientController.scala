@@ -149,7 +149,7 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
             emailNotifier.sendRecipientDeletedAlert(recipient)
             emailNotifier.sendRecipientDeletedNotification(recipient)
             recipient.delete.map { _ =>
-               Redirect(routes.Application.index()).flashing("messageWarning" -> "Recipient deleted")
+               Redirect(routes.Application.index()).withNewSession.flashing("messageWarning" -> "Recipient deleted")
             }
          case Some(recipient) => Future.successful( Unauthorized ) // TODO
          case _ => Future.successful( NotFound ) // TODO
@@ -293,7 +293,7 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                         }
                      case false =>
                         logger.warn(s"Verification for $username does not match [$verificationHash]")
-                        Future.successful( BadRequest )
+                        Future.successful( BadRequest ) // TODO
                   }
             }
          case _ => Future.successful( NotFound ) // TODO

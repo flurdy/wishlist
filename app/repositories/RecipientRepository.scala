@@ -4,11 +4,8 @@ import anorm._
 // import anorm.JodaParameterMetaData._
 import anorm.SqlParser._
 import com.google.inject.ImplementedBy
-// import java.sql.Connection
 import javax.inject.{Inject, Singleton}
-// import org.joda.time.DateTime
 import play.api.db._
-// import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import models._

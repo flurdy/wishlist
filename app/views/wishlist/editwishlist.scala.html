@@ -5,7 +5,7 @@
 @nautical("") {
 	<li><a href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
-	
+
 	<div>
 
 	    @for(error <- editWishlistForm.errors){
@@ -28,14 +28,14 @@
 
 				<div class="control-group">
     				<label class="control-label" for="inputTitle">Title</label>
-					<div class="controls"> 
+					<div class="controls">
 						<input type="text" class="input-xlarge" id="inputTitle" name="title" placeholder="Title of wishlist" maxlength="50" value="@editWishlistForm("title").value"/>
 					</div>
 				</div>
 
 				<div class="control-group">
     				<label class="control-label" for="inputDescription">Description</label>
-					<div class="controls"> 
+					<div class="controls">
 						<textarea class="input-xlarge" id="inputDescription" name="description" placeholder="Describe wishlist if required" rows="6">@editWishlistForm("description").value</textarea>
 					</div>
 				</div>
@@ -58,15 +58,15 @@
 				<h4>Organisers</h4>
 
 		@if(organisers.size>0){
-				<ul id="organiser-list" class="unstyled">									
-					@for(organiser <- organisers){	                    
+				<ul id="organiser-list" class="unstyled">
+					@for(organiser <- organisers){
 						<li>
-							@form(action = routes.WishlistController.removeOrganiserFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,organiser.username), 'class -> "form-inline"){
+							@form(action = routes.WishlistController.alsoRemoveOrganiserFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,organiser.username), 'class -> "form-inline"){
 								<a href="@routes.RecipientController.showProfile(organiser.username)">@organiser.username</a>
-								<button type="submit" class="btn btn-warning btn-small">remove organiser</button>								
+								<button type="submit" class="btn btn-warning btn-small">remove organiser</button>
 							}
 						</li>
-					}	
+					}
 				</ul>
 		}
 		</div>

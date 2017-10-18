@@ -75,7 +75,7 @@
                 <ul class="edit-links unstyled">
                     @wish.links.map { link =>
                      <li>
-                        @form(action = routes.WishController.deleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,link.linkId), 'class -> "form-inline wish-edit noshow"){
+                        @form(action = routes.WishController.alsoDeleteLinkFromWish(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get,link.linkId), 'class -> "form-inline wish-edit noshow"){
                         <a href="@link.url">@if(link.url.length>40){ @link.url.substring(0,39) } else { @link.url }</a>
                             <button type="submit" class="wish-edit noshow btn btn-warning input-small btn-mini">remove link</button>
                         }
@@ -107,7 +107,7 @@
 
     <div class="modal-footer wish-edit noshow">
         <button class="wish-cancel-button wish-edit noshow btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">cancel</button>
-         @form(action = routes.WishController.removeWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
+         @form(action = routes.WishController.alsoRemoveWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
         <input type="hidden" name="username" value="@currentRecipient.get.username" />
         <button type="submit" class="wish-edit noshow btn btn-danger input-small btn-small">delete wish</button>
         }

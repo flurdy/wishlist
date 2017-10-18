@@ -5,9 +5,9 @@
 @nautical(" delete: " + wishlist.title) {
 	<li><a href="@routes.WishlistController.showWishlist(wishlist.recipient.username,wishlist.wishlistId.get)">wishlist</a></li>
 }{
-	
+
 	<div>
-	    
+
 		<h3>Delete wishlist</h3>
 
 		<div class="well" >
@@ -16,13 +16,13 @@
 
 				<h4>Title: @wishlist.title</h4>
 				<p>Please confirm you want to delete this wishlist</p>
-				   
+
 			</div>
-			
+
 			<br/>
 			<br/>
 
-			@form(action = routes.WishlistController.deleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
+			@form(action = routes.WishlistController.alsoDeleteWishlist(wishlist.recipient.username,wishlist.wishlistId.get), 'class -> "form-horizontal"){
 
 				<div class="control-group">
 <!--					<div class="controls" id="buttons-row">
@@ -36,7 +36,7 @@
 		</div>
 
 
-	
+
 	</div>
 
 }

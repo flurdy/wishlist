@@ -29,7 +29,8 @@ trait LoginForm {
 
 
 @Singleton
-class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)(implicit recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
+class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
+   (implicit recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging {
 
    def redirectToLoginForm = Action { implicit request =>
@@ -89,4 +90,9 @@ extends Controller with Secured with WithAnalytics with LoginForm with RegisterF
          }
       )
    }
+
+   def logout = Action {
+      Redirect(routes.Application.index).withNewSession.flashing("message"->"You have been logged out")
+   }
+
 }

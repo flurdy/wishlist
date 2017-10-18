@@ -176,8 +176,8 @@ case class Recipient (
 
 
 
+/*
 object Recipient {
- /*
 
   val emailVerificationRequired = Play.configuration.getString("mail.verification").getOrElse("false") == "true"
 
@@ -306,5 +306,5 @@ object Recipient {
       ).as(scalar[String].singleOpt)
     }
   }
- */
 }
+*/

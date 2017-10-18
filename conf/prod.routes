@@ -14,7 +14,7 @@ POST  /login				controllers.LoginController.login
 GET   /login      		controllers.LoginController.redirectToLoginForm
 GET   /login.html   		controllers.LoginController.showLoginForm
 
-GET   /logout  			controllers.Application.logout
+GET   /logout  			controllers.LoginController.logout
 
 GET	 /search		      controllers.WishlistController.search
 

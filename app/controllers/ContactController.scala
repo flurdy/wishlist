@@ -1,7 +1,5 @@
 package controllers
 
-// import play.api.Play.current
-// import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api._
 import play.api.mvc._

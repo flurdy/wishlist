@@ -188,10 +188,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
             }
          case Some(r) =>
             logger.warn("Can not reserve your own wish")
-            Future.successful( Unauthorized )
+            Future.successful( Unauthorized ) // TODO
          case _ =>
             logger.debug("Have to be logged in to reserve a wish")
-            Future.successful( NotFound )
+            Future.successful( NotFound ) // TODO
       }
   }
 
@@ -211,11 +211,11 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                      }
                   } else {
                      logger.warn("===== not reserver")
-                     Future.successful(Unauthorized)
+                     Future.successful(Unauthorized) // TODO
                   }
                }
             }
-         case _ => Future.successful(NotFound)
+         case _ => Future.successful(NotFound) // TODO
        }
    }
 
@@ -229,7 +229,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                Redirect(routes.RecipientController.showProfile(request.username.get))
                      .flashing("message" -> "Wish reservation cancelled")
            }
-         } else Future.successful(Unauthorized)
+         } else Future.successful(Unauthorized) // TODO
       }
    }
 
@@ -293,9 +293,9 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                                  Redirect(routes.WishlistController.showWishlist(username, wishlistId))
                                        .flashing("message" -> "Wish moved to other list")
                               }
-                           case false => Future.successful( Unauthorized )// (views.html.error.permissiondenied())
+                           case false => Future.successful( Unauthorized )// (views.html.error.permissiondenied()) // TODO
                         }
-                     case None => Future.successful(NotFound)  //(views.html.error.notfound())
+                     case None => Future.successful(NotFound)  //(views.html.error.notfound()) // TODO
                   }
                case _ => Future.successful(InternalServerError) // TODO
             }

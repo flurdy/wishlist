@@ -3,7 +3,7 @@
 
 @import helper._
 
-@titleCapper(title:String,description:Option[String]) = {
+@titleCapper(title: String, description: Option[String]) = {
 	@description match {
 		case Some(actualDescription) => {
 			@if(title.length>40){
@@ -22,7 +22,7 @@
 	}
 }
 
-@descriptionCapper(title:String,description:Option[String]) = {
+@descriptionCapper(title: String, description: Option[String]) = {
 	@description.map { actualDescription =>
 		@if(title.length + actualDescription.length > 50){
 			@if(title.length>40 && actualDescription.length>10){

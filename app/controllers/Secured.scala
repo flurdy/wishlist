@@ -1,10 +1,8 @@
 package controllers
 
-// import play.api._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc._
 import play.api.mvc.Results.{NotFound, Unauthorized}
-// import play.api.Play.current
 import scala.concurrent.Future
 import models._
 import repositories.RecipientLookup

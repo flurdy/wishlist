@@ -65,7 +65,7 @@ trait WishlistActions {
          wishlistLookup.findWishlist(wishlistId) map {
             _.map { shallowWishlist =>
                new WishlistRequest(shallowWishlist, input)
-            }.toRight(NotFound)
+            }.toRight(NotFound) // TODO
          }
    }
 
@@ -76,9 +76,9 @@ trait WishlistActions {
                recipient.canEdit(input.wishlist) map {
                   case true  =>
                      Right(input) // new WishlistAccessRequest( input.wishlist, recipient, input))
-                  case false => Left(Forbidden)
+                  case false => Left(Forbidden) // TODO
                }
-            case None => Future.successful(Left(Forbidden))
+            case None => Future.successful(Left(Forbidden)) // TODO
          }
    }
 }
@@ -126,7 +126,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                      }
                   case _ =>
                      logger.warn(s"Recipient ${username} can not create a wishlist for ${request.username}")
-                     Future.successful(Unauthorized) // (views.html.error.permissiondenied())
+                     Future.successful(Unauthorized) // (views.html.error.permissiondenied()) // TODO
               }
           }
         )
@@ -139,8 +139,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
 
       val editForm = editWishlistForm.fill((request.wishlist.title,request.wishlist.description))
 
-      request.wishlist.findOrganisers map { organisers =>
-         Ok(views.html.wishlist.editwishlist(request.wishlist, editForm, organisers, addOrganiserForm))
+      request.wishlist.findOrganisers flatMap { organisers =>
+         request.wishlist.inflate map { wishlist =>
+            Ok(views.html.wishlist.editwishlist(wishlist, editForm, organisers, addOrganiserForm))
+         }
       }
    }
 
@@ -176,8 +178,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
 
    def showConfirmDeleteWishlist(username: String, wishlistId: Long) =
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-            andThen WishlistAction(wishlistId) andThen WishlistEditorAction) { implicit request =>
-      Ok(views.html.wishlist.deletewishlist(request.wishlist))
+            andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
+      request.wishlist.inflate map { wishlist =>
+         Ok(views.html.wishlist.deletewishlist(wishlist))
+      }
    }
 
     def deleteWishlist(username: String, wishlistId: Long)     = removeWishlist(username, wishlistId)
@@ -193,7 +197,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                    .flashing("messageWarning" -> "Wishlist deleted")
           case false =>
              logger.error("Failed to delete wishlist")
-             InternalServerError("Failed to delete wishlist")
+             InternalServerError("Failed to delete wishlist") // TODO
        }
     }
 
