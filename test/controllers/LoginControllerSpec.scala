@@ -22,10 +22,12 @@ class LoginControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerS
 
    trait Setup {
       val configurationMock = mock[Configuration]
+      val appConfigMock = mock[ApplicationConfig]
       val recipientLookupMock = mock[RecipientLookup]
       val recipientRepositoryMock = mock[RecipientRepository]
       val featureTogglesMock = mock[FeatureToggles]
-      val controller = new LoginController(configurationMock, recipientLookupMock)(recipientRepositoryMock, featureTogglesMock)
+      val controller = new LoginController(configurationMock, recipientLookupMock, appConfigMock)(recipientRepositoryMock, featureTogglesMock)
+      when(appConfigMock.getString(anyString)).thenReturn(None)
    }
 
    trait LoginSetup extends Setup {

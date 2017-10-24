@@ -86,7 +86,7 @@ trait WishlistActions {
 
 @Singleton
 class WishlistController @Inject() (val configuration: Configuration,
-   val recipientLookup: RecipientLookup)
+   val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig)
 (implicit val wishlistRepository: WishlistRepository,
       val wishRepository: WishRepository,
       val wishlistOrganiserRepository: WishlistOrganiserRepository,

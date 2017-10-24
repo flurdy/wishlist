@@ -17,7 +17,7 @@ import controllers.{Secured, WithAnalytics, WithLogging}
 
 @Singleton
 class TestOnlyRecipientController @Inject() (val configuration: Configuration,
-      val recipientLookup: RecipientLookup, val recipientRepository: RecipientRepository)
+      val recipientLookup: RecipientLookup, val recipientRepository: RecipientRepository, val appConfig: ApplicationConfig)
       extends Controller with Secured with WithAnalytics with WithLogging {
 
    def findVerification(username: String) = Action.async{ _ =>

@@ -53,7 +53,7 @@ trait RegisterForm {
 
 
 @Singleton
-class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
+class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with RegisterForm
 with EmailAddressChecks with WithLogging {
 

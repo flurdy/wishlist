@@ -41,9 +41,12 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
 
    trait Setup {
       val configurationMock = mock[Configuration]
+      val appConfigMock = mock[ApplicationConfig]
       val wishlistRepositoryMock = mock[WishlistRepository]
       val recipientRepositoryMock = mock[RecipientRepository]
-      val controller = new Application(configurationMock, mock[RecipientLookup])(wishlistRepositoryMock, recipientRepositoryMock)
+      val recipientLookupMock = mock[RecipientLookup]
+      val controller = new Application(configurationMock, recipientLookupMock, appConfigMock)(wishlistRepositoryMock, recipientRepositoryMock)
+      when(appConfigMock.getString(anyString)).thenReturn(None)
    }
 
    "Application controller" when requesting {
@@ -66,10 +69,14 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
                val recipientMock = mock[Recipient]
                val wishlist = new Wishlist("my list" , recipientMock)
                val wishlists = List(wishlist)
+               when(recipientLookupMock.findRecipient("some-username"))
+                     .thenReturn(Future.successful(Some(recipientMock)))
                when(recipientRepositoryMock.findRecipient("some-username"))
                      .thenReturn(Future.successful(Some(recipientMock)))
                when(recipientMock.findAndInflateWishlists(wishlistRepositoryMock, recipientRepositoryMock))
                      .thenReturn(Future.successful(wishlists))
+               when(recipientMock.inflate(recipientRepositoryMock))
+                     .thenReturn(Future.successful(recipientMock))
 
                val result = controller.index().apply(FakeRequest().withSession("username"  -> "some-username"))
 

@@ -29,7 +29,7 @@ trait LoginForm {
 
 
 @Singleton
-class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
+class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig)
    (implicit recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging {
 

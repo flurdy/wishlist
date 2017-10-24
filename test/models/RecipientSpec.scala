@@ -39,8 +39,7 @@ class RecipientSpec extends BaseUnitSpec with ScalaFutures {
    "authenticate" should {
       "authenticate" when given {
          "valid credentials" in new Setup {
-            whenReady(
-               recipient.authenticate(correctPassword)){ response =>
+            whenReady( recipient.authenticate(correctPassword)){ response =>
                response mustBe true
             }
          }

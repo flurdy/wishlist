@@ -19,6 +19,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
    trait Setup {
       val configurationMock = mock[Configuration]
+      val appConfigMock = mock[ApplicationConfig]
       val recipientRepositoryMock = mock[RecipientRepository]
       val recipientLookupMock = mock[RecipientLookup]
       val wishlistRepositoryMock = mock[WishlistRepository]
@@ -30,7 +31,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
       val reservationRepositoryMock = mock[ReservationRepository]
       val featureTogglesMock = mock[FeatureToggles]
       val emailNotifierMock = mock[EmailNotifier]
-      val controller = new RecipientController(configurationMock, recipientLookupMock, emailNotifierMock)(
+      val controller = new RecipientController(configurationMock, recipientLookupMock, emailNotifierMock, appConfigMock)(
             recipientRepositoryMock,
             wishlistRepositoryMock,
             wishLinkRepositoryMock,
@@ -60,6 +61,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
             .thenReturn( Future.successful( Some( recipient ) ) )
       when( recipientRepositoryMock.findRecipientById(5555) )
             .thenReturn( Future.successful( Some( anotherRecipient ) ) )
+      when(appConfigMock.getString(anyString)).thenReturn(None)
    }
 
    trait ProfileSetup extends Setup {

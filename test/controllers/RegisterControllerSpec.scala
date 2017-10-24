@@ -69,12 +69,14 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
 
    trait Setup {
       val configurationMock = mock[Configuration]
+      val appConfigMock = mock[ApplicationConfig]
       val recipientFactoryMock = mock[RecipientFactory]
       val recipientLookupMock = mock[RecipientLookup]
       val recipientRepositoryMock = mock[RecipientRepository]
       val featureTogglesMock = mock[FeatureToggles]
       val emailNotifierMock = mock[EmailNotifier]
-      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock, emailNotifierMock)(recipientRepositoryMock, featureTogglesMock)
+      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock, emailNotifierMock, appConfigMock)(recipientRepositoryMock, featureTogglesMock)
+      when(appConfigMock.getString(anyString)).thenReturn(None)
    }
 
    trait RegisterSetup extends Setup {

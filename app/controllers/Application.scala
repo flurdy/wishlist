@@ -6,13 +6,14 @@ import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
 import repositories._
+import models._
 
 
 trait WithAnalytics {
 
-   def configuration: Configuration
+   def appConfig: ApplicationConfig
 
-   implicit def analyticsDetails: Option[String] = configuration.getString("analytics.id")
+   implicit def analyticsDetails: Option[String] = appConfig.getString("analytics.id")
 
 }
 
@@ -23,7 +24,7 @@ trait WithLogging {
 }
 
 @Singleton
-class Application @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup)
+class Application @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig)
 (implicit val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)
 extends Controller with Secured with WithAnalytics with WishlistForm with WithLogging {
 

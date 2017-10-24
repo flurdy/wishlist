@@ -74,7 +74,7 @@ trait RecipientForm extends RegisterForm {
 }
 
 @Singleton
-class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier)
+class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig)
          (implicit val recipientRepository: RecipientRepository,
             val wishlistRepository: WishlistRepository,
             val wishLinkRepository: WishLinkRepository,
