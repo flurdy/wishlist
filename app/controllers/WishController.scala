@@ -3,7 +3,7 @@ package controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.mvc._
-import play.api.mvc.Results.{Forbidden, NotFound, Unauthorized}
+import play.api.mvc.Results.{NotFound, Unauthorized}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
@@ -56,36 +56,45 @@ trait WishActions {
    implicit def wishlistRepository: WishlistRepository
    implicit def recipientRepository: RecipientRepository
 
+   implicit def analyticsDetails: Option[String]
+
    def WishWishlistAction(wishId: Long) = new ActionRefiner[WishlistRequest, WishRequest] {
       def refine[A](input: WishlistRequest[A]) =
          wishLookup.findWishById(wishId) map { w =>
+            implicit val flash = input.flash
+            implicit val currentRecipient = input.currentRecipient
             w.map ( new WishRequest(_, Some(input.wishlist), input.maybeRecipient) )
-            .toRight(NotFound)
+            .toRight(NotFound(views.html.error.notfound()))
          }
    }
 
    def WishAction(wishId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishRequest] {
       def refine[A](input: MaybeCurrentRecipientRequest[A]) = Future.successful {
+         implicit val flash = input.flash
+         implicit val currentRecipient = input.currentRecipient
          Some(new Wish(wishId, input.currentRecipient.get)).map( wish =>
                   new WishRequest(wish, None, input))
-              .toRight(NotFound)
+              .toRight(NotFound(views.html.error.notfound()))
       }
    }
 
    def WishEditorAction(wishlistId: Long) = new ActionRefiner[WishRequest, WishRequest] {
-      def refine[A](input: WishRequest[A]) =
+      def refine[A](input: WishRequest[A]) = {
+         implicit val flash = input.flash
+         implicit val currentRecipient = input.currentRecipient
          input.currentRecipient match {
             case Some(recipient) =>
                wishlistLookup.findWishlist(wishlistId).flatMap {
                   case Some(wishlist) =>
                      recipient.canEdit(wishlist).map {
                         case true  => Right(input)
-                        case false => Left(Unauthorized)
+                        case false => Left(Unauthorized(views.html.error.permissiondenied()))
                      }
-                  case None => Future.successful(Left(NotFound))
+                  case None => Future.successful(Left(NotFound(views.html.error.notfound())))
                }
-            case None => Future.successful(Left(Unauthorized))
+            case None => Future.successful(Left(Unauthorized(views.html.error.permissiondenied())))
          }
+      }
    }
 }
 
@@ -99,6 +108,8 @@ class WishController @Inject() (val configuration: Configuration,
       val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository)
 extends Controller with Secured with WithAnalytics with WishForm with WishActions with WishlistActions with WithLogging {
 
+
+   implicit def requestToCurrentRecipient(implicit request: WishRequest[_]): Option[Recipient] = request.currentRecipient
     /*
 
     val updateWishlistOrderForm = Form(
@@ -130,7 +141,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                                .flashing("messageSuccess" -> "Wish added")
                       }
                    }
-                case _ =>  Future.successful( NotFound )
+                case _ =>  Future.successful( NotFound(views.html.error.notfound()) )
              }
           }
         )
@@ -147,7 +158,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                   Redirect(routes.WishlistController.showWishlist(username, wishlistId))
                      .flashing("messageWarning" -> "Wish deleted")
                }
-            case _ => Future.successful(NotFound)
+            case _ => Future.successful(NotFound(views.html.error.notfound()))
          }
       }
 
@@ -188,10 +199,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
             }
          case Some(r) =>
             logger.warn("Can not reserve your own wish")
-            Future.successful( Unauthorized ) // TODO
+            Future.successful( Unauthorized(views.html.error.permissiondenied()) )
          case _ =>
             logger.debug("Have to be logged in to reserve a wish")
-            Future.successful( NotFound ) // TODO
+            Future.successful( NotFound(views.html.error.notfound()) )
       }
   }
 
@@ -211,11 +222,11 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                      }
                   } else {
                      logger.warn("===== not reserver")
-                     Future.successful(Unauthorized) // TODO
+                     Future.successful(Unauthorized(views.html.error.permissiondenied()))
                   }
                }
             }
-         case _ => Future.successful(NotFound) // TODO
+         case _ => Future.successful(NotFound(views.html.error.notfound()))
        }
    }
 
@@ -229,7 +240,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                Redirect(routes.RecipientController.showProfile(request.username.get))
                      .flashing("message" -> "Wish reservation cancelled")
            }
-         } else Future.successful(Unauthorized) // TODO
+         } else Future.successful(Unauthorized(views.html.error.permissiondenied()))
       }
    }
 
@@ -265,7 +276,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                Redirect(routes.WishlistController.showWishlist(username, wishlistId))
                      .flashing("messageWarning" -> "Link removed from wish")
             }
-         case None => Future.successful( NotFound) // TODO (views.html.error.notfound()) )
+         case None => Future.successful( NotFound(views.html.error.notfound()))
       }
    }
 
@@ -293,11 +304,11 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
                                  Redirect(routes.WishlistController.showWishlist(username, wishlistId))
                                        .flashing("message" -> "Wish moved to other list")
                               }
-                           case false => Future.successful( Unauthorized )// (views.html.error.permissiondenied()) // TODO
+                           case false => Future.successful( Unauthorized(views.html.error.permissiondenied()) )
                         }
-                     case None => Future.successful(NotFound)  //(views.html.error.notfound()) // TODO
+                     case None => Future.successful(NotFound(views.html.error.notfound()))
                   }
-               case _ => Future.successful(InternalServerError) // TODO
+               case _ => Future.successful(InternalServerError(views.html.error.error500()))
             }
          }
       )

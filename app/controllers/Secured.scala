@@ -48,7 +48,10 @@ trait Secured {
             case Some(username) =>
                recipientLookup.findRecipient(username).map( recipient =>
                   Right( new MaybeCurrentRecipientRequest(recipient, input) ) )
-            case None => Future.successful( Left(NotFound) )
+            case None =>
+               implicit val flash = input.flash
+               implicit val currentRecipient = None
+               Future.successful( Left(NotFound(views.html.error.notfound())) )
          }
    }
 

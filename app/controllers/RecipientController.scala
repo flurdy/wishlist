@@ -107,7 +107,7 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
              gravatarUrl  =  generateGravatarUrl(recipient)
             } yield Ok(views.html.recipient.profile(recipient, wishlists,
                   organisedWishlists = Nil, reservations = Nil, editWishlistForm, gravatarUrl ))
-         case _ => Future.successful( NotFound ) // TODO
+         case _ => Future.successful( NotFound(views.html.error.notfound()) )
       }
    }
 
@@ -122,8 +122,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
            val editForm = editRecipientForm.fill(
              username, username, recipient.fullname, recipient.email)
            Ok( views.html.recipient.editrecipient(recipient, editForm) )
-         case Some(recipient) => Unauthorized // TODO
-         case _ => NotFound // TODO
+         case Some(recipient) => Unauthorized(views.html.error.permissiondenied())
+         case _ => NotFound(views.html.error.notfound())
       }
    }
 
@@ -131,8 +131,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       recipientLookup.findRecipient(username) map {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
             Ok(views.html.recipient.deleterecipient(recipient))
-          case Some(recipient) => Unauthorized // TODO
-          case _ => NotFound // TODO
+          case Some(recipient) => Unauthorized(views.html.error.permissiondenied())
+          case _ => NotFound(views.html.error.notfound())
       }
    }
 
@@ -147,8 +147,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
             recipient.delete.map { _ =>
                Redirect(routes.Application.index()).withNewSession.flashing("messageWarning" -> "Recipient deleted")
             }
-         case Some(recipient) => Future.successful( Unauthorized ) // TODO
-         case _ => Future.successful( NotFound ) // TODO
+         case Some(recipient) => Future.successful( Unauthorized(views.html.error.permissiondenied()) )
+         case _ => Future.successful( NotFound(views.html.error.notfound()) )
       }
    }
 
@@ -189,8 +189,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
             )
           case Some(recipient) =>
              logger.warn(s"Unauthorized to update recipient [$username] as [${request.currentRecipient}]")
-             Future.successful( Unauthorized ) // TODO
-          case _ => Future.successful( NotFound ) // TODO
+             Future.successful( Unauthorized(views.html.error.permissiondenied()) )
+          case _ => Future.successful( NotFound(views.html.error.notfound()) )
       }
    }
 
@@ -214,7 +214,7 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                            Redirect(routes.Application.index()).flashing("messageWarning" -> "Password reset information sent by email")
                         }
                      }
-                  case _ => Future.successful( NotFound ) // TODO
+                  case _ => Future.successful( NotFound(views.html.error.notfound()) )
                }
          }
       )
@@ -224,8 +224,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       request.currentRecipient match {
          case Some(recipient) if recipient.username == username =>
             Ok(views.html.recipient.passwordchange(changePasswordForm))
-         case Some(recipient) => Unauthorized // TODO
-         case _ => NotFound // TODO
+         case Some(recipient) => Unauthorized(views.html.error.permissiondenied())
+         case _ => NotFound(views.html.error.notfound())
       }
    }
 
@@ -261,13 +261,13 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                         views.html.recipient.passwordchange(changePasswordForm,
                            Some("Unauthorized to update password for recipient [$username]") )) )
                   case _ =>
-                     Future.successful( NotFound ) // TODO
+                     Future.successful( NotFound(views.html.error.notfound()) )
                }
          }
       )
    }
 
-   def verifyEmail(username: String, verificationHash: String) = Action.async { implicit request =>
+   def verifyEmail(username: String, verificationHash: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
 
       def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
             .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
@@ -289,10 +289,11 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                         }
                      case false =>
                         logger.warn(s"Verification for $username does not match [$verificationHash]")
-                        Future.successful( BadRequest ) // TODO
+                        Future.successful( Redirect(routes.RecipientController.showResendVerification())
+                                 .flashing("messageError" -> "Verification error") )
                   }
             }
-         case _ => Future.successful( NotFound ) // TODO
+         case _ => Future.successful( NotFound(views.html.error.notfound()) )
       }
    }
 
@@ -329,10 +330,10 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
                                  Redirect(routes.Application.index())
                                     .flashing("message" -> "Verification is not needed"))
                         case false =>
-                           Future.successful( Unauthorized ) // TODO
+                           Future.successful( Unauthorized(views.html.error.permissiondenied()) )
                      }
                   case _ =>
-                     Future.successful( NotFound ) // TODO
+                     Future.successful( NotFound(views.html.error.notfound()) )
                }
          }
       )

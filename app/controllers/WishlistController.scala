@@ -3,7 +3,7 @@ package controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.mvc._
-import play.api.mvc.Results.{Forbidden, NotFound}
+import play.api.mvc.Results.{NotFound, Unauthorized}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.concurrent.Execution.Implicits._
@@ -58,28 +58,36 @@ trait WishlistActions {
    implicit def wishlistRepository: WishlistRepository
    implicit def recipientRepository: RecipientRepository
 
+   implicit def analyticsDetails: Option[String]
+
    implicit def wishlistRequestToCurrentRecipient(implicit request: WishlistRequest[_]): Option[Recipient] = request.currentRecipient
 
    def WishlistAction(wishlistId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishlistRequest] {
-      def refine[A](input: MaybeCurrentRecipientRequest[A]) =
+      def refine[A](input: MaybeCurrentRecipientRequest[A]) = {
+         implicit val flash = input.flash
+         implicit val currentRecipient = input.currentRecipient
          wishlistLookup.findWishlist(wishlistId) map {
             _.map { shallowWishlist =>
                new WishlistRequest(shallowWishlist, input)
-            }.toRight(NotFound) // TODO
+            }.toRight(NotFound(views.html.error.notfound()))
          }
+      }
    }
 
    def WishlistEditorAction = new ActionRefiner[WishlistRequest, WishlistRequest] {
-      def refine[A](input: WishlistRequest[A]) =
+      def refine[A](input: WishlistRequest[A]) = {
+         implicit val flash = input.flash
+         implicit val currentRecipient = input.currentRecipient
          input.currentRecipient match {
             case Some(recipient) =>
                recipient.canEdit(input.wishlist) map {
                   case true  =>
                      Right(input) // new WishlistAccessRequest( input.wishlist, recipient, input))
-                  case false => Left(Forbidden) // TODO
+                  case false => Left(Unauthorized(views.html.error.permissiondenied()))
                }
-            case None => Future.successful(Left(Forbidden)) // TODO
+            case None => Future.successful(Left(Unauthorized(views.html.error.permissiondenied())))
          }
+      }
    }
 }
 
@@ -126,7 +134,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                      }
                   case _ =>
                      logger.warn(s"Recipient ${username} can not create a wishlist for ${request.username}")
-                     Future.successful(Unauthorized) // (views.html.error.permissiondenied()) // TODO
+                     Future.successful(Unauthorized(views.html.error.permissiondenied()))
               }
           }
         )
@@ -197,7 +205,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                    .flashing("messageWarning" -> "Wishlist deleted")
           case false =>
              logger.error("Failed to delete wishlist")
-             InternalServerError("Failed to delete wishlist") // TODO
+             InternalServerError(views.html.error.error500())
        }
     }
 
@@ -355,7 +363,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
                Redirect(routes.WishlistController.showEditWishlist(username, wishlistId))
                   .flashing("messageRemoved" -> "Organiser removed")
             }
-         case _ => Future.successful( NotFound) // TODO (views.html.error.notfound())
+         case _ => Future.successful( NotFound(views.html.error.notfound()) )
       }
    }
 }
