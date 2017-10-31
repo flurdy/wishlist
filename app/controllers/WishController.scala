@@ -105,9 +105,10 @@ class WishController @Inject() (val configuration: Configuration,
 (implicit val wishlistRepository: WishlistRepository, val wishRepository: WishRepository,
       val wishEntryRepository: WishEntryRepository, val wishlistLookup: WishlistLookup,
       val wishLookup: WishLookup, val wishLinkRepository: WishLinkRepository,
-      val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository)
-extends Controller with Secured with WithAnalytics with WishForm with WishActions with WishlistActions with WithLogging {
+      val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
+extends Controller with Secured with WithAnalytics with WishForm with WishActions with WishlistActions with WithLogging with WithGravatarUrl {
 
+   def gravatarUrl(wishlist: Wishlist) = generateGravatarUrl(wishlist.recipient)
 
    implicit def requestToCurrentRecipient(implicit request: WishRequest[_]): Option[Recipient] = request.currentRecipient
     /*
@@ -118,9 +119,6 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
 
    */
 
-   // private def recipientGravatarUrl(wishlist:Wishlist) = RecipientController.gravatarUrl(wishlist.recipient)
-
-
    def addWishToWishlist(username:String,wishlistId:Long) =
      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
            andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
@@ -128,7 +126,7 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
           errors => {
               logger.warn("Add failed: " + errors)
               request.wishlist.findWishes.map{ wishes =>
-                 BadRequest(views.html.wishlist.showwishlist(request.wishlist,wishes,errors, None)) //recipientGravatarUrl(wishlist)))
+                 BadRequest(views.html.wishlist.showwishlist(request.wishlist,wishes,errors, gravatarUrl(request.wishlist)))
               }
           },
           title => {

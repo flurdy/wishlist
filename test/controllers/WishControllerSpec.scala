@@ -28,15 +28,16 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       val wishEntryRepositoryMock = mock[WishEntryRepository]
       val wishLinkRepositoryMock = mock[WishLinkRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
+      val featureTogglesMock = mock[FeatureToggles]
       val wishController = new WishController(configurationMock, recipientLookupMock, appConfigMock)(
          wishlistRepositoryMock, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock,
-         wishLookupMock, wishLinkRepositoryMock, reservationRepositoryMock, recipientRepositoryMock)
+         wishLookupMock, wishLinkRepositoryMock, reservationRepositoryMock, recipientRepositoryMock, featureTogglesMock)
       val wishlistController = new WishlistController(
          configurationMock, recipientLookupMock, appConfigMock)(
          wishlistRepositoryMock, wishRepositoryMock, wishlistOrganiserRepositoryMock,
          wishlistLookupMock, wishLookupMock, wishLinkRepositoryMock,
          wishEntryRepositoryMock, recipientRepositoryMock,
-         reservationRepositoryMock)
+         reservationRepositoryMock, featureTogglesMock)
       when(appConfigMock.getString(anyString)).thenReturn(None)
    }
 

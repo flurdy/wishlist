@@ -82,7 +82,7 @@ trait WishlistActions {
             case Some(recipient) =>
                recipient.canEdit(input.wishlist) map {
                   case true  =>
-                     Right(input) // new WishlistAccessRequest( input.wishlist, recipient, input))
+                     Right(input)
                   case false => Left(Unauthorized(views.html.error.permissiondenied()))
                }
             case None => Future.successful(Left(Unauthorized(views.html.error.permissiondenied())))
@@ -102,9 +102,9 @@ class WishlistController @Inject() (val configuration: Configuration,
       val wishLinkRepository: WishLinkRepository,
       val wishEntryRepository: WishEntryRepository,
       val recipientRepository: RecipientRepository,
-      val reservationRepository: ReservationRepository)
-extends Controller with Secured with WithAnalytics with WishForm with WishlistForm with WishlistActions with WishActions with WithLogging {
-
+      val reservationRepository: ReservationRepository,
+      val featureToggles: FeatureToggles)
+extends Controller with Secured with WithAnalytics with WishForm with WishlistForm with WishlistActions with WishActions with WithLogging with WithGravatarUrl {
 
     def createWishlist(username: String) =
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction).async { implicit request =>
@@ -217,9 +217,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
      (UsernameAction andThen MaybeCurrentRecipientAction
         andThen WishlistAction(wishlistId)).async { implicit request =>
 
-      val gravatarUrl = None // recipientGravatarUrl(request.wishlist)
-
       request.wishlist.inflate.flatMap { wishlist =>
+
+         val gravatarUrl = generateGravatarUrl(wishlist.recipient)
+
          wishlist.findWishes flatMap { wishes =>
             def showWishlist =
                Ok(views.html.wishlist.showwishlist(
@@ -262,8 +263,6 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
             }
         )
    }
-
-   // private def recipientGravatarUrl(wishlist:Wishlist) = RecipientController.gravatarUrl(wishlist.recipient)
 
    def updateWishlistOrder(username: String, wishlistId: Long) =
       (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
@@ -308,7 +307,6 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
             andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
 
       def editForm = editWishlistForm.fill((request.wishlist.title, request.wishlist.description))
-
 
       addOrganiserForm.bindFromRequest.fold(
         errors => {

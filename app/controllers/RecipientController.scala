@@ -73,8 +73,20 @@ trait RecipientForm extends RegisterForm {
 
 }
 
+trait WithGravatarUrl {
+
+   def generateGravatarUrl(recipient: Recipient)(implicit featureToggles: FeatureToggles) =
+      FeatureToggle.Gravatar.isEnabled().some.map { _ =>
+         Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
+      }
+}
+
 @Singleton
-class RecipientController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig)
+class RecipientController @Inject() (
+            val configuration: Configuration,
+            val recipientLookup: RecipientLookup,
+            val emailNotifier: EmailNotifier,
+            val appConfig: ApplicationConfig)
          (implicit val recipientRepository: RecipientRepository,
             val wishlistRepository: WishlistRepository,
             val wishLinkRepository: WishLinkRepository,
@@ -84,12 +96,7 @@ class RecipientController @Inject() (val configuration: Configuration, val recip
             val wishOrganiserRepository: WishlistOrganiserRepository,
             val reservationRepository: ReservationRepository,
             val featureToggles: FeatureToggles)
-extends Controller with Secured with WithAnalytics with WishlistForm with RecipientForm with EmailAddressChecks with WithLogging {
-
-   private def generateGravatarUrl(recipient:Recipient) =
-      FeatureToggle.Gravatar.isEnabled().some.map { _ =>
-         Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
-      }
+extends Controller with Secured with WithAnalytics with WishlistForm with RecipientForm with EmailAddressChecks with WithLogging with WithGravatarUrl {
 
    def showProfile(username: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) flatMap {
