@@ -23,7 +23,7 @@ libraryDependencies ++= {
       // "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
       // "com.heroku.sdk" % "heroku-jdbc" % "0.1.1",
       "com.andersen-gott" %% "scravatar" % "1.0.3",
-      "com.flurdy"        %% "sander" % "0.1.4",
+      "com.flurdy"        %% "sander-core" % "0.2.0",
       "com.beachape" %% "enumeratum" % enumeratumVersion,
       "com.beachape" %% "enumeratum-play" % enumeratumVersion,
       "com.beachape" %% "enumeratum-play-json" % enumeratumVersion,
