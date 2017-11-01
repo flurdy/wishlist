@@ -1,26 +1,25 @@
-FROM flurdy/activator:latest
+FROM flurdy/play-framework:2.5.14-alpine
 
-MAINTAINER flurdy
+MAINTAINER Ivar Abrahamsen <@flurdy>
 
-ENV DEBIAN_FRONTEND noninteractive
+COPY conf /etc/app/
 
-ENV APPDIR /var/local/application
+ADD . /opt/build/
 
-ADD repositories /root/.sbt/
+WORKDIR /opt/build
 
-COPY . /var/local/application
+RUN /opt/activator/bin/activator clean stage && \
+  rm -f target/universal/stage/bin/*.bat && \
+  mv target/universal/stage/bin/* target/universal/stage/bin/app && \
+  mv target/universal /opt/app && \
+  ln -s /opt/app/stage/logs /var/log/app && \
+  rm -rf /opt/build && \
+  rm -rf /root/.ivy2
 
-WORKDIR /var/local/application
+WORKDIR /opt/app
 
-RUN /usr/local/bin/activator stage
+ADD . /opt/build/
 
-WORKDIR /var/local/application/target/universal/stage/bin/
-
-RUN rm -f playapp ;\ 
-   for i in `ls | grep -v .bat | grep -v playapp` ;\
-   do mv $i playapp; done
-
-ENTRYPOINT ["/var/local/application/target/universal/stage/bin/playapp"]
+ENTRYPOINT ["/opt/app/stage/bin/app"]
 
 EXPOSE 9000
-EXPOSE 9999
