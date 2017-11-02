@@ -34,8 +34,6 @@ jobs:
             # - ~/.docker
           key: v1.1-dependencies--{{ checksum "build.sbt" }}
 
-      - run: cat /dev/null | activator test:testOnly com.flurdy.wishlist.LoginIntegrationSpec
-
       - run: cat /dev/null | activator test:test
 
       - run: cat /dev/null | activator stage
