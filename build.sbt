@@ -6,6 +6,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.8"
 
+resolvers += "flurdy-maven" at "http://dl.bintray.com/content/flurdy/maven"
+
 libraryDependencies ++= {
    val enumeratumVersion = "1.5.8"
    // val playMailerVersion = "6.0.1"
