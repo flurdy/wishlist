@@ -5,8 +5,6 @@ jobs:
   build:
     docker:
       - image: flurdy/activator-mini:1.3.12-alpine
-      # - image: circleci/openjdk:8-jdk
-
 
     working_directory: ~/repo
 
@@ -22,9 +20,13 @@ jobs:
           - v1.1-dependencies-{{ checksum "build.sbt" }}
           - v1.1-dependencies-
 
-      - run: cat /dev/null | activator test:compile
+      - run:
+          name: Compile
+          command: cat /dev/null | activator test:compile
 
-      - run: cat /dev/null | activator dist
+      - run:
+          name: Download all dependencies
+          command: cat /dev/null | activator dist
 
       - save_cache:
           paths:
@@ -34,9 +36,13 @@ jobs:
             # - ~/.docker
           key: v1.1-dependencies--{{ checksum "build.sbt" }}
 
-      - run: cat /dev/null | activator test:test
+      - run:
+          name: Test build
+          command: cat /dev/null | activator test:test
 
-      - run: cat /dev/null | activator stage
+      - run:
+          name: Package application
+          command: cat /dev/null | activator stage
 
       - run:
           name: Rename shell script
@@ -45,7 +51,9 @@ jobs:
             rm -f target/universal/stage/bin/*.bat
             mv -f target/universal/stage/bin/* target/universal/stage/bin/app
 
-      - run: rm -rf target/universal/stage/share
+      - run:
+          name: Remove API docs
+          command: rm -rf target/universal/stage/share
 
       - store_artifacts:
           path: target/universal/stage
@@ -58,10 +66,16 @@ jobs:
 
       - setup_remote_docker
 
-      - run: docker build -t flurdy/wishlist:latest .
+      - run:
+          name: Build Docker image
+          command: docker build -t flurdy/wishlist:latest .
 
       # - run: docker build -t flurdy/wishlist:latest$CIRCLE_BRANCH .
 
-      # - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run:
+          name: Login to Docker registry
+          command: docker login -u $DOCKER_USER -p $DOCKER_PASS
 
-      # - run: docker push company/app:$CIRCLE_BRANCH
+      - run:
+          name: Push image to registry
+          command: docker push flurdy/wishlist:latest
