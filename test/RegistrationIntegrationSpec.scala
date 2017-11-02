@@ -39,7 +39,6 @@ trait RegistrationIntegrationHelper extends IntegrationHelper {
    def findVerificationUrl(username: String)(implicit ec: ExecutionContext) = {
       val hashUrl = s"$baseUrl/test-only/recipient/${username.toLowerCase().trim}/verify/find"
       getWsClient().url(hashUrl).withFollowRedirects(false).get().map { response =>
-         // println("!!!!!! v status " + response.status)
          response.header("Location").headOption
       }
    }
@@ -167,8 +166,8 @@ class RegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
 
       scenario("unable to log in unless verified"){
          val flow = for {
-            registerResponse <- register("Testerson99")
-            loginResponse    <- login("Testerson99")
+            registerResponse <- register("Testerson2299")
+            loginResponse    <- login("Testerson2299")
          } yield (registerResponse, loginResponse)
 
          flow map { case (registerResponse, loginResponse) =>
@@ -188,11 +187,11 @@ class RegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
 
       scenario("verifying email post registration"){
          val flow = for {
-            registerResponse <- register("Testerson999")
-            loginResponse1   <- login("Testerson999")
-            verificationUrl  <- findVerificationUrl("Testerson999")
+            registerResponse <- register("Testerson111999")
+            loginResponse1   <- login("Testerson111999")
+            verificationUrl  <- findVerificationUrl("Testerson111999")
             verifyResponse   <- verificationUrl.fold(throw new IllegalStateException("no hash found"))( v => verify(v))
-            loginResponse2   <- login("Testerson999")
+            loginResponse2   <- login("Testerson111999")
          } yield (registerResponse, loginResponse1, verifyResponse, loginResponse2)
 
          flow map { case (registerResponse, loginResponse1, verifyResponse, loginResponse2) =>
