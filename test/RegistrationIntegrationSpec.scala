@@ -29,6 +29,13 @@ trait RegistrationIntegrationHelper extends IntegrationHelper {
       getWsClient().url(registerUrl).withFollowRedirects(false).post(registerFormData)
    }
 
+   def registerAndVerify(username: String)(implicit ec: ExecutionContext): Future[WSResponse] =
+      for {
+         registerResponse <- register(username)
+         verificationUrl  <- findVerificationUrl(username)
+         _                <- verificationUrl.fold(throw new IllegalStateException("no hash found"))( v => verify(v))
+      } yield registerResponse
+
    def findVerificationUrl(username: String)(implicit ec: ExecutionContext) = {
       val hashUrl = s"$baseUrl/test-only/recipient/${username.toLowerCase().trim}/verify/find"
       getWsClient().url(hashUrl).withFollowRedirects(false).get().map { response =>

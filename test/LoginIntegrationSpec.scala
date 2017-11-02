@@ -26,6 +26,13 @@ trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIn
          session          =  findSessionCookie(loginResponse)
       } yield session
 
+   def registerVerifyAndLogin(username: String)(implicit ec: ExecutionContext): Future[Option[String]] =
+      for {
+         _                <- registerAndVerify(username)
+         loginResponse    <- login(username)
+         session          =  findSessionCookie(loginResponse)
+      } yield session
+
    def logout(session: Option[String]) =
       wsWithSession(logoutUrl, session).withFollowRedirects(false).get()
 }
@@ -68,14 +75,14 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
 
    feature("Login flow") {
 
-      scenario("Registration and log in") {
+      scenario("Register and log in") {
 
          val flow = for {
-            _               <- register("Testerson")
+            _               <- register("Testerson666")
             frontBefore     <- frontpage()
-            verificationUrl <- findVerificationUrl("Testerson")
+            verificationUrl <- findVerificationUrl("Testerson666")
             _               <- verificationUrl.fold(throw new IllegalStateException("no hash found"))( v => verify(v))
-            loginResponse   <- login("Testerson")
+            loginResponse   <- login("Testerson666")
             session         =  findSessionCookie(loginResponse)
             frontAfter      <- frontpageWithSession(session)
          } yield(frontBefore, loginResponse, frontAfter)
@@ -95,15 +102,15 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
             val loginFormAfter = ScalaSoup.parse(frontAfter.body).select("#login-box input").headOption
             loginFormAfter shouldBe None
             val logoutLink = ScalaSoup.parse(frontAfter.body).select("#logout-box li a").headOption
-            logoutLink.value.text shouldBe "testerson"
+            logoutLink.value.text shouldBe "testerson666"
          }
       }
 
       scenario("Can log out"){
 
          val flow = for {
-            _              <- register("Testerson")
-            loginResponse  <- login("Testerson")
+            _              <- registerAndVerify("Testerson999")
+            loginResponse  <- login("Testerson999")
             session        =  findSessionCookie(loginResponse)
             frontLogin     <- frontpageWithSession(session)
             logoutResponse <- logout(session)
@@ -114,7 +121,7 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
 
             Given("a logged in user")
             val logoutLink = ScalaSoup.parse(frontLogin.body).select("#logout-box li a").headOption
-            logoutLink.value.text shouldBe "testerson"
+            logoutLink.value.text shouldBe "testerson999"
             session shouldBe defined
             session.value.length should be > 5
 
@@ -132,13 +139,13 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
 
       scenario("Logged in, out and in again"){
          val flow = for {
-            _              <- register("Testerson")
-            loginResponse1 <- login("Testerson")
+            _              <- registerAndVerify("Testerson444")
+            loginResponse1 <- login("Testerson444")
             session1       =  findSessionCookie(loginResponse1)
             frontBefore    <- frontpageWithSession(session1)
             _              <- logout(session1)
             frontLogout    <- frontpage()
-            loginResponse2 <- login("Testerson")
+            loginResponse2 <- login("Testerson444")
             session2       =  findSessionCookie(loginResponse2)
             frontAfter     <- frontpageWithSession(session2)
          } yield (frontBefore, frontLogout, loginResponse2, frontAfter)
@@ -147,7 +154,7 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
 
             Given("a logged in user")
             val logoutLink = ScalaSoup.parse(frontBefore.body).select("#logout-box li a").headOption
-            logoutLink.value.text shouldBe "testerson"
+            logoutLink.value.text shouldBe "testerson444"
 
             When("logging out")
             val loggedOutLink = ScalaSoup.parse(frontLogout.body).select("#logout-box li a").headOption
@@ -159,7 +166,7 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
 
             Then("should be logged in")
             val logout2Link = ScalaSoup.parse(frontAfter.body).select("#logout-box li a").headOption
-            logout2Link.value.text shouldBe "testerson"
+            logout2Link.value.text shouldBe "testerson444"
 
          }
       }
