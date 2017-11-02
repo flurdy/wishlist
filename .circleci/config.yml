@@ -64,13 +64,16 @@ jobs:
              apk update
              apk add docker
 
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
 
       - run:
           name: Build Docker image
           command: docker build -t flurdy/wishlist:latest .
 
-      # - run: docker build -t flurdy/wishlist:latest$CIRCLE_BRANCH .
+      - run:
+          name: Tag Docker image
+          command: docker tag flurdy/wishlist:latest registry.heroku.com/wish-staging-03/web
 
       - run:
           name: Login to Docker registry
@@ -78,4 +81,4 @@ jobs:
 
       - run:
           name: Push image to registry
-          command: docker push flurdy/wishlist:latest
+          command: docker push registry.heroku.com/wish-staging-03/web
