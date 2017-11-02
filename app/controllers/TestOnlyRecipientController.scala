@@ -32,7 +32,8 @@ class TestOnlyRecipientController @Inject() (val configuration: Configuration,
                   NotFound
             }
          case _ =>
-            println("IN TEST ONLY: No recipient found")
+            println("IN TEST ONLY: No recipient found.")
+            println(s"IN TEST ONLY: Looking for [$username]")
             Future.successful(Conflict)
       }
    }
