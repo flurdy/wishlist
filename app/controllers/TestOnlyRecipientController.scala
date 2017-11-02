@@ -27,9 +27,13 @@ class TestOnlyRecipientController @Inject() (val configuration: Configuration,
             recipientRepository.findVerificationHash(recipient).map {
                case Some(hash) =>
                   Ok.withHeaders(HeaderNames.LOCATION -> s"/recipient/${username.toLowerCase.trim}/verify/$hash/")
-               case _ => NotFound
+               case _ =>
+                  println("IN TEST ONLY: No recipient found")
+                  NotFound
             }
-         case _ => Future.successful(NotFound)
+         case _ =>
+            println("IN TEST ONLY: No recipient found")
+            Future.successful(Conflict)
       }
    }
 
