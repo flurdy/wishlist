@@ -21,6 +21,7 @@ class TestOnlyRecipientController @Inject() (val configuration: Configuration,
       extends Controller with Secured with WithAnalytics with WithLogging {
 
    def findVerification(username: String) = Action.async{ _ =>
+      println("IN TEST ONLY")
       recipientLookup.findRecipient(username.toLowerCase().trim).flatMap {
          case Some(recipient) =>
             recipientRepository.findVerificationHash(recipient).map {

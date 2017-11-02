@@ -32,6 +32,7 @@ trait RegistrationIntegrationHelper extends IntegrationHelper {
    def findVerificationUrl(username: String)(implicit ec: ExecutionContext) = {
       val hashUrl = s"$baseUrl/test-only/recipient/${username.toLowerCase().trim}/verify/find"
       getWsClient().url(hashUrl).withFollowRedirects(false).get().map { response =>
+         println("!!!!!! v status " + response.status)
          response.header("Location").headOption
       }
    }
