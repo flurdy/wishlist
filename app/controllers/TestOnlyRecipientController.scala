@@ -28,7 +28,7 @@ class TestOnlyRecipientController @Inject() (val configuration: Configuration,
                case Some(hash) =>
                   Ok.withHeaders(HeaderNames.LOCATION -> s"/recipient/${username.toLowerCase.trim}/verify/$hash/")
                case _ =>
-                  logger.info((s"No verification has found for [$username]")
+                  logger.info(s"No verification has found for [$username]")
                   NotFound
             }
          case _ =>
