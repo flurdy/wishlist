@@ -45,14 +45,23 @@ jobs:
             rm -f target/universal/stage/bin/*.bat
             mv -f target/universal/stage/bin/* target/universal/stage/bin/app
 
+      - run: rm -rf target/universal/stage/share
+
       - store_artifacts:
           path: target/universal/stage
 
-      - run: cat /dev/null | apk add docker
+      - run:
+          name: Install Docker client
+          command: |
+             apk update
+             apk add docker
 
       - setup_remote_docker
 
       - run: docker build -t flurdy/wishlist:latest .
+
       # - run: docker build -t flurdy/wishlist:latest$CIRCLE_BRANCH .
+
       # - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
       # - run: docker push company/app:$CIRCLE_BRANCH
