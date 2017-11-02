@@ -1,25 +1,15 @@
-FROM flurdy/play-framework:2.5.14-alpine
+FROM flurdy/activator-mini:1.3.12-alpine
 
 MAINTAINER Ivar Abrahamsen <@flurdy>
 
-COPY conf /etc/app/
-
-ADD . /opt/build/
-
-WORKDIR /opt/build
-
-RUN /opt/activator/bin/activator clean stage && \
-  rm -f target/universal/stage/bin/*.bat && \
-  mv target/universal/stage/bin/* target/universal/stage/bin/app && \
-  mv target/universal /opt/app && \
-  ln -s /opt/app/stage/logs /var/log/app && \
-  rm -rf /opt/build && \
-  rm -rf /root/.ivy2
-
 WORKDIR /opt/app
 
-ADD . /opt/build/
+RUN adduser -D appuser
 
-ENTRYPOINT ["/opt/app/stage/bin/app"]
+USER appuser
+
+ADD target/universal/stage/ /opt/app/
+
+ENTRYPOINT ["/opt/app/bin/app"]
 
 EXPOSE 9000
