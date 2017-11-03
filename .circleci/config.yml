@@ -25,7 +25,7 @@ jobs:
           command: cat /dev/null | activator test:compile
 
       - run:
-          name: Download all dependencies
+          name: Download dependencies
           command: cat /dev/null | activator dist
 
       - save_cache:

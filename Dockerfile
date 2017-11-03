@@ -12,4 +12,6 @@ ADD target/universal/stage/ /opt/app/
 
 ENTRYPOINT ["/opt/app/bin/app"]
 
+CMD ["-Dconfig.resource=heroku.conf","-Dhttp.port=${PORT}"]
+
 EXPOSE 9000
