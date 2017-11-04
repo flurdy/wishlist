@@ -5,8 +5,8 @@
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
       <!-- <level>ERROR</level> -->
-      <level>WARN</level>
-      <!-- <level>INFO</level> -->
+      <!-- <level>WARN</level> -->
+      <level>INFO</level>
       <!-- <level>DEBUG</level> -->
     </filter>
     <encoder>
@@ -57,8 +57,8 @@
   <logger name="org.asynchttpclient.netty" level="WARN" />
 
 
-  <logger name="play" level="WARN" />
-  <logger name="akka" level="WARN" />
+  <!-- <logger name="play" level="WARN" />
+  <logger name="akka" level="WARN" /> -->
 
   <root>
     <appender-ref ref="ASYNCSTDOUT" />

@@ -4,14 +4,18 @@ MAINTAINER Ivar Abrahamsen <@flurdy>
 
 WORKDIR /opt/app
 
-RUN adduser -D appuser
-
-USER appuser
+ENV PORT 9000
 
 ADD target/universal/stage/ /opt/app/
 
-ENTRYPOINT ["/opt/app/bin/app"]
+RUN adduser -D appuser && chown -R appuser /opt/app
 
-CMD ["-Dconfig.resource=heroku.conf","-Dhttp.port=${PORT}"]
+USER appuser
+
+ENTRYPOINT /opt/app/bin/app -Dhttp.port=${PORT}
+
+# CMD ["-Dconfig.resource=heroku.conf"]
+
+CMD ["-Dconfig.resource=application.conf"]
 
 EXPOSE 9000
