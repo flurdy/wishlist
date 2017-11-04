@@ -17,16 +17,16 @@ jobs:
 
       - restore_cache:
           keys:
-          - v1.1-dependencies-{{ checksum "build.sbt" }}
-          - v1.1-dependencies-
+          - v7.3-dependencies-{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
+          - v7.3-dependencies-
 
       - run:
           name: Compile
           command: cat /dev/null | activator test:compile
 
-      - run:
-          name: Download dependencies
-          command: cat /dev/null | activator dist
+#      - run:
+#          name: Download dependencies
+#          command: cat /dev/null | activator dist
 
       - save_cache:
           paths:
@@ -34,7 +34,7 @@ jobs:
             - ~/.ivy2
             - ~/.sbt
             # - ~/.docker
-          key: v1.1-dependencies--{{ checksum "build.sbt" }}
+          key: v7.3-dependencies--{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
 
       - run:
           name: Test build

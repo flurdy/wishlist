@@ -1,1 +1,11 @@
+.ensime_cache
+.git
+target/resolution-cache
+target/scala-2.11
 target/streams
+target/test-reports
+target/universal/tmp
+target/universal/wishlist-*.zip
+target/web
+project/target
+project/project
