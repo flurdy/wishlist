@@ -69,16 +69,16 @@ jobs:
 
       - run:
           name: Build Docker image
-          command: docker build -t flurdy/wishlist:latest .
+          command: docker build -t $DOCKER_BUILD_TAG:latest .
 
       - run:
           name: Tag Docker image
-          command: docker tag flurdy/wishlist:latest registry.heroku.com/wish-staging-03/web
+          command: docker tag $DOCKER_BUILD_TAG:latest $DOCKER_TAG
 
       - run:
           name: Login to Docker registry
-          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD registry.heroku.com
+          command: docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY
 
       - run:
           name: Push image to registry
-          command: docker push registry.heroku.com/wish-staging-03/web
+          command: docker push $DOCKER_TAG
