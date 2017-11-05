@@ -24,10 +24,6 @@ jobs:
           name: Compile
           command: cat /dev/null | activator test:compile
 
-#      - run:
-#          name: Download dependencies
-#          command: cat /dev/null | activator dist
-
       - save_cache:
           paths:
             - ~/.m2
