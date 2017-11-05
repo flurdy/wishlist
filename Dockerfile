@@ -12,10 +12,12 @@ RUN adduser -D appuser && chown -R appuser /opt/app
 
 USER appuser
 
-ENTRYPOINT ["/opt/app/bin/entrypoint.sh"]
+# ENTRYPOINT ["/opt/app/bin/entrypoint.sh"]
 
-CMD ["-Dconfig.resource=heroku.conf"]
+# CMD ["-Dconfig.resource=heroku.conf"]
 
 # CMD -Dhttp.port=${PORT}
+
+CMD ls -lh /opt/app/
 
 EXPOSE 9000
