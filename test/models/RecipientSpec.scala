@@ -15,7 +15,7 @@ import repositories.RecipientRepository
 import controllers.BaseUnitSpec
 
 
-class RecipientSpec extends BaseUnitSpec with ScalaFutures {
+class RecipientSpec extends BaseUnitSpec with IntegrationPatience with ScalaFutures {
 
    trait Setup {
       val recipient = Recipient(
