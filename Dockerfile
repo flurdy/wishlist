@@ -16,6 +16,6 @@ USER appuser
 
 ENTRYPOINT ["/opt/app/bin/entrypoint.sh"]
 
-CMD ["-Dconfig.resource=heroku.conf"]
+CMD ["-Dconfig.resource=production.conf"]
 
 EXPOSE 9000
