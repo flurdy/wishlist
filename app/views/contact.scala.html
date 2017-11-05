@@ -22,35 +22,6 @@
 		</p>
 	</div>
 
-   <div class="well">
-      <h4>Frequently asked questions</h4>
-
-      <h5>Password reset</h5>
-      @form(action = routes.RecipientController.showResetPassword, 'class -> "form-horizontal"){
-         <p>
-            Please follow<button type="submit" class="btn-link">the password reset instructions.</button>
-         </p>
-      }
-
-      <h5>Email verification</h5>
-      <p>
-         Please click on the link in the verification email you should have received.
-         It is the only way to verify your email and does not expire.
-      </p>
-
-      <h5>Products &amp; orders</h5>
-      <p>
-         <em>Wish</em> does not have any products nor do we sell anything so there are no orders.
-         <!-- You may have confused this application with other sites and apps that also have <em>wish</em> as part of their name. -->
-      </p>
-
-      <h5>Web design offers</h5>
-      <p>
-         This is an open source project with $0 income, and no plans to change that.
-         Keep that in mind when contacting about selling web design services.
-      </p>
-   </div>
-
 
 	@for(error <- contactForm.errors){
     <p class="alert alert-error">
@@ -105,7 +76,43 @@
              </div>
          </div>
 		</div>
+   }
 
-	}
+      <div class="well">
+         <h4>Frequently asked questions</h4>
+
+         <h5>Password reset</h5>
+         @form(action = routes.RecipientController.showResetPassword, 'class -> "form-horizontal"){
+            <p>
+               Please follow<button type="submit" class="btn-link">the password reset instructions.</button>
+            </p>
+         }
+
+         <h5>Email verification</h5>
+         <p>
+            Please click on the link in the verification email you should have received.
+         </p>
+         <p>
+            It is the only way to verify your email and does not expire.
+         </p>
+         <p>
+            Wish can <a href="@routes.RecipientController.showResendVerification">send another verification email</a>.
+         </p>
+
+         <h5>Products &amp; orders</h5>
+         <p>
+            <em>Wish</em> does not have any products nor do we sell anything so there are no orders.
+            <!-- You may have confused this application with other sites and apps that also have <em>wish</em> as part of their name. -->
+         </p>
+
+         <h5>Web design offers</h5>
+         <p>
+            This is an open source project with $0 income, and no plans to change that.
+         </p>
+         <p>
+            Keep that in mind when contacting about selling web design services.
+         </p>
+      </div>
+
    </div>
 }

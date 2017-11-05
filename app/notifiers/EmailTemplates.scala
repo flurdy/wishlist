@@ -62,7 +62,7 @@ trait EmailTemplates {
             | Hi, welcome to Wish.
             |
             | Please verify your email address by clicking on the link below:
-            | $verificationUrl
+            | http://${emailConfig.hostname}$verificationUrl
             |
             |
             | If you didn't register with Wish, please let us know at http://${emailConfig.hostname}

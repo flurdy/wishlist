@@ -74,7 +74,8 @@ with EmailAddressChecks with WithLogging {
 
                         if(FeatureToggle.EmailVerification.isEnabled()){
                            recipient.findOrGenerateVerificationHash.flatMap { verificationHash =>
-                              emailNotifier.sendEmailVerification(recipient, verificationHash).map { _ =>
+                              val verificationRoute = s"/recipient/${recipient.username}/verify/$verificationHash/"
+                              emailNotifier.sendEmailVerification(recipient, verificationRoute).map { _ =>
                                  Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
                                     """Welcome, you have successfully registered.<br/>
                                     Please click on the verification link in the email we just sent to you""")

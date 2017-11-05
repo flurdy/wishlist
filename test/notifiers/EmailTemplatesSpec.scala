@@ -16,7 +16,15 @@ class EmailTemplatesSpec extends BaseUnitSpec with ScalaFutures {
 
    trait Setup {
       val emailConfig = mock[EmailConfig]
+      when(emailConfig.hostname).thenReturn("wish.example.com")
       val templates = new DefaultEmailTemplates(emailConfig)
+   }
+
+   "footerText" should respondWith {
+      "hostname" in new Setup {
+         val message = templates.footer
+         message must include ("Visit: http://wish.example.com")
+      }
    }
 
    "registrationAlertText" should respondWith {
@@ -49,8 +57,10 @@ class EmailTemplatesSpec extends BaseUnitSpec with ScalaFutures {
 
    "emailVerificationText" should respondWith {
       "username" in new Setup {
-         val message = templates.emailVerificationText("someuser","some-verification")
-         message.body must include ("some-verification")
+         val message = templates.emailVerificationText(
+            "someuser","/recipient/someuser/verify/some-verification/ ")
+         message.body must include ("/recipient/someuser/verify/some-verification/")
+         message.body must include ("http://wish.example.com/recipient/someuser/verify/some-verification/")
       }
    }
 

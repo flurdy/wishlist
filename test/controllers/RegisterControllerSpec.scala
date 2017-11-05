@@ -2,7 +2,7 @@ package controllers
 
 import akka.stream.Materializer
 import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers.{any,anyString}
+import org.mockito.ArgumentMatchers.{any,anyString,eq => eqTo}
 import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.mockito.MockitoSugar
@@ -150,9 +150,11 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                   .thenReturn( Future.successful( recipientMock ) )
                when ( recipientMock.findOrGenerateVerificationHash(recipientRepositoryMock) )
                   .thenReturn( Future.successful( "some-verification-hash" ) )
+               when ( recipientMock.username )
+                     .thenReturn( "some-username" )
                when( featureTogglesMock.isEnabled(FeatureToggle.EmailVerification) )
                   .thenReturn( true )
-               when( emailNotifierMock.sendEmailVerification(recipientMock, "some-verification-hash"))
+               when( emailNotifierMock.sendEmailVerification(eqTo(recipientMock), anyString )) // "/recipient/some-username/verify/some-verification-hash/"))
                   .thenReturn( Future.successful(()))
 
                val result = controller.register().apply(registerRequest)
@@ -161,6 +163,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
 
                verify ( recipientMock ).save()(recipientRepositoryMock)
                verify( featureTogglesMock ).isEnabled(FeatureToggle.EmailVerification)
+               verify( emailNotifierMock ).sendEmailVerification(recipientMock, "/recipient/some-username/verify/some-verification-hash/")
 
             }
 

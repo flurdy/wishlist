@@ -4,7 +4,7 @@ import com.google.inject.ImplementedBy
 import javax.inject.{Inject,Singleton}
 import play.api.libs.concurrent.Execution.Implicits._
 import scala.concurrent.Future
-import controllers.WithLogging
+import controllers.{routes,WithLogging}
 import models._
 
 
@@ -37,9 +37,9 @@ trait EmailNotifier extends WithLogging {
       emailDispatcher.sendNotificationEmail(recipient.email, emailMessage)
    }
 
-   def sendEmailVerification(recipient: Recipient, verificationHash: String): Future[Unit] = {
-      val emailMessage = emailTemplates.emailVerificationText(recipient.username, verificationHash)
-      logger.info(s"Verification: $verificationHash")
+   def sendEmailVerification(recipient: Recipient, verificationRoute: String): Future[Unit] = {
+      val emailMessage = emailTemplates.emailVerificationText(recipient.username, verificationRoute)
+      logger.info(s"Verification: $verificationRoute")
       emailDispatcher.sendNotificationEmail( recipient.email, emailMessage)
    }
 
