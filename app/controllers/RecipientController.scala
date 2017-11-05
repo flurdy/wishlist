@@ -118,6 +118,10 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       }
    }
 
+   def redirectToShowProfile(username: String) = Action {
+      Redirect(routes.RecipientController.showProfile(username))
+   }
+
    def redirectToShowEditRecipient(username: String) = Action {
       Redirect(routes.RecipientController.showEditRecipient(username))
    }

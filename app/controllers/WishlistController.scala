@@ -213,6 +213,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishlistFo
       Redirect(routes.WishlistController.showWishlist(username, wishlistId))
    }
 
+   def alsoRedirectToShowWishlist(username: String, wishlistId: Long) = Action {
+      Redirect(routes.WishlistController.showWishlist(username, wishlistId))
+   }
+
    def showWishlist(username: String, wishlistId: Long) =
      (UsernameAction andThen MaybeCurrentRecipientAction
         andThen WishlistAction(wishlistId)).async { implicit request =>

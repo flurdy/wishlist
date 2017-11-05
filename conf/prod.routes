@@ -19,7 +19,8 @@ GET   /logout  			controllers.LoginController.logout
 GET	 /search		      controllers.WishlistController.search
 
 POST   /recipient/:username/wishlist                         controllers.WishlistController.createWishlist(username)
-GET    /recipient/:username/wishlist/:wishlistId/            controllers.WishlistController.redirectToShowWishlist(username, wishlistId: Long)
+GET    /recipient/:username/wishlist/:wishlistId             controllers.WishlistController.redirectToShowWishlist(username, wishlistId: Long)
+GET    /recipient/:username/wishlist/:wishlistId/            controllers.WishlistController.alsoRedirectToShowWishlist(username, wishlistId: Long)
 GET    /:username/wishlist/:wishlistId/                      controllers.WishlistController.showWishlist(username, wishlistId: Long)
 GET    /recipient/:username/wishlist/:wishlistId/delete.html controllers.WishlistController.showConfirmDeleteWishlist(username, wishlistId: Long)
 POST   /recipient/:username/wishlist/:wishlistId/delete      controllers.WishlistController.alsoDeleteWishlist(username, wishlistId: Long)
@@ -52,6 +53,7 @@ POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/ 		        co
 POST   /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId/delete	controllers.WishController.alsoDeleteLinkFromWish(username, wishlistId: Long, wishId: Long, linkId: Long)
 DELETE /recipient/:username/wishlist/:wishlistId/wish/:wishId/link/:linkId          controllers.WishController.deleteLinkFromWish(username, wishlistId: Long, wishId: Long, linkId: Long)
 
+GET    /recipient/:username               controllers.RecipientController.redirectToShowProfile(username)
 GET    /recipient/:username/              controllers.RecipientController.showProfile(username)
 GET    /recipient/:username/edit.html     controllers.RecipientController.showEditRecipient(username)
 GET    /recipient/:username/update 	      controllers.RecipientController.redirectToShowEditRecipient(username)
