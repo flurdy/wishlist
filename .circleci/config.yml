@@ -24,14 +24,6 @@ jobs:
           name: Compile
           command: cat /dev/null | activator test:compile
 
-      - save_cache:
-          paths:
-            - ~/.m2
-            - ~/.ivy2
-            - ~/.sbt
-            # - ~/.docker
-          key: v7.3-dependencies--{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
-
       - run:
           name: Test build
           command: cat /dev/null | activator test:test
@@ -40,16 +32,13 @@ jobs:
           name: Package application
           command: cat /dev/null | activator stage
 
-      - run:
-          name: Rename shell script
-          command: |
-            set -x
-            rm -f target/universal/stage/bin/*.bat
-            mv -f target/universal/stage/bin/* target/universal/stage/bin/app
-
-      - run:
-          name: Remove API docs
-          command: rm -rf target/universal/stage/share
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/.ivy2
+            - ~/.sbt
+            # - ~/.docker
+          key: v7.3-dependencies--{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
 
       - store_artifacts:
           path: target/universal/stage
@@ -78,3 +67,7 @@ jobs:
       - run:
           name: Push image to registry
           command: docker push $DOCKER_TAG
+
+      - run:
+          name: Deploy to Heroku staging
+          command: cat /dev/null | activator deployHeroku

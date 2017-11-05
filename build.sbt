@@ -38,3 +38,12 @@ javaOptions in Universal ++= Seq(
   "-Dpidfile.path=/dev/null"
 )
 
+sources in (Compile, doc) := Seq.empty
+
+publishArtifact in (Compile, packageDoc) := false
+
+herokuProcessTypes in Compile := Map(
+  "web" -> "target/universal/stage/bin/wishlist -Dconfig.resource=production.conf -Dhttp.port=$PORT"
+)
+
+herokuAppName in Compile := sys.props.getOrElse("HEROKU_APP_ENV","")
