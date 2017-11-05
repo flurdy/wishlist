@@ -46,4 +46,4 @@ herokuProcessTypes in Compile := Map(
   "web" -> "target/universal/stage/bin/wishlist -Dconfig.resource=production.conf -Dhttp.port=$PORT"
 )
 
-herokuAppName in Compile := sys.props.getOrElse("HEROKU_APP_ENV","")
+herokuAppName in Compile := sys.props.getOrElse("herokuApp","")
