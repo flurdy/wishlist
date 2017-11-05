@@ -6,6 +6,8 @@ WORKDIR /opt/app
 
 ENV PORT 9000
 
+# Locally or your CI will have to run sbt stage before hand 
+
 ADD target/universal/stage/ /opt/app/
 
 ADD bin/entrypoint.sh /opt/app/bin/
