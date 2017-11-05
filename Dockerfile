@@ -10,12 +10,12 @@ ENV PORT 9000
 
 ADD target/universal/stage/ /opt/app/
 
-RUN rm -f /opt/app/bin/*.bat && \
-    mv -f /opt/app/bin/* /opt/app/bin/app
-
 ADD bin/entrypoint.sh /opt/app/bin/
 
-RUN adduser -D appuser && chown -R appuser /opt/app
+RUN rm -f /opt/app/bin/*.bat && \
+    mv -f /opt/app/bin/* /opt/app/bin/app && \
+    adduser -D appuser && \
+    chown -R appuser /opt/app
 
 USER appuser
 
