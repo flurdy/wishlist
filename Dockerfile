@@ -8,16 +8,14 @@ ENV PORT 9000
 
 ADD target/universal/stage/ /opt/app/
 
+ADD bin/entrypoint.sh /opt/app/bin/
+
 RUN adduser -D appuser && chown -R appuser /opt/app
 
 USER appuser
 
-# ENTRYPOINT ["/opt/app/bin/entrypoint.sh"]
+ENTRYPOINT ["/opt/app/bin/entrypoint.sh"]
 
-# CMD ["-Dconfig.resource=heroku.conf"]
-
-# CMD -Dhttp.port=${PORT}
-
-CMD ls -lh /opt/app/
+CMD ["-Dconfig.resource=heroku.conf"]
 
 EXPOSE 9000
