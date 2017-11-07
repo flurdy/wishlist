@@ -51,49 +51,61 @@ trait RegisterForm {
 }
 
 
-
 @Singleton
-class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
+class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig, val usernameValidator: UsernameValidator)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends Controller with Secured with WithAnalytics with RegisterForm
 with EmailAddressChecks with WithLogging {
 
   	def register =
      (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+
+      def badRequest(form: Form[(String, Option[String], String, String, String)], message: Option[String]) =
+        Future.successful( BadRequest(views.html.register( form, message) ) )
+
   		registerForm.bindFromRequest.fold(
         errors => {
           logger.warn("Registration failed: " + errors.errors.headOption.map( e => s"${e.key}: ${e.message}").getOrElse(""))
-          Future.successful(BadRequest(views.html.register(errors)))
+          badRequest(errors, None)
         },
    	   registeredForm => {
+
+            def fillForm = registerForm.fill(
+               (registeredForm._1, registeredForm._2, registeredForm._3, "", ""))
+
             recipientLookup.findRecipient(registeredForm._1.trim.toLowerCase()) flatMap {
                case None =>
-                  recipientFactory.newRecipient( registeredForm ).save.flatMap {
-                     recipient =>
-                        logger.info("New registration: " + registeredForm._1)
-                        emailNotifier.sendNewRegistrationAlert(recipient)
 
-                        if(FeatureToggle.EmailVerification.isEnabled()){
-                           recipient.findOrGenerateVerificationHash.flatMap { verificationHash =>
-                              val verificationRoute = s"/recipient/${recipient.username}/verify/$verificationHash/"
-                              emailNotifier.sendEmailVerification(recipient, verificationRoute).map { _ =>
-                                 Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
-                                    """Welcome, you have successfully registered.<br/>
-                                    Please click on the verification link in the email we just sent to you""")
+                  usernameValidator.isValid(registeredForm._1.trim.toLowerCase()) flatMap {
+                     case true =>
+                        recipientFactory.newRecipient( registeredForm ).save.flatMap {
+                           recipient =>
+                              logger.info("New registration: " + registeredForm._1)
+                              emailNotifier.sendNewRegistrationAlert(recipient)
+
+                              if(FeatureToggle.EmailVerification.isEnabled()){
+                                 recipient.findOrGenerateVerificationHash.flatMap { verificationHash =>
+                                    val verificationRoute = s"/recipient/${recipient.username}/verify/$verificationHash/"
+                                    emailNotifier.sendEmailVerification(recipient, verificationRoute).map { _ =>
+                                       Redirect(routes.Application.index()).withNewSession.flashing("messageSuccess"->
+                                          """Welcome, you have successfully registered.<br/>
+                                          Please click on the verification link in the email we just sent to you""")
+                                    }
+                                 }
+                              } else {
+                                 logger.info("Email verification not enabled/")
+                                 Future.successful(
+                                    Redirect(routes.Application.index()).withSession(
+                                       "username" -> registeredForm._1).flashing(
+                                          "messageSuccess"-> "Welcome, you have successfully registered"))
                               }
-                           }
-                        } else {
-                           logger.info("Email verification not enabled/")
-                           Future.successful(
-                              Redirect(routes.Application.index()).withSession(
-                                 "username" -> registeredForm._1).flashing("messageSuccess"-> "Welcome, you have successfully registered"))
                         }
+                     case false =>
+                        logger.info(s"Username invalid: [$registeredForm._1]")
+                        badRequest( fillForm, Some("Registration failed. Username unavailable") )
                   }
                case _ =>
                   logger.info(s"Username taken: [$registeredForm._1]")
-                  Future.successful(
-                     BadRequest(views.html.register(
-                           registerForm.fill((registeredForm._1, registeredForm._2, registeredForm._3,
-                              "", "")), Some("Registration failed. Username already registered") ) ) )
+                  badRequest( fillForm, Some("Registration failed. Username already registered") )
             }
       	}
       )

@@ -13,7 +13,7 @@ import play.api.Configuration
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext,Future}
 import com.flurdy.wishlist.ScalaSoup
 import models._
 import notifiers._
@@ -75,7 +75,8 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
       val recipientRepositoryMock = mock[RecipientRepository]
       val featureTogglesMock = mock[FeatureToggles]
       val emailNotifierMock = mock[EmailNotifier]
-      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock, emailNotifierMock, appConfigMock)(recipientRepositoryMock, featureTogglesMock)
+      val usernameValidatorMock = mock[UsernameValidator]
+      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock, emailNotifierMock, appConfigMock, usernameValidatorMock)(recipientRepositoryMock, featureTogglesMock)
       when(appConfigMock.getString(anyString)).thenReturn(None)
    }
 
@@ -88,6 +89,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
          "email"    -> "some-email@example.com",
          "password" -> "some-password",
          "confirm"  -> "some-password")
+      when ( usernameValidatorMock.isValid( anyString )(any[ExecutionContext]) ).thenReturn( Future.successful( true ) )
    }
 
    "Register controller" when requesting {
@@ -282,6 +284,26 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                verifyZeroInteractions( recipientFactoryMock, recipientMock )
              }
 
+            "an bad username, ie unwanted username" in new RegisterSetup {
+
+               when ( recipientLookupMock.findRecipient( "admin" ) )
+                     .thenReturn( Future.successful( None ) )
+               when ( usernameValidatorMock.isValid( eqTo("admin") )(any[ExecutionContext]) ).thenReturn( Future.successful( false ) )
+
+               val invalidRegisterRequest = FakeRequest().withFormUrlEncodedBody(
+                  "fullname" -> "some name",
+                  "username" -> "admin",
+                  "email"    -> "some-email@example.com",
+                  "password" -> "some-password",
+                  "confirm"  -> "some-password")
+
+               val result = controller.register().apply(invalidRegisterRequest)
+
+               status(result) mustBe 400
+
+               verifyZeroInteractions( recipientFactoryMock, recipientMock )
+             }
+
             "an invalid password that is too short" in new RegisterSetup {
 
                val invalidRegisterRequest = FakeRequest().withFormUrlEncodedBody(
@@ -349,6 +371,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                   verifyZeroInteractions( recipientFactoryMock, recipientMock )
                }
             }
+
          }
       }
    }
