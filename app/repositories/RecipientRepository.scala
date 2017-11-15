@@ -6,11 +6,10 @@ import anorm.SqlParser._
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+// import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import controllers.WithLogging
-
 
 
 @ImplementedBy(classOf[DefaultRecipientLookup])
@@ -18,9 +17,9 @@ trait RecipientLookup {
 
    def recipientRepository: RecipientRepository
 
-   def findRecipient(username: String) = recipientRepository.findRecipient(username)
+   def findRecipient(username: String)(implicit executionContext: ExecutionContext) = recipientRepository.findRecipient(username)
 
-   def findVerification(username: String): Future[Option[String]] = Future.successful(None)
+   // def findVerification(username: String): Future[Option[String]] = Future.successful(None) // TODO 
 
 }
 
@@ -43,7 +42,7 @@ trait RecipientRepository extends Repository with WithLogging {
       }
 
 
-   def findRecipient(username: String): Future[Option[Recipient]] =
+   def findRecipient(username: String)(implicit executionContext: ExecutionContext): Future[Option[Recipient]] =
       Future {
          db.withConnection { implicit connection =>
             logger.trace(s"Looking up recipient: ${username}")
@@ -56,7 +55,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def findRecipientById(recipientId: Long) =
+   def findRecipientById(recipientId: Long)(implicit executionContext: ExecutionContext) =
       Future {
          db.withConnection { implicit connection =>
             // logger.trace(s"Looking up recipient id: ${recipientId}")
@@ -69,7 +68,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def saveRecipient(recipient: Recipient): Future[Recipient] =
+   def saveRecipient(recipient: Recipient)(implicit executionContext: ExecutionContext): Future[Recipient] =
       Future {
          db.withConnection{ implicit connection =>
             // println(s"###### Saving new recipient: ${recipient.username}")
@@ -87,7 +86,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def findCredentials(recipient: Recipient): Future[Option[String]] =
+   def findCredentials(recipient: Recipient)(implicit executionContext: ExecutionContext): Future[Option[String]] =
       Future {
          db.withConnection{ implicit connection =>
             recipient.recipientId.map{ recipientId =>
@@ -101,7 +100,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def isEmailVerified(recipient: Recipient) : Future[Boolean] =
+   def isEmailVerified(recipient: Recipient)(implicit executionContext: ExecutionContext): Future[Boolean] =
       Future {
          db.withConnection { implicit connection =>
             recipient.recipientId.fold(false){ recipientId =>
@@ -116,7 +115,7 @@ trait RecipientRepository extends Repository with WithLogging {
       }
 
 
-   def findVerificationHash(recipient:Recipient): Future[Option[String]] =
+   def findVerificationHash(recipient:Recipient)(implicit executionContext: ExecutionContext): Future[Option[String]] =
       Future {
          recipient.recipientId.flatMap { recipientId =>
             db.withConnection { implicit connection =>
@@ -130,7 +129,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def saveVerificationHash(recipient: Recipient, verificationHash: String): Future[String] =
+   def saveVerificationHash(recipient: Recipient, verificationHash: String)(implicit executionContext: ExecutionContext): Future[String] =
       Future {
          recipient.recipientId.fold{
             throw new IllegalStateException("No recipient id")
@@ -149,7 +148,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def doesVerificationMatch(recipient: Recipient, verificationHash: String): Future[Boolean] =
+   def doesVerificationMatch(recipient: Recipient, verificationHash: String)(implicit executionContext: ExecutionContext): Future[Boolean] =
       Future {
          recipient.recipientId.fold{
             throw new IllegalStateException("No recipient id")
@@ -168,7 +167,7 @@ trait RecipientRepository extends Repository with WithLogging {
       }
 
 
-   def setEmailAsVerified(recipient: Recipient, verificationHash: String): Future[Boolean] =
+   def setEmailAsVerified(recipient: Recipient, verificationHash: String)(implicit executionContext: ExecutionContext): Future[Boolean] =
       Future {
          recipient.recipientId.fold{
             throw new IllegalStateException("No recipient id")
@@ -188,7 +187,7 @@ trait RecipientRepository extends Repository with WithLogging {
 
 
 
-   def findOrganisers(wishlist: Wishlist): Future[List[Recipient]] =
+   def findOrganisers(wishlist: Wishlist)(implicit executionContext: ExecutionContext): Future[List[Recipient]] =
       Future {
          wishlist.wishlistId.fold {
             throw new IllegalArgumentException("No wishlist id")
@@ -206,7 +205,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def updateRecipient(recipient: Recipient): Future[Recipient] =
+   def updateRecipient(recipient: Recipient)(implicit executionContext: ExecutionContext): Future[Recipient] =
       Future {
          recipient.recipientId.fold{
             throw new IllegalStateException("No recipient id")
@@ -226,7 +225,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def updatePassword(recipient: Recipient): Future[Recipient] =
+   def updatePassword(recipient: Recipient)(implicit executionContext: ExecutionContext): Future[Recipient] =
       Future {
          (recipient.recipientId, recipient.password) match {
             case (Some(recipientId), Some(password)) =>
@@ -246,7 +245,7 @@ trait RecipientRepository extends Repository with WithLogging {
          }
       }
 
-   def deleteRecipient(recipient: Recipient): Future[Boolean] =
+   def deleteRecipient(recipient: Recipient)(implicit executionContext: ExecutionContext): Future[Boolean] =
       Future {
          recipient.recipientId.fold{
             throw new IllegalStateException("No recipient id")

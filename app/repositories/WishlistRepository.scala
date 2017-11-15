@@ -5,8 +5,8 @@ import anorm.SqlParser._
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+// import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import controllers.WithLogging
 
@@ -31,11 +31,11 @@ trait WishlistLookup {
    def wishlistRepository: WishlistRepository
    // def wishRepository: WishRepository
 
-   def findRecipientWishlists(recipient: Recipient) = wishlistRepository.findRecipientWishlists(recipient)
+   def findRecipientWishlists(recipient: Recipient)(implicit executionContext: ExecutionContext) = wishlistRepository.findRecipientWishlists(recipient)
 
-   def findWishlist(wishlistId: Long) = wishlistRepository.findWishlist(wishlistId)
+   def findWishlist(wishlistId: Long)(implicit executionContext: ExecutionContext) = wishlistRepository.findWishlist(wishlistId)
 
-   def isOrganiserOfWishlist(organiser: Recipient, wishlist: Wishlist) =
+   def isOrganiserOfWishlist(organiser: Recipient, wishlist: Wishlist)(implicit executionContext: ExecutionContext) =
       wishlistRepository.isOrganiserOfWishlist(organiser, wishlist)
 
    // def findWishes(wishlist: Wishlist): Future[Seq[Wish]] = wishLookup.findWishes(wishlist)
@@ -49,7 +49,7 @@ class DefaultWishlistLookup @Inject() (val wishlistRepository: WishlistRepositor
 @ImplementedBy(classOf[DefaultWishlistRepository])
 trait WishlistRepository extends Repository with WishlistMapper with WithLogging  {
 
-   def findWishlist(wishlistId: Long): Future[Option[Wishlist]] =
+   def findWishlist(wishlistId: Long)(implicit executionContext: ExecutionContext): Future[Option[Wishlist]] =
       Future {
          db.withConnection { implicit connection =>
             SQL"""
@@ -61,7 +61,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def findRecipientWishlists(recipient: Recipient): Future[List[Wishlist]] =
+   def findRecipientWishlists(recipient: Recipient)(implicit executionContext: ExecutionContext): Future[List[Wishlist]] =
       Future {
          recipient.recipientId.fold{
             throw new IllegalStateException("No recipient id")
@@ -77,7 +77,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def findOrganisedWishlists(organiser: Recipient): Future[List[Wishlist]] =
+   def findOrganisedWishlists(organiser: Recipient)(implicit executionContext: ExecutionContext): Future[List[Wishlist]] =
       Future {
          organiser.recipientId.fold{
             throw new IllegalStateException("No recipient id")
@@ -94,7 +94,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def saveWishlist(wishlist: Wishlist): Future[Either[_,Wishlist]] =
+   def saveWishlist(wishlist: Wishlist)(implicit executionContext: ExecutionContext): Future[Either[_,Wishlist]] =
       Future {
          wishlist.recipient.recipientId.flatMap{ recipientId =>
             db.withConnection{ implicit connection =>
@@ -115,7 +115,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
       }
 
 
-   def updateWishlist(wishlist: Wishlist) =
+   def updateWishlist(wishlist: Wishlist)(implicit executionContext: ExecutionContext) =
       Future {
          wishlist.wishlistId.fold {
             throw new IllegalArgumentException("No wishlist id")
@@ -135,7 +135,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def deleteWishlist(wishlist: Wishlist): Future[Boolean] =
+   def deleteWishlist(wishlist: Wishlist)(implicit executionContext: ExecutionContext): Future[Boolean] =
       Future {
          wishlist.wishlistId.fold[Boolean] {
             throw new IllegalArgumentException("Can not delete wishlist without an id")
@@ -167,7 +167,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def isOrganiserOfWishlist(organiser: Recipient, wishlist: Wishlist) =
+   def isOrganiserOfWishlist(organiser: Recipient, wishlist: Wishlist)(implicit executionContext: ExecutionContext) =
       Future {
          organiser.recipientId.fold(false){ recipientId =>
             wishlist.wishlistId.fold(false){  wishlistId =>
@@ -183,7 +183,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def findAll: Future[List[Wishlist]] =
+   def findAll(implicit executionContext: ExecutionContext): Future[List[Wishlist]] =
       Future{
          db.withConnection { implicit connection =>
             SQL"""
@@ -194,7 +194,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
          }
       }
 
-   def searchForWishlistsContaining(searchTerm: String): Future[List[Wishlist]] =
+   def searchForWishlistsContaining(searchTerm: String)(implicit executionContext: ExecutionContext): Future[List[Wishlist]] =
       Future{
          db.withConnection { implicit connection =>
             val searchLikeTerm = "%" + searchTerm.toLowerCase.trim + "%"
@@ -215,7 +215,7 @@ class DefaultWishlistRepository @Inject() (val dbApi: DBApi) extends WishlistRep
 @ImplementedBy(classOf[DefaultWishlistOrganiserRepository])
 trait WishlistOrganiserRepository extends Repository with WithLogging  {
 
-   def addOrganiserToWishlist(organiser: Recipient, wishlist: Wishlist) =
+   def addOrganiserToWishlist(organiser: Recipient, wishlist: Wishlist)(implicit executionContext: ExecutionContext) =
       Future {
          (organiser.recipientId, wishlist.wishlistId) match {
             case (Some(recipientId), Some(wishlistId)) =>
@@ -237,7 +237,7 @@ trait WishlistOrganiserRepository extends Repository with WithLogging  {
 
 
 
-   def removeOrganiserFromWishlist(organiser: Recipient,wishlist: Wishlist) =
+   def removeOrganiserFromWishlist(organiser: Recipient,wishlist: Wishlist)(implicit executionContext: ExecutionContext) =
       Future {
          (organiser.recipientId, wishlist.wishlistId) match {
             case (Some(recipientId), Some(wishlistId)) =>

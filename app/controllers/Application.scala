@@ -1,10 +1,9 @@
 package controllers
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 import play.api._
 import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import repositories._
 import models._
 
@@ -13,7 +12,7 @@ trait WithAnalytics {
 
    def appConfig: ApplicationConfig
 
-   implicit def analyticsDetails: Option[String] = appConfig.getString("analytics.id")
+   implicit def analyticsDetails: Option[String] = appConfig.findString("analytics.id")
 
 }
 
@@ -23,12 +22,11 @@ trait WithLogging {
 
 }
 
-@Singleton
-class Application @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig)
-(implicit val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)
-extends Controller with Secured with WithAnalytics with WishlistForm with WithLogging {
+class Application @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig, usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
+(implicit val executionContext: ExecutionContext, val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)
+extends AbstractController(cc) with Secured with WithAnalytics with WishlistForm with WithLogging {
 
-   def index = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+   def index() = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
       request.currentRecipient match {
          case Some(currentRecipient) =>
             recipientLookup.findRecipient(currentRecipient.username) flatMap {
@@ -49,7 +47,7 @@ extends Controller with Secured with WithAnalytics with WishlistForm with WithLo
       Redirect(routes.Application.index())
    }
 
-   def about = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+   def about = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.about())
    }
 

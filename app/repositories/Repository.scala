@@ -1,9 +1,8 @@
 package repositories
 
-import java.sql.Connection
-
 import anorm._
 import anorm.SqlParser._
+import java.sql.Connection
 import play.api.db.{DBApi, Database}
 
 trait Repository {

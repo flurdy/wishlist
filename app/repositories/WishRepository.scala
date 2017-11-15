@@ -6,8 +6,8 @@ import com.google.inject.ImplementedBy
 import java.sql.Connection
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+// import play.api.libs.concurrent.Execution.Implicits._
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import controllers.WithLogging
 
@@ -38,7 +38,7 @@ trait WishMapper {
 @ImplementedBy(classOf[DefaultWishLookup])
 trait WishLookup extends Repository with WishMapper with WithLogging {
 
-   def findWishes(wishlist: Wishlist)(implicit wishLinkRepository: WishLinkRepository): Future[Seq[Wish]] =
+   def findWishes(wishlist: Wishlist)(implicit wishLinkRepository: WishLinkRepository, executionContext: ExecutionContext): Future[Seq[Wish]] =
       Future {
          db.withConnection { implicit connection =>
             wishlist.wishlistId.fold(List[Wish]()){ wishlistId => {
@@ -64,7 +64,7 @@ trait WishLookup extends Repository with WishMapper with WithLogging {
       }
    }
 
-   def findWishById(wishId: Long): Future[Option[Wish]] =
+   def findWishById(wishId: Long)(implicit executionContext: ExecutionContext): Future[Option[Wish]] =
       Future {
          db.withConnection { implicit connection =>
             SQL"""
@@ -90,7 +90,7 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
    private def generateNextWishId()(implicit connection: Connection) =
       SQL"""SELECT NEXTVAL('wish_seq')""".as(scalar[Long].single)
 
-   def saveWish(wish: Wish): Future[Wish] =
+   def saveWish(wish: Wish)(implicit executionContext: ExecutionContext): Future[Wish] =
       Future {
          wish.recipient.recipientId.fold{
             throw new IllegalArgumentException("Can not save wish without recipient")
@@ -110,7 +110,7 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
          }
       }
 
-   def updateWish(wish: Wish) = {
+   def updateWish(wish: Wish)(implicit executionContext: ExecutionContext) = {
       Future {
          wish.wishId.fold{
             throw new IllegalArgumentException("Can not update wish without id")
@@ -130,7 +130,7 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
       }
    }
 
-   def removeReservation(wish: Wish) = {
+   def removeReservation(wish: Wish)(implicit executionContext: ExecutionContext) = {
       Future {
          wish.wishId.fold{
             throw new IllegalArgumentException("Can not update wish without id")
@@ -150,7 +150,7 @@ trait WishRepository extends Repository with WishMapper with WithLogging {
       }
    }
 
-   def deleteWish(wish: Wish) =
+   def deleteWish(wish: Wish)(implicit executionContext: ExecutionContext) =
        Future {
           wish.wishId.fold{
              throw new IllegalArgumentException("Can not save wish without id")

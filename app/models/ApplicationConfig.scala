@@ -10,18 +10,20 @@ trait ApplicationConfig {
 
    protected def config: Configuration
 
-   def getConfig(property: String)  = config.getConfig(property)
-   def getInt(property: String)     = config.getInt(property)
-   def getBoolean(property: String) = config.getBoolean(property)
-   def getString(property: String)  = config.getString(property)
+   def findConfig(property: String): Option[Configuration]  = config.getOptional[Configuration](property)
+   def findInt(property: String): Option[Int]         = config.getOptional[Int](property)
+   def findBoolean(property: String): Option[Boolean] = config.getOptional[Boolean](property)
+   def findString(property: String): Option[String]   = config.getOptional[String](property)
 
 }
 
 @Singleton
 class DefaultApplicationConfig @Inject() (configuration: Configuration) extends ApplicationConfig {
+
    override lazy val config =
-       configuration.getConfig("com.flurdy.wishlist")
+       configuration.getOptional[Configuration]("com.flurdy.wishlist")
                     .getOrElse(Configuration.empty)
+
 }
 
 trait WithApplicationConfig {

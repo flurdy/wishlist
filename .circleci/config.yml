@@ -17,8 +17,8 @@ jobs:
 
       - restore_cache:
           keys:
-          - v7.3-dependencies-{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
-          - v7.3-dependencies-
+          - v7.4-dependencies-{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
+          - v7.4-dependencies-
 
       - run:
           name: Compile
@@ -38,7 +38,7 @@ jobs:
             - ~/.ivy2
             - ~/.sbt
             # - ~/.docker
-          key: v7.3-dependencies--{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
+          key: v7.4-dependencies--{{ checksum "build.sbt" }}--{{ checksum ".circleci/config.yml" }}
 
       - store_artifacts:
           path: target/universal/stage
