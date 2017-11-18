@@ -6,8 +6,7 @@ import com.google.inject.ImplementedBy
 //import java.sql.Connection
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import controllers.WithLogging
 
@@ -29,7 +28,7 @@ trait WishLinkMapper {
 @ImplementedBy(classOf[DefaultWishLinkRepository])
 trait WishLinkRepository extends Repository with WishLinkMapper with WithLogging {
 
-   def addLinkToWish(wish: Wish, url: String) =
+   def addLinkToWish(wish: Wish, url: String)(implicit executionContext: ExecutionContext) =
       Future {
          wish.wishId.fold {
             throw new IllegalArgumentException("Can not save wish without id")
@@ -49,7 +48,7 @@ trait WishLinkRepository extends Repository with WishLinkMapper with WithLogging
          }
       }
 
-   def findLink(wish: Wish, linkId: Long): Future[Option[WishLink]] =
+   def findLink(wish: Wish, linkId: Long)(implicit executionContext: ExecutionContext): Future[Option[WishLink]] =
       Future {
          wish.wishId.fold{
             throw new IllegalArgumentException("No wish id")
@@ -65,7 +64,7 @@ trait WishLinkRepository extends Repository with WishLinkMapper with WithLogging
          }
       }
 
-   def findLinks(wish: Wish): Future[List[WishLink]] =
+   def findLinks(wish: Wish)(implicit executionContext: ExecutionContext): Future[List[WishLink]] =
       Future {
          wish.wishId.fold{
             throw new IllegalArgumentException("No wish id")
@@ -80,7 +79,7 @@ trait WishLinkRepository extends Repository with WishLinkMapper with WithLogging
          }
       }
 
-   def deleteLink(wishLink: WishLink) =
+   def deleteLink(wishLink: WishLink)(implicit executionContext: ExecutionContext) =
       Future {
          wishLink.wish.wishId.fold{
             throw new IllegalArgumentException("No wish id")

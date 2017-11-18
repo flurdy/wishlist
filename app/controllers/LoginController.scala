@@ -1,12 +1,10 @@
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api._
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 import models._
 import repositories._
@@ -28,20 +26,19 @@ trait LoginForm {
 }
 
 
-@Singleton
-class LoginController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig)
-   (implicit recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
-extends Controller with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging {
+class LoginController @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig, usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
+(implicit val executionContext: ExecutionContext, recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
+extends AbstractController(cc) with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging {
 
    def redirectToLoginForm = Action { implicit request =>
       Redirect(routes.LoginController.showLoginForm())
    }
 
-   def showLoginForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+   def showLoginForm = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.login(loginForm))
    }
 
-   def login = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+   def login = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
 
       def badLogin(username: String, errorMessage: String) =
          BadRequest(views.html.login(

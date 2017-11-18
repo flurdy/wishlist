@@ -2,9 +2,9 @@ package notifiers
 
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject,Singleton}
-import play.api.libs.concurrent.Execution.Implicits._
+// import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.mailer._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import controllers.WithLogging
 import models._
 
@@ -36,7 +36,7 @@ trait EmailDispatcher {
 }
 
 @Singleton
-class SmtpEmailDispatcher @Inject() (val emailConfig: EmailConfig, val emailTemplates: EmailTemplates, val mailerClient: MailerClient) extends EmailDispatcher with WithLogging {
+class SmtpEmailDispatcher @Inject() (val emailConfig: EmailConfig, val emailTemplates: EmailTemplates, val mailerClient: MailerClient)(implicit executionContext: ExecutionContext) extends EmailDispatcher with WithLogging {
 
    override def sendEmail(sender: String, recipient: String, subject: String, body: String) = {
 

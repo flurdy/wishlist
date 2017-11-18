@@ -1,12 +1,10 @@
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api._
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 import scala.util.matching.Regex
 import models._
 import notifiers._
@@ -46,11 +44,12 @@ trait ContactForm {
    )
 }
 
-@Singleton
-class ContactController @Inject() (val configuration: Configuration, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig)
-extends Controller with Secured with WithAnalytics with RegisterForm with ContactForm with EmailAddressChecks {
 
-   def contact = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+class ContactController @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig, usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
+(implicit val executionContext: ExecutionContext)
+extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm with ContactForm with WithLogging with EmailAddressChecks {
+
+   def contact = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.contact(contactForm))
    }
 
@@ -58,10 +57,10 @@ extends Controller with Secured with WithAnalytics with RegisterForm with Contac
       Redirect(routes.ContactController.contact())
    }
 
-  def sendContact =  (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+  def sendContact =  (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
     contactForm.bindFromRequest.fold(
       errors => {
-          Logger.warn("Contact failed: " + errors.errors.headOption.map( e => s"${e.key}: ${e.message}").getOrElse(""))
+          logger.warn("Contact failed: " + errors.errors.headOption.map( e => s"${e.key}: ${e.message}").getOrElse(""))
           BadRequest(views.html.contact(errors))
       },
       contactFields => {

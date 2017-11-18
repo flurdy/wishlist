@@ -1,4 +1,4 @@
-@(recipient: Recipient)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(recipient: Recipient)(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[AnalyticsDetails])
 
 @import helper._
 
@@ -6,7 +6,7 @@
 	<li><a href="@routes.RecipientController.showProfile(recipient.username)">recipient</a></li>
 }{
 
-	
+
 	<div id="list-wishlists-page">
 
 

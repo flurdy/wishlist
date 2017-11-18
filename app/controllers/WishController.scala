@@ -1,13 +1,11 @@
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.mvc.Results.{NotFound, Unauthorized}
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import repositories._
 
@@ -44,21 +42,19 @@ trait WishForm {
    )
 }
 
+
 class WishRequest[A](val wish: Wish, val wishlist: Option[Wishlist], request: MaybeCurrentRecipientRequest[A]) extends WrappedRequest[A](request){
    lazy val username = request.username
    lazy val currentRecipient: Option[Recipient] = request.currentRecipient
 }
 
+
 trait WishActions {
 
-   implicit def wishLookup: WishLookup
-   implicit def wishlistLookup: WishlistLookup
-   implicit def wishlistRepository: WishlistRepository
-   implicit def recipientRepository: RecipientRepository
+   implicit def analyticsDetails: Option[AnalyticsDetails]
 
-   implicit def analyticsDetails: Option[String]
-
-   def WishWishlistAction(wishId: Long) = new ActionRefiner[WishlistRequest, WishRequest] {
+   def wishWishlistAction(wishId: Long, ec: ExecutionContext)(implicit wishLookup: WishLookup) = new ActionRefiner[WishlistRequest, WishRequest] {
+      implicit val executionContext: ExecutionContext = ec
       def refine[A](input: WishlistRequest[A]) =
          wishLookup.findWishById(wishId) map { w =>
             implicit val flash = input.flash
@@ -68,16 +64,18 @@ trait WishActions {
          }
    }
 
-   def WishAction(wishId: Long) = new ActionRefiner[MaybeCurrentRecipientRequest, WishRequest] {
-      def refine[A](input: MaybeCurrentRecipientRequest[A]) = Future.successful {
-         implicit val flash = input.flash
-         implicit val currentRecipient = input.currentRecipient
-         Some(new Wish(wishId, input.currentRecipient.get)).map( wish =>
-                  new WishRequest(wish, None, input))
-              .toRight(NotFound(views.html.error.notfound()))
-      }
+   def wishAction(wishId: Long, ec: ExecutionContext)(implicit wishLookup: WishLookup) = new ActionRefiner[MaybeCurrentRecipientRequest, WishRequest] {
+      implicit val executionContext: ExecutionContext = ec
+      def refine[A](input: MaybeCurrentRecipientRequest[A]) =
+         wishLookup.findWishById(wishId) map { w =>
+            implicit val flash = input.flash
+            implicit val currentRecipient = input.currentRecipient
+            w.map ( new WishRequest(_, None, input) )
+            .toRight(NotFound(views.html.error.notfound()))
+         }
    }
 
+/*
    def WishEditorAction(wishlistId: Long) = new ActionRefiner[WishRequest, WishRequest] {
       def refine[A](input: WishRequest[A]) = {
          implicit val flash = input.flash
@@ -96,32 +94,27 @@ trait WishActions {
          }
       }
    }
+   */
 }
 
+class WishController @Inject()
+(cc: ControllerComponents, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig,
+   usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
+(implicit val executionContext: ExecutionContext,
+         val wishRepository: WishRepository,
+         val wishEntryRepository: WishEntryRepository, val wishlistLookup: WishlistLookup,
+         val wishLookup: WishLookup, val wishLinkRepository: WishLinkRepository,
+         val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository,
+         val featureToggles: FeatureToggles)
+extends AbstractController(cc) with Secured with WithAnalytics with WishForm with WishlistActions with WishActions
+         with WithLogging with WithGravatarUrl {
 
-@Singleton
-class WishController @Inject() (val configuration: Configuration,
-   val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig)
-(implicit val wishlistRepository: WishlistRepository, val wishRepository: WishRepository,
-      val wishEntryRepository: WishEntryRepository, val wishlistLookup: WishlistLookup,
-      val wishLookup: WishLookup, val wishLinkRepository: WishLinkRepository,
-      val reservationRepository: ReservationRepository, val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
-extends Controller with Secured with WithAnalytics with WishForm with WishActions with WishlistActions with WithLogging with WithGravatarUrl {
+   implicit def requestToCurrentRecipient(implicit request: WishRequest[_]): Option[Recipient] = request.currentRecipient
 
    def gravatarUrl(wishlist: Wishlist) = generateGravatarUrl(wishlist.recipient)
 
-   implicit def requestToCurrentRecipient(implicit request: WishRequest[_]): Option[Recipient] = request.currentRecipient
-    /*
-
-    val updateWishlistOrderForm = Form(
-      "order" -> text(maxLength=500)
-    )
-
-   */
-
-   def addWishToWishlist(username:String,wishlistId:Long) =
-     (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-           andThen WishlistAction(wishlistId) andThen WishlistEditorAction).async { implicit request =>
+   def addWishToWishlist(username:String,wishlistId:Long) = (usernameAction andThen maybeCurrentRecipientAction
+           andThen wishlistAction(wishlistId, executionContext) andThen wishlistEditorAction(executionContext)).async { implicit request =>
         simpleAddWishForm.bindFromRequest.fold(
           errors => {
               logger.warn("Add failed: " + errors)
@@ -148,8 +141,9 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
    def alsoRemoveWishFromWishlist(username: String, wishlistId: Long, wishId: Long) = removeWishFromWishlist( username, wishlistId, wishId)
 
    def removeWishFromWishlist(username: String, wishlistId: Long, wishId: Long) =
-      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
+      (usernameAction andThen maybeCurrentRecipientAction
+            andThen wishlistAction(wishlistId, executionContext) andThen wishlistEditorAction(executionContext)
+            andThen wishWishlistAction(wishId, executionContext) ).async { implicit request =>
          request.wishlist match {
             case Some(wishlist) =>
                wishlist.removeWish(request.wish).map { wishlist =>
@@ -163,8 +157,9 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
    def alsoUpdateWish(username: String, wishlistId: Long, wishId: Long) = updateWish(username, wishlistId, wishId)
 
    def updateWish(username: String, wishlistId: Long, wishId: Long) =
-      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
+      (usernameAction andThen maybeCurrentRecipientAction
+            andThen wishlistAction(wishlistId, executionContext) andThen wishlistEditorAction(executionContext)
+            andThen wishWishlistAction(wishId, executionContext) ).async { implicit request =>
 
          editWishForm.bindFromRequest.fold(
             errors => {
@@ -184,10 +179,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
          )
    }
 
-
   def reserveWish(username: String, wishlistId: Long, wishId: Long) =
-      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-             andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) ).async { implicit request =>
+      (usernameAction andThen maybeCurrentRecipientAction
+         andThen wishlistAction(wishlistId, executionContext)
+         andThen wishWishlistAction(wishId, executionContext) ).async { implicit request =>
       request.currentRecipient match {
          case Some(r) if !r.isSame(request.wish.recipient) =>
             logger.info(s"Reserving wish $wishId by ${r.username} for ${request.wish.recipient.recipientId}")
@@ -204,10 +199,10 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
       }
   }
 
-
   def unreserveWish(username: String, wishlistId: Long, wishId: Long) =
-    (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-          andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) ).async { implicit request =>
+      (usernameAction andThen maybeCurrentRecipientAction
+         andThen wishlistAction(wishlistId, executionContext)
+         andThen wishWishlistAction(wishId, executionContext) ).async { implicit request =>
        (request.currentRecipient, request.wish.reservation) match {
          case (Some(currentRecipient), Some(reservation)) =>
             currentRecipient.inflate.flatMap { thickerRecipient =>
@@ -229,8 +224,8 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
    }
 
    def unreserveWishFromProfile(username:String, wishId:Long) =
-      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-         andThen WishAction(wishId) ).async { implicit request =>
+       (usernameAction andThen maybeCurrentRecipientAction
+          andThen wishAction(wishId, executionContext) ).async { implicit request =>
 
       request.wish.reservation.fold[Future[Result]](Future.successful(NotFound)){ reservation =>
          if(reservation.isReserver(request.currentRecipient.get)){
@@ -243,8 +238,9 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
    }
 
    def addLinkToWish(username:String, wishlistId: Long, wishId: Long) =
-      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
+      (usernameAction andThen maybeCurrentRecipientAction
+            andThen wishlistAction(wishlistId, executionContext) andThen wishlistEditorAction(executionContext)
+            andThen wishWishlistAction(wishId, executionContext) ).async { implicit request =>
 
      addLinkToWishForm.bindFromRequest.fold(
        errors => {
@@ -265,8 +261,9 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
       deleteLinkFromWish(username, wishlistId, wishId, linkId)
 
    def deleteLinkFromWish(username: String, wishlistId: Long, wishId: Long, linkId: Long) =
-      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
+      (usernameAction andThen maybeCurrentRecipientAction
+            andThen wishlistAction(wishlistId, executionContext) andThen wishlistEditorAction(executionContext)
+            andThen wishWishlistAction(wishId, executionContext) ).async { implicit request =>
 
       request.wish.findLink(linkId) flatMap {
          case Some(link) =>
@@ -278,11 +275,11 @@ extends Controller with Secured with WithAnalytics with WishForm with WishAction
       }
    }
 
-
    def moveWishToWishlist(username: String, wishlistId: Long, wishId: Long) =
-      (UsernameAction andThen IsAuthenticatedAction andThen CurrentRecipientAction
-            andThen WishlistAction(wishlistId) andThen WishWishlistAction(wishId) andThen WishEditorAction(wishlistId) ).async { implicit request =>
-
+          (usernameAction andThen maybeCurrentRecipientAction
+             andThen wishlistAction(wishlistId, executionContext)
+             andThen wishlistEditorAction(executionContext)
+             andThen wishWishlistAction(wishId, executionContext)).async { implicit request =>
       moveWishForm.bindFromRequest.fold(
          errors => {
             logger.warn("move wish failed")

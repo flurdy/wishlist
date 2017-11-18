@@ -1,12 +1,10 @@
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api._
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.matching.Regex
 import models._
 import repositories._
@@ -50,14 +48,12 @@ trait RegisterForm {
   )
 }
 
+class RegisterController @Inject()(cc: ControllerComponents, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val usernameValidator: UsernameValidator, val appConfig: ApplicationConfig,
+   usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
+(implicit val executionContext: ExecutionContext, val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
+extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm with EmailAddressChecks with WithLogging {
 
-@Singleton
-class RegisterController @Inject() (val configuration: Configuration, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig, val usernameValidator: UsernameValidator)(implicit val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
-extends Controller with Secured with WithAnalytics with RegisterForm
-with EmailAddressChecks with WithLogging {
-
-  	def register =
-     (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+  	def register = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
 
       def badRequest(form: Form[(String, Option[String], String, String, String)], message: Option[String]) =
         Future.successful( BadRequest(views.html.register( form, message) ) )
@@ -111,8 +107,7 @@ with EmailAddressChecks with WithLogging {
       )
   }
 
-   def redirectToRegisterForm =
-     (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+   def redirectToRegisterForm = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       simpleRegisterForm.bindFromRequest.fold(
          errors => {
         BadRequest(views.html.register(registerForm))
@@ -128,7 +123,7 @@ with EmailAddressChecks with WithLogging {
       )
    }
 
-   def showRegisterForm = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+   def showRegisterForm = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.register(registerForm))
    }
 }

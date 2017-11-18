@@ -1,38 +1,32 @@
 package controllers
 
-import play.api.libs.concurrent.Execution.Implicits._
+import javax.inject.{Inject, Singleton}
+// import play.api._
 import play.api.mvc._
 import play.api.mvc.Results.{NotFound, Unauthorized}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import repositories.RecipientLookup
 
-
 class UsernameRequest[A](val username: Option[String], request: Request[A]) extends WrappedRequest[A](request)
 
-class MaybeCurrentRecipientRequest[A](val currentRecipient: Option[Recipient], request: Request[A]) extends WrappedRequest[A](request){
-   lazy val username = request.session.get(Security.username)
+@Singleton
+class UsernameAction @Inject()(val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext)
+      extends ActionBuilder[UsernameRequest, AnyContent] with ActionTransformer[Request, UsernameRequest] {
+   def transform[A](request: Request[A]) = Future.successful {
+      new UsernameRequest(request.session.get("username"), request)
+   }
 }
 
-object UsernameAction extends
-    ActionBuilder[UsernameRequest] with ActionTransformer[Request, UsernameRequest] {
-  def transform[A](request: Request[A]) = Future.successful {
-    new UsernameRequest(request.session.get(Security.username), request)
-  }
+class MaybeCurrentRecipientRequest[A](val currentRecipient: Option[Recipient], request: Request[A]) extends WrappedRequest[A](request) {
+  def username = request.session.get("username")
 }
 
-object MaybeCurrentRecipientAction extends
-    ActionBuilder[MaybeCurrentRecipientRequest] with ActionTransformer[Request, MaybeCurrentRecipientRequest] {
-  def transform[A](request: Request[A]) = Future.successful {
-    new MaybeCurrentRecipientRequest(request.session.get(Security.username).map(new Recipient(_)), request)
-  }
-}
-
-object IsAuthenticatedAction extends ActionFilter[UsernameRequest] {
-  def filter[A](input: UsernameRequest[A]) = Future.successful {
-     if(input.username.isEmpty) Some(Unauthorized)
-     else None
-  }
+class MaybeCurrentRecipientAction @Inject()(val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext)
+      extends ActionBuilder[MaybeCurrentRecipientRequest, AnyContent] with ActionTransformer[Request, MaybeCurrentRecipientRequest] {
+   def transform[A](request: Request[A]) = Future.successful {
+      new MaybeCurrentRecipientRequest(request.session.get("username").map(new Recipient(_)), request)
+   }
 }
 
 
@@ -42,20 +36,44 @@ trait Secured {
 
    implicit def requestToCurrentRecipient(implicit request: MaybeCurrentRecipientRequest[_]): Option[Recipient] = request.currentRecipient
 
-   def CurrentRecipientAction = new ActionRefiner[UsernameRequest, MaybeCurrentRecipientRequest] {
-      def refine[A](input: UsernameRequest[A]) =
-         input.username match {
-            case Some(username) =>
-               recipientLookup.findRecipient(username).map( recipient =>
-                  Right( new MaybeCurrentRecipientRequest(recipient, input) ) )
-            case None =>
-               implicit val flash = input.flash
-               implicit val currentRecipient = None
-               Future.successful( Left(NotFound(views.html.error.notfound())) )
-         }
-   }
+   // def PermissionCheckAction(implicit ec: ExecutionContext) = new ActionFilter[ItemRequest] {
+   //    def executionContext = ec
+   //    def filter[A](input: ItemRequest[A]) = Future.successful {
+   //       if (!input.item.accessibleByUser(input.username))
+   //          Some(Forbidden)
+   //       else
+   //          None
+   //    }
+   // }
 
-  implicit def findCurrentRecipient(implicit session: Session): Future[Option[Recipient]] = {
+   // def CurrentRecipientAction(implicit ec: ExecutionContext, recipientLookup: RecipientLookup) = new ActionFilter[UsernameRequest] {
+   //    def filter[A](input: UsernameRequest[A]) = {
+   //       input.username.fold{
+   //          implicit val flash = input.flash
+   //          implicit val currentRecipient = None
+   //          Future.successful( NotFound(views.html.error.notfound()) )
+   //       }{ username =>
+   //          recipientLookup.findRecipient(username).map( recipient =>
+   //             new MaybeCurrentRecipientRequest(recipient, input) )
+   //       }
+   //    }
+   // }
+
+   //
+   // def CurrentRecipientAction = new ActionRefiner[UsernameRequest, MaybeCurrentRecipientRequest] {
+   //    def refine[A](input: UsernameRequest[A]) =
+   //       input.username match {
+   //          case Some(username) =>
+   //             recipientLookup.findRecipient(username).map( recipient =>
+   //                Right( new MaybeCurrentRecipientRequest(recipient, input) ) )
+   //          case None =>
+   //             implicit val flash = input.flash
+   //             implicit val currentRecipient = None
+   //             Future.successful( Left(NotFound(views.html.error.notfound())) )
+   //       }
+   // }
+  //
+  implicit def findCurrentRecipient(implicit session: Session, ec: ExecutionContext): Future[Option[Recipient]] = {
     session.get(Security.username) match {
       case Some(sessionUsername) => recipientLookup.findRecipient(sessionUsername)
       case None => Future.successful(None)

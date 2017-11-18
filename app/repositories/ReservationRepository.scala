@@ -5,8 +5,7 @@ import anorm.SqlParser._
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import controllers.WithLogging
 
@@ -32,7 +31,7 @@ trait ReservationMapper {
 trait ReservationRepository extends Repository with WithLogging
 with ReservationMapper {
 
-   def saveReservation(reservation: Reservation) =
+   def saveReservation(reservation: Reservation)(implicit ec: ExecutionContext) =
       Future {
          (reservation.wish.wishId, reservation.reserver.recipientId) match {
             case (Some(wishId), Some(recipientId)) =>
@@ -59,7 +58,7 @@ with ReservationMapper {
          }
       }
 
-   def findReservationsByReserver(reserver: Recipient) =
+   def findReservationsByReserver(reserver: Recipient)(implicit ec: ExecutionContext) =
       Future {
          reserver.recipientId.fold{
             throw new IllegalStateException("No recipient id")
@@ -79,7 +78,7 @@ with ReservationMapper {
          }
       }
 
-   def inflateReservationsReserver(shallowReservations: List[Reservation])(implicit recipientRepository: RecipientRepository): Future[List[Reservation]] = {
+   def inflateReservationsReserver(shallowReservations: List[Reservation])(implicit ec: ExecutionContext, recipientRepository: RecipientRepository): Future[List[Reservation]] = {
       val thickerReservations =
          shallowReservations.flatMap { reservation =>
             reservation.reserver.recipientId map { recipientId =>
@@ -91,7 +90,7 @@ with ReservationMapper {
       Future.sequence(thickerReservations).map( _.flatten )
    }
 
-   def inflateReservationsWishRecipient(shallowReservations: List[Reservation])(implicit recipientRepository: RecipientRepository): Future[List[Reservation]] = {
+   def inflateReservationsWishRecipient(shallowReservations: List[Reservation])(implicit ec: ExecutionContext, recipientRepository: RecipientRepository): Future[List[Reservation]] = {
       val thickerReservations =
          shallowReservations.flatMap { reservation =>
             reservation.wish.recipient.recipientId map { recipientId =>
@@ -104,7 +103,7 @@ with ReservationMapper {
    }
 
 
-   def deleteReservation(reservation:Reservation) =
+   def deleteReservation(reservation:Reservation)(implicit ec: ExecutionContext) =
       Future {
          reservation.reservationId.fold {
             throw new IllegalStateException("No recipient id")

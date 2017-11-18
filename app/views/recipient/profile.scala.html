@@ -1,4 +1,4 @@
-@(recipient: Recipient, wishlists: Seq[Wishlist], organisedWishlists: Seq[Wishlist], reservations: Seq[Reservation], createWishlistForm: Form[(String,Option[String])], gravatarUrl: Option[String])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(recipient: Recipient, wishlists: Seq[Wishlist], organisedWishlists: Seq[Wishlist], reservations: Seq[Reservation], createWishlistForm: Form[(String,Option[String])], gravatarUrl: Option[String])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[AnalyticsDetails])
 
 @import helper._
 

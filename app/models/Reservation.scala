@@ -1,7 +1,6 @@
 package models
 
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import repositories._
 import controllers.WithLogging
 
@@ -15,10 +14,10 @@ case class Reservation(
 
    def this(reserver: Recipient, wish: Wish) = this(None, reserver, wish)
 
-   def save(implicit reservationRepository: ReservationRepository): Future[Reservation] =
+   def save(implicit reservationRepository: ReservationRepository, ec: ExecutionContext): Future[Reservation] =
       reservationRepository.saveReservation(this)
 
-   def cancel(implicit reservationRepository: ReservationRepository, wishRepository: WishRepository) =
+   def cancel(implicit reservationRepository: ReservationRepository, wishRepository: WishRepository, ec: ExecutionContext) =
       reservationRepository.deleteReservation(this).flatMap { _ =>
          wishRepository.removeReservation(wish)
       }.map( _ => ())
@@ -26,45 +25,7 @@ case class Reservation(
    def isReserver(possibleReserver: Recipient) =
       reserver.isSame(possibleReserver)
 
-   def inflate(implicit recipientRepository: RecipientRepository): Future[Reservation] =
+   def inflate(implicit recipientRepository: RecipientRepository, ec: ExecutionContext): Future[Reservation] =
       reserver.inflate.map( r => this.copy( reserver = r ) )
 
 }
-
-/*
-
-object Reservation {
-
-
-  def findByWish(wishId:Long) : Option[Reservation]= {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-					SELECT * FROM reservation
-		 			WHERE wishid = {wishid}
-        				"""
-      ).on(
-        'wishid -> wishId
-      ).as(Reservation.simple.singleOpt)
-    }
-  }
-
-
-  def findReserver(reservation:Reservation) : Option[Recipient]= {
-    DB.withConnection { implicit connection =>
-      SQL(
-        """
-					SELECT rec.* FROM reservation res
-          INNER JOIN recipient rec on res.recipientid = rec.recipientid
-		 			WHERE res.reservationid = {reservationid}
-        """
-      ).on(
-        'reservationid -> reservation.reservationId
-      ).as(Recipient.simple.singleOpt)
-    }
-  }
-
-
-}
-
-*/

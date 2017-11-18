@@ -2,7 +2,6 @@
 import akka.stream.Materializer
 import javax.inject.{Inject, Singleton}
 import play.api.http.DefaultHttpFilters
-// import play.api.Logger
 import play.api.mvc._
 import play.filters.gzip.GzipFilter
 import play.filters.headers.SecurityHeadersFilter
@@ -17,12 +16,11 @@ class UsernameFilter @Inject()(
   override def apply(nextFilter: RequestHeader => Future[Result])
            (requestHeader: RequestHeader): Future[Result] = {
     nextFilter(requestHeader).map { result =>
-      requestHeader.session.get(Security.username).foldLeft(result){ (result, username) =>
+      requestHeader.session.get("username").foldLeft(result){ (result, username) =>
          result.withHeaders("X-Username" -> username)
       }
     }
   }
-
 }
 
 
@@ -33,7 +31,7 @@ extends Filter with WithLogging {
            (requestHeader: RequestHeader): Future[Result] = {
 
    //  Logger.debug(s"Request: [${requestHeader.method}] ${requestHeader.uri} ")
-      nextFilter(requestHeader).map { result =>
+   nextFilter(requestHeader).map { result =>
 
       val location = result.header.headers.get("Location").map( l => s" >> $l").getOrElse("")
       if(! requestHeader.uri.startsWith("/assets") ){

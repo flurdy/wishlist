@@ -1,18 +1,17 @@
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api._
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.http.HeaderNames
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import play.api.mvc.Results.{NotFound, Unauthorized}
+import scala.concurrent.{ExecutionContext, Future}
 import com.flurdy.sander.primitives._
 import models._
 import repositories._
 import notifiers._
 import scravatar._
+
 
 trait RecipientForm extends RegisterForm {
 
@@ -28,9 +27,8 @@ trait RecipientForm extends RegisterForm {
             InvalidEmailAddress.findFirstIn(email.trim).isEmpty
       }
     }) verifying("Username is not valid. A to Z and numbers only. No spaces. Sorry", fields => fields match {
-      case (_, username, _, _) => {
+      case (_, username, _, _) =>
         ValidUsername.findFirstIn(username.trim).isDefined
-      }
     })
   )
 
@@ -39,9 +37,8 @@ trait RecipientForm extends RegisterForm {
     "username" -> nonEmptyText(maxLength = 99),
     "email" -> nonEmptyText(maxLength = 99)
     ) verifying("Email address is not valid", fields => fields match {
-      case (_, email) => {
+      case (_, email) =>
          isValidEmailAddress(email)
-      }
     }) verifying("Username is not valid. A to Z and numbers only", fields => fields match {
       case (username, _) =>
          isValidUsername(username)
@@ -73,6 +70,54 @@ trait RecipientForm extends RegisterForm {
 
 }
 
+
+trait RecipientActions {
+
+   implicit def analyticsDetails: Option[AnalyticsDetails]
+
+   def onlyRecipientEditorAction(username: String, ec: ExecutionContext)(implicit recipientLookup: RecipientLookup) = new ActionFilter[UsernameRequest] {
+      implicit val executionContext: ExecutionContext = ec
+      def filter[A](input: UsernameRequest[A]) = {
+         implicit val flash = input.flash
+         input.username.fold[Future[Option[Result]]]{
+            implicit val currentRecipient = None
+            Future.successful( Some( NotFound(views.html.error.notfound()) ) )
+         }{ sessionUsername =>
+            recipientLookup.findRecipient(username) flatMap {
+               case Some(pR) =>
+                  recipientLookup.findRecipient(sessionUsername) map {
+                     case Some(sR) if sR.isSame(pR) => None
+                     case maybeSr =>
+                        implicit val currentRecipient = maybeSr
+                        Some(Unauthorized(views.html.error.permissiondenied()))
+                  }
+               case _ =>
+                  implicit val currentRecipient = None
+                  Future.successful( Some(NotFound(views.html.error.notfound())) )
+            }
+         }
+      }
+   }
+
+   def isLoggedIn(ec: ExecutionContext)(implicit recipientLookup: RecipientLookup) = new ActionFilter[UsernameRequest] {
+      implicit val executionContext: ExecutionContext = ec
+      def filter[A](input: UsernameRequest[A]) = {
+         implicit val flash = input.flash
+         input.username.fold[Future[Option[Recipient]]]{
+            Future.successful( None )
+         }{ sessionUsername =>
+            recipientLookup.findRecipient(sessionUsername)
+         }.map {
+            case Some(_) => None
+            case _ =>
+               implicit val currentRecipient = None
+               Some(Unauthorized(views.html.error.permissiondenied()))
+         }
+      }
+   }
+}
+
+
 trait WithGravatarUrl {
 
    def generateGravatarUrl(recipient: Recipient)(implicit featureToggles: FeatureToggles) =
@@ -81,24 +126,29 @@ trait WithGravatarUrl {
       }
 }
 
-@Singleton
-class RecipientController @Inject() (
-            val configuration: Configuration,
-            val recipientLookup: RecipientLookup,
+
+class RecipientController @Inject()(
+            cc: ControllerComponents,
             val emailNotifier: EmailNotifier,
-            val appConfig: ApplicationConfig)
-         (implicit val recipientRepository: RecipientRepository,
+            val appConfig: ApplicationConfig,
+            usernameAction: UsernameAction,
+            maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
+         (implicit val executionContext: ExecutionContext,
+            val recipientRepository: RecipientRepository,
+            val recipientLookup: RecipientLookup,
             val wishlistRepository: WishlistRepository,
             val wishLinkRepository: WishLinkRepository,
             val wishLookup: WishLookup,
             val wishRepository: WishRepository,
             val wishEntryRepository: WishEntryRepository,
-            val wishOrganiserRepository: WishlistOrganiserRepository,
+            val wishlistOrganiserRepository: WishlistOrganiserRepository,
             val reservationRepository: ReservationRepository,
             val featureToggles: FeatureToggles)
-extends Controller with Secured with WithAnalytics with WishlistForm with RecipientForm with EmailAddressChecks with WithLogging with WithGravatarUrl {
+extends AbstractController(cc) with Secured with RecipientActions with WithAnalytics with WishlistForm
+         with RecipientForm with EmailAddressChecks with WithLogging with WithGravatarUrl {
 
-   def showProfile(username: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+
+   def showProfile(username: String) = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) flatMap {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
             for {
@@ -126,8 +176,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       Redirect(routes.RecipientController.showEditRecipient(username))
    }
 
-   def showEditRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
-
+   def showEditRecipient(username: String) = (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
+                        andThen maybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) map {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
            val editForm = editRecipientForm.fill(
@@ -138,7 +188,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       }
    }
 
-   def showDeleteRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+   def showDeleteRecipient(username: String) = (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
+                        andThen maybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) map {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
             Ok(views.html.recipient.deleterecipient(recipient))
@@ -146,13 +197,13 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
           case _ => NotFound(views.html.error.notfound())
       }
    }
-
    def alsoDeleteRecipient(username: String) = deleteRecipient(username)
 
-   def deleteRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+   def deleteRecipient(username: String) = (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
+                        andThen maybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) flatMap {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
-            Logger.info("Deleting recipient: "+ recipient.username)
+            logger.info("Deleting recipient: "+ recipient.username)
             emailNotifier.sendRecipientDeletedAlert(recipient)
             emailNotifier.sendRecipientDeletedNotification(recipient)
             recipient.delete.map { _ =>
@@ -165,7 +216,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
 
    def alsoUpdateRecipient(username: String) = updateRecipient(username)
 
-   def updateRecipient(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+   def updateRecipient(username: String) = (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
+                        andThen maybeCurrentRecipientAction).async { implicit request =>
 
       recipientLookup.findRecipient(username) flatMap {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>
@@ -205,11 +257,11 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       }
    }
 
-   def showResetPassword = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+   def showResetPassword = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.recipient.passwordreset(resetPasswordForm))
    }
 
-   def resetPassword = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+   def resetPassword = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
 
       resetPasswordForm.bindFromRequest.fold(
          errors => {
@@ -231,7 +283,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       )
    }
 
-   def showChangePassword(username: String) = (UsernameAction andThen CurrentRecipientAction) { implicit request =>
+   def showChangePassword(username: String) = (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
+                        andThen maybeCurrentRecipientAction) { implicit request =>
       request.currentRecipient match {
          case Some(recipient) if recipient.username == username =>
             Ok(views.html.recipient.passwordchange(changePasswordForm))
@@ -240,7 +293,8 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       }
    }
 
-   def updatePassword(username: String) = (UsernameAction andThen CurrentRecipientAction).async { implicit request =>
+   def updatePassword(username: String) = (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
+                        andThen maybeCurrentRecipientAction).async { implicit request =>
 
       changePasswordForm.bindFromRequest.fold(
          errors => {
@@ -278,7 +332,7 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       )
    }
 
-   def verifyEmail(username: String, verificationHash: String) = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+   def verifyEmail(username: String, verificationHash: String) = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
 
       def redirectToLogin: Result = Redirect(routes.LoginController.showLoginForm)
             .withNewSession.flashing("messageSuccess" -> "Email address verified. Please log in")
@@ -308,11 +362,11 @@ extends Controller with Secured with WithAnalytics with WishlistForm with Recipi
       }
    }
 
-   def showResendVerification = (UsernameAction andThen MaybeCurrentRecipientAction) { implicit request =>
+   def showResendVerification = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
      Ok(views.html.recipient.emailverification(emailVerificationForm))
    }
 
-   def resendVerification = (UsernameAction andThen MaybeCurrentRecipientAction).async { implicit request =>
+   def resendVerification = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
       emailVerificationForm.bindFromRequest.fold(
          errors => {
             Future.successful( BadRequest(views.html.recipient.emailverification(errors)) )

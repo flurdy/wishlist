@@ -8,19 +8,12 @@ import repositories._
 import models._
 
 
-trait WithAnalytics {
-
-   def appConfig: ApplicationConfig
-
-   implicit def analyticsDetails: Option[String] = appConfig.findString("analytics.id")
-
-}
-
 trait WithLogging {
 
    val logger: Logger = Logger(this.getClass())
 
 }
+
 
 class Application @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig, usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext, val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)

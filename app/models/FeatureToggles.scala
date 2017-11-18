@@ -10,7 +10,7 @@ import javax.inject._
 trait FeatureToggles extends WithApplicationConfig {
 
    def isEnabledByName(featureName: String) =
-         appConfig.getBoolean(s"feature.$featureName.enabled").getOrElse(false)
+         appConfig.findBoolean(s"feature.$featureName.enabled").getOrElse(false)
 
    def isEnabled(featureToggle: FeatureToggle) = isEnabledByName(featureToggle.entryName.toLowerCase)
 

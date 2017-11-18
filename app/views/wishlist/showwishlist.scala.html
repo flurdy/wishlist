@@ -1,4 +1,4 @@
-@(wishlist: Wishlist, wishes: Seq[Wish],addWishForm: Form[String], gravatarUrl: Option[String])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[String])
+@(wishlist: Wishlist, wishes: Seq[Wish],addWishForm: Form[String], gravatarUrl: Option[String])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[AnalyticsDetails])
 
 @import helper._
 @import wishlist._

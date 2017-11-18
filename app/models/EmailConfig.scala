@@ -9,11 +9,11 @@ trait EmailConfig {
 
    protected def appConfig: ApplicationConfig
 
-   lazy val hostname  = appConfig.getString("email.hostname")
+   lazy val hostname  = appConfig.findString("email.hostname")
                                  .getOrElse(throw new IllegalStateException("Missing configuration"))
-   lazy val emailSender = appConfig.getString("email.sender.mail")
+   lazy val emailSender = appConfig.findString("email.sender.mail")
                                    .getOrElse(throw new IllegalStateException("Missing configuration"))
-   lazy val alertRecipient = appConfig.getString("email.alerts.recipient.mail")
+   lazy val alertRecipient = appConfig.findString("email.alerts.recipient.mail")
                                       .getOrElse(throw new IllegalStateException("Missing configuration"))
 
 }

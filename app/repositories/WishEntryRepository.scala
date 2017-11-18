@@ -5,8 +5,7 @@ import anorm.SqlParser._
 import com.google.inject.ImplementedBy
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.libs.concurrent.Execution.Implicits._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import models._
 import controllers.WithLogging
 
@@ -30,7 +29,7 @@ trait WishEntryMapper {
 @ImplementedBy(classOf[DefaultWishEntryRepository])
 trait WishEntryRepository extends Repository with WishEntryMapper with WithLogging {
 
-   def saveWishEntry(wishEntry: WishEntry): Future[WishEntry] =
+   def saveWishEntry(wishEntry: WishEntry)(implicit executionContext: ExecutionContext): Future[WishEntry] =
       Future{
          (wishEntry.wish.wishId, wishEntry.wishlist.wishlistId) match {
          case (Some(wishId), Some(wishlistId)) =>
@@ -56,7 +55,7 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
          }
       }
 
-   def removeWishFromWishlist(wish: Wish, wishlist: Wishlist): Future[Wishlist] =
+   def removeWishFromWishlist(wish: Wish, wishlist: Wishlist)(implicit executionContext: ExecutionContext): Future[Wishlist] =
       Future {
          (wish.wishId, wishlist.wishlistId) match {
          case (Some(wishId), Some(wishlistId)) =>
@@ -77,7 +76,7 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
       }
 
 
-   def removeWishFromAllWishlists(wish: Wish): Future[Boolean] =
+   def removeWishFromAllWishlists(wish: Wish)(implicit executionContext: ExecutionContext): Future[Boolean] =
       Future {
          logger.debug("Deleting wishentry: "+wish.title)
          wish.wishId.fold {
@@ -93,7 +92,7 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
          }
       }.map( _ > 0 )
 
-   def findByIds(wishId: Long, wishlistId: Long): Future[Option[WishEntry]]=
+   def findByIds(wishId: Long, wishlistId: Long)(implicit executionContext: ExecutionContext): Future[Option[WishEntry]]=
       Future {
          db.withConnection { implicit connection =>
             SQL"""
@@ -108,7 +107,7 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
       }
 
 
-   def moveWishToWishlist(wish: Wish, targetWishlist: Wishlist): Future[Wish] =
+   def moveWishToWishlist(wish: Wish, targetWishlist: Wishlist)(implicit executionContext: ExecutionContext): Future[Wish] =
       (wish.wishId, targetWishlist.wishlistId) match {
          case (Some(wishId), Some(wishlistId)) =>
             Future {
@@ -127,7 +126,7 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
          case _ => throw new IllegalArgumentException("No ids")
       }
 
-   private def updateOrdinal(wishId: Long, wishlistId: Long, ordinal: Int) =
+   private def updateOrdinal(wishId: Long, wishlistId: Long, ordinal: Int)(implicit executionContext: ExecutionContext) =
       Future {
          db.withConnection { implicit connection =>
             SQL"""
@@ -141,7 +140,7 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
       }
 
 
-   private def removeOrdinal(wishId: Long, wishlistId: Long) =
+   private def removeOrdinal(wishId: Long, wishlistId: Long)(implicit executionContext: ExecutionContext) =
       Future {
          db.withConnection { implicit connection =>
             SQL"""
@@ -155,7 +154,7 @@ trait WishEntryRepository extends Repository with WishEntryMapper with WithLoggi
       }
 
 
-   def update(wishEntry: WishEntry): Future[WishEntry] = {
+   def update(wishEntry: WishEntry)(implicit executionContext: ExecutionContext): Future[WishEntry] = {
       (wishEntry.wish.wishId, wishEntry.wishlist.wishlistId) match {
          case (Some(wishId), Some(wishlistId)) =>
             wishEntry.ordinal.fold{
