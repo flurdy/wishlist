@@ -1,7 +1,6 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-// import play.api._
 import play.api.mvc._
 import play.api.mvc.Results.{NotFound, Unauthorized}
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,10 +21,17 @@ class MaybeCurrentRecipientRequest[A](val currentRecipient: Option[Recipient], r
   def username = request.session.get("username")
 }
 
-class MaybeCurrentRecipientAction @Inject()(val parser: BodyParsers.Default)(implicit val executionContext: ExecutionContext)
+class MaybeCurrentRecipientAction @Inject()(val parser: BodyParsers.Default)
+      (implicit val executionContext: ExecutionContext, recipientLookup: RecipientLookup)
       extends ActionBuilder[MaybeCurrentRecipientRequest, AnyContent] with ActionTransformer[Request, MaybeCurrentRecipientRequest] {
-   def transform[A](request: Request[A]) = Future.successful {
-      new MaybeCurrentRecipientRequest(request.session.get("username").map(new Recipient(_)), request)
+   def transform[A](request: Request[A]) = {
+      request.session.get("username").fold[Future[Option[Recipient]]]{
+        Future.successful(None) 
+      }{ username => 
+          recipientLookup.findRecipient(username)
+    }.map { currentRecipient =>
+          new MaybeCurrentRecipientRequest(currentRecipient, request)
+      } 
    }
 }
 
@@ -74,7 +80,7 @@ trait Secured {
    // }
   //
   implicit def findCurrentRecipient(implicit session: Session, ec: ExecutionContext): Future[Option[Recipient]] = {
-    session.get(Security.username) match {
+    session.get("username") match {
       case Some(sessionUsername) => recipientLookup.findRecipient(sessionUsername)
       case None => Future.successful(None)
     }

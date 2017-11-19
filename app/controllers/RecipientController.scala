@@ -283,7 +283,8 @@ extends AbstractController(cc) with Secured with RecipientActions with WithAnaly
       )
    }
 
-   def showChangePassword(username: String) = (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
+   def showChangePassword(username: String) = 
+        (usernameAction andThen onlyRecipientEditorAction(username, executionContext)
                         andThen maybeCurrentRecipientAction) { implicit request =>
       request.currentRecipient match {
          case Some(recipient) if recipient.username == username =>

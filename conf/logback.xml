@@ -57,8 +57,10 @@
   <logger name="org.asynchttpclient.netty" level="WARN" />
 
 
-  <logger name="play" level="INFO" />
+  <logger name="play" level="WARN" />
+  <logger name="play.mailer" level="INFO" />
   <logger name="akka" level="WARN" />
+  <logger name="com.typesafe.sslconfig.akka" level="WARN" />
 
   <root>
     <appender-ref ref="ASYNCSTDOUT" />

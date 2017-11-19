@@ -9,6 +9,7 @@ import org.scalatestplus.play._
 import play.api.libs.mailer._
 import play.api.test._
 import play.api.test.Helpers._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import controllers.BaseUnitSpec
 import models.{EmailConfig,Recipient}

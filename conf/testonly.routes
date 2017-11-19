@@ -1,5 +1,5 @@
 #### Test only routes
 
-GET	 /test-only/recipient/:username/verify/find controllers.testonly.TestOnlyRecipientController.findVerification(username)
+GET  /test-only/recipient/:username/verify/find controllers.testonly.TestOnlyRecipientController.findVerification(username)
 
 ->   /   prod.Routes

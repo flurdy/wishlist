@@ -9,6 +9,8 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
@@ -19,15 +21,25 @@ import notifiers._
 import repositories._
 
 
-class ContactControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
+class ContactControllerSpec extends BaseControllerSpec {
 
-   trait Setup {
-      val configurationMock = mock[Configuration]
-      val appConfigMock = mock[ApplicationConfig]
-      val notifierMock      = mock[EmailNotifier]
-      val recipientMock     = mock[Recipient]
-      val controller = new ContactController(configurationMock, mock[RecipientLookup], notifierMock, appConfigMock)
-      when(appConfigMock.getString(anyString)).thenReturn(None)
+   trait Setup extends WithMock {
+      val appConfigMock       = mock[ApplicationConfig]
+      val notifierMock        = mock[EmailNotifier]
+      val recipientMock       = mock[Recipient]
+      val recipientLookupMock = mock[RecipientLookup]
+
+      val application = new GuiceApplicationBuilder()
+            .overrides(bind[RecipientLookup].toInstance(recipientLookupMock))
+            .build()
+
+      val controller = new ContactController(controllerComponents, 
+            recipientLookupMock, notifierMock, appConfigMock,
+            usernameAction, maybeCurrentRecipientAction)(executionContext)
+
+      when(appConfigMock.findString(anyString)).thenReturn(None)
+
+      when(recipientLookupMock.findRecipient("some-username")(executionContext)).thenReturn(Future.successful(Some(recipientMock)))
    }
 
    "Contact controller" when requesting {
@@ -81,7 +93,7 @@ class ContactControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPe
             "logged in" in new Setup {
 
                when( notifierMock.sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(new Recipient("some-username"))))
+                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(recipientMock)))
                   .thenReturn( Future.successful(()) )
 
 
@@ -100,7 +112,7 @@ class ContactControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPe
                header("Location", result).value mustBe "/"
 
                verify( notifierMock ).sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(new Recipient("some-username")))
+                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(recipientMock))
             }
 
             "no username filled" in new Setup {

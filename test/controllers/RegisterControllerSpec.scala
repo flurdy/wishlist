@@ -9,7 +9,6 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
@@ -20,7 +19,7 @@ import notifiers._
 import repositories._
 
 
-class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite with TableDrivenPropertyChecks {
+class RegisterControllerSpec extends BaseControllerSpec with TableDrivenPropertyChecks {
 
    val invalidEmailAddresses =
       Table(
@@ -67,17 +66,21 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
          ("&*@c.com", "invalid characters")
       )
 
-   trait Setup {
-      val configurationMock = mock[Configuration]
+   trait Setup extends WithApp {
       val appConfigMock = mock[ApplicationConfig]
       val recipientFactoryMock = mock[RecipientFactory]
       val recipientLookupMock = mock[RecipientLookup]
-      val recipientRepositoryMock = mock[RecipientRepository]
-      val featureTogglesMock = mock[FeatureToggles]
+      implicit val recipientRepositoryMock = mock[RecipientRepository]
+      implicit val featureTogglesMock = mock[FeatureToggles]
       val emailNotifierMock = mock[EmailNotifier]
       val usernameValidatorMock = mock[UsernameValidator]
-      val controller = new RegisterController(configurationMock, recipientFactoryMock, recipientLookupMock, emailNotifierMock, appConfigMock, usernameValidatorMock)(recipientRepositoryMock, featureTogglesMock)
-      when(appConfigMock.getString(anyString)).thenReturn(None)
+      val controller = new RegisterController(
+            controllerComponents,
+            recipientFactoryMock, recipientLookupMock, 
+            emailNotifierMock, usernameValidatorMock, appConfigMock, 
+            usernameAction, maybeCurrentRecipientAction)
+            (executionContext, recipientRepositoryMock, featureTogglesMock)
+      when(appConfigMock.findString(anyString)).thenReturn(None)
    }
 
    trait RegisterSetup extends Setup {
@@ -133,14 +136,14 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                when ( recipientLookupMock.findRecipient( "some-username" ) )
                   .thenReturn( Future.successful( None ) )
                when ( recipientFactoryMock.newRecipient( registerForm ) ).thenReturn( recipientMock )
-               when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( recipientMock ) )
+               when ( recipientMock.save()(recipientRepositoryMock, executionContext) ).thenReturn( Future.successful( recipientMock ) )
 
                val result = controller.register().apply(registerRequest)
 
                status(result) mustBe 303
                header("Location", result).value mustBe "/"
 
-               verify ( recipientMock ).save()(recipientRepositoryMock)
+               verify ( recipientMock ).save()(recipientRepositoryMock, executionContext)
             }
 
             "sends a verification email" in new RegisterSetup {
@@ -148,9 +151,9 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                when ( recipientLookupMock.findRecipient( "some-username" ) )
                   .thenReturn( Future.successful( None ) )
                when ( recipientFactoryMock.newRecipient( registerForm ) ).thenReturn( recipientMock )
-               when ( recipientMock.save()(recipientRepositoryMock) )
+               when ( recipientMock.save()(recipientRepositoryMock, executionContext) )
                   .thenReturn( Future.successful( recipientMock ) )
-               when ( recipientMock.findOrGenerateVerificationHash(recipientRepositoryMock) )
+               when ( recipientMock.findOrGenerateVerificationHash(recipientRepositoryMock, executionContext) )
                   .thenReturn( Future.successful( "some-verification-hash" ) )
                when ( recipientMock.username )
                      .thenReturn( "some-username" )
@@ -163,7 +166,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
 
                status(result) mustBe 303
 
-               verify ( recipientMock ).save()(recipientRepositoryMock)
+               verify ( recipientMock ).save()(recipientRepositoryMock, executionContext)
                verify( featureTogglesMock ).isEnabled(FeatureToggle.EmailVerification)
                verify( emailNotifierMock ).sendEmailVerification(recipientMock, "/recipient/some-username/verify/some-verification-hash/")
 
@@ -174,13 +177,13 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                when ( recipientLookupMock.findRecipient( "some-username" ) )
                   .thenReturn( Future.successful( None ) )
                when ( recipientFactoryMock.newRecipient( registerForm ) ).thenReturn( recipientMock )
-               when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( recipientMock ) )
+               when ( recipientMock.save()(recipientRepositoryMock, executionContext) ).thenReturn( Future.successful( recipientMock ) )
 
                val result = controller.register().apply(registerRequest)
 
                status(result) mustBe 303
 
-               verify ( recipientMock ).save()(recipientRepositoryMock)
+               verify ( recipientMock ).save()(recipientRepositoryMock, executionContext)
                verify( emailNotifierMock ).sendNewRegistrationAlert(recipientMock)
             }
 
@@ -193,7 +196,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                   when ( recipientLookupMock.findRecipient( "some-username" ) )
                         .thenReturn( Future.successful( None ) )
                   when ( recipientFactoryMock.newRecipient( validRegisterForm ) ).thenReturn( recipientMock )
-                  when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( recipientMock ) )
+                  when ( recipientMock.save()(recipientRepositoryMock, executionContext) ).thenReturn( Future.successful( recipientMock ) )
 
                   val validRegisterRequest = FakeRequest().withFormUrlEncodedBody(
                      "fullname" -> "some name",
@@ -206,7 +209,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
 
                   status(result) mustBe 303
 
-                  verify ( recipientMock ).save()(recipientRepositoryMock)
+                  verify ( recipientMock ).save()(recipientRepositoryMock, executionContext)
 
                }
             }
@@ -220,7 +223,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
                   when ( recipientLookupMock.findRecipient( username.trim ) )
                         .thenReturn( Future.successful( None ) )
                   when ( recipientFactoryMock.newRecipient( validRegisterForm ) ).thenReturn( recipientMock )
-                  when ( recipientMock.save()(recipientRepositoryMock) ).thenReturn( Future.successful( recipientMock ) )
+                  when ( recipientMock.save()(recipientRepositoryMock, executionContext) ).thenReturn( Future.successful( recipientMock ) )
 
                   val validRegisterRequest = FakeRequest().withFormUrlEncodedBody(
                      "fullname" -> "some name",
@@ -233,7 +236,7 @@ class RegisterControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
 
                   status(result) mustBe 303
 
-                  verify ( recipientMock ).save()(recipientRepositoryMock)
+                  verify ( recipientMock ).save()(recipientRepositoryMock, executionContext)
 
                }
             }

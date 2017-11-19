@@ -53,7 +53,7 @@ class RegistrationIntegrationSpec extends AsyncFeatureSpec
    with IntegrationPatience with StartAndStopServer
    with RegistrationIntegrationHelper with CookieIntegrationHelper {
 
-   applicationConfiguration = Map(                                  "com.flurdy.wishlist.feature.email.verification.enabled" -> false)
+   applicationConfiguration = Map("com.flurdy.wishlist.feature.email.verification.enabled" -> false)
 
    info("As a wish recipient")
    info("I want to register with the Wish application")
@@ -120,7 +120,7 @@ class RegistrationIntegrationSpec extends AsyncFeatureSpec
          response map { r =>
             r.status shouldBe 303
             r.header("Location").headOption.value shouldBe "/"
-            findFlashCookie(r).value shouldBe "messageSuccess=Welcome%2C+you+have+successfully+registered"
+            findFlashCookie(r, "messageSuccess").value shouldBe "Welcome, you have successfully registered"
          }
       }
 
@@ -139,7 +139,7 @@ class RegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
 
    feature("Registration flow with verification enabled") {
 
-      scenario("Submit full registration form") {
+      scenario("Submit aaaa full registration form") {
          val registerUrl = s"$baseUrl/register/"
 
          Given("a filled in registration form")
@@ -158,9 +158,9 @@ class RegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
          response map { r =>
             r.status shouldBe 303
             r.header("Location").headOption.value shouldBe "/"
-            val flash = findFlashCookie(r).value
-            flash should startWith ("messageSuccess=Welcome%2C+you+have+successfully+registered")
-            flash should endWith ("sent+to+you")
+            val flash = findFlashCookie(r, "messageSuccess").value
+            flash should startWith ("Welcome, you have successfully registered")
+            flash should endWith ("sent to you")
          }
       }
 
@@ -181,7 +181,7 @@ class RegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
             loginResponse.status shouldBe 400
 
             Then("should not be able to")
-            findFlashCookie(loginResponse).value shouldBe "messageError=Log+in+failed.+Email+not+verified.+Please+check+your+email"
+            findFlashCookie(loginResponse, "messageError").value shouldBe "Log in failed. Email not verified. Please check your email"
          }
       }
 
@@ -202,18 +202,18 @@ class RegistrationWithVerificationIntegrationSpec extends AsyncFeatureSpec
             registerResponse.status shouldBe 303
             registerResponse.header("Location").headOption.value shouldBe "/"
             loginResponse1.status shouldBe 400
-            findFlashCookie(loginResponse1).value shouldBe "messageError=Log+in+failed.+Email+not+verified.+Please+check+your+email"
+            findFlashCookie(loginResponse1, "messageError").value shouldBe "Log in failed. Email not verified. Please check your email"
 
             When("clicking on verify email link sent")
             verifyResponse.status shouldBe 303
 
             Then("registration should be verified")
-            val flash = findFlashCookie(verifyResponse).value
-            flash should startWith ("messageSuccess=Email+address+verified.+Please+log+in")
+            val flash = findFlashCookie(verifyResponse, "messageSuccess").value
+            flash should startWith ("Email address verified. Please log in")
 
             And("able to log in")
             loginResponse2.status shouldBe 303
-            findFlashCookie(loginResponse2).value shouldBe "message=You+have+logged+in"
+            findFlashCookie(loginResponse2, "message").value shouldBe "You have logged in"
          }
       }
    }

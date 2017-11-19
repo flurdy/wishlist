@@ -4,6 +4,8 @@ import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.{any, anyString, eq => eqTo}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
@@ -13,10 +15,9 @@ import models._
 import repositories._
 
 
-class WishlistControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
+class WishlistControllerSpec extends BaseControllerSpec {
 
-   trait Setup {
-      val configurationMock = mock[Configuration]
+   trait Setup extends WithMock {
       val appConfigMock = mock[ApplicationConfig]
       val recipientRepositoryMock = mock[RecipientRepository]
       val recipientLookupMock = mock[RecipientLookup]
@@ -29,13 +30,22 @@ class WishlistControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
       val wishLinkRepositoryMock = mock[WishLinkRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
       val featureTogglesMock = mock[FeatureToggles]
-      val controller = new WishlistController(configurationMock, recipientLookupMock, appConfigMock)(
-         wishlistRepositoryMock, wishRepositoryMock,
-         wishlistOrganiserRepositoryMock,
-         wishlistLookupMock, wishLookupMock, wishLinkRepositoryMock,
-         wishEntryRepositoryMock, recipientRepositoryMock,
+
+      val application = new GuiceApplicationBuilder()
+            .overrides(bind[RecipientLookup].toInstance(recipientLookupMock))
+            .build()
+
+      val controller = new WishlistController(
+         controllerComponents, appConfigMock, 
+         usernameAction, maybeCurrentRecipientAction)(
+         executionContext, wishlistOrganiserRepositoryMock, 
+         wishlistRepositoryMock, wishlistLookupMock,
+         wishLinkRepositoryMock, wishEntryRepositoryMock,
+         wishRepositoryMock, wishLookupMock,
+         recipientLookupMock, recipientRepositoryMock,
          reservationRepositoryMock, featureTogglesMock)
-      when(appConfigMock.getString(anyString)).thenReturn(None)
+      
+      when(appConfigMock.findString(anyString)).thenReturn(None)
    }
 
    trait WishlistSetup extends Setup {
@@ -57,7 +67,7 @@ class WishlistControllerSpec extends BaseUnitSpec with Results with GuiceOneAppP
             .thenReturn( Future.successful( Some( recipient) ))
       when( recipientRepositoryMock.findRecipientById(444) )
             .thenReturn( Future.successful( Some( another ) ))
-      when( wishLookupMock.findWishes(wishlist)(wishLinkRepositoryMock) )
+      when( wishLookupMock.findWishes(wishlist)(wishLinkRepositoryMock, executionContext) )
             .thenReturn( Future.successful(wishes) )
 
       def showAnonymousWishlist() = {

@@ -1,24 +1,20 @@
 package controllers.testonly
 
-import javax.inject.{Inject, Singleton}
-
-import play.api._
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.concurrent.Execution.Implicits._
-
-import scala.concurrent.Future
-import models._
+import scala.concurrent.{ExecutionContext, Future}
 import play.api.http.HeaderNames
+import controllers.{Secured, WithLogging}
+import models._
 import repositories._
-import controllers.{Secured, WithAnalytics, WithLogging}
 
 
-@Singleton
-class TestOnlyRecipientController @Inject() (val configuration: Configuration,
+class TestOnlyRecipientController @Inject()(cc: ControllerComponents,
       val recipientLookup: RecipientLookup, val recipientRepository: RecipientRepository, val appConfig: ApplicationConfig)
-      extends Controller with Secured with WithAnalytics with WithLogging {
+(implicit val executionContext: ExecutionContext)
+extends AbstractController(cc) with Secured with WithAnalytics with WithLogging {
 
    def findVerification(username: String) = Action.async{ _ =>
       // println("IN TEST ONLY")

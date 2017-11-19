@@ -45,7 +45,9 @@ trait ContactForm {
 }
 
 
-class ContactController @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig, usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
+class ContactController @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, 
+  val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig, 
+  usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext)
 extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm with ContactForm with WithLogging with EmailAddressChecks {
 

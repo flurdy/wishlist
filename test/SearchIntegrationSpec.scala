@@ -51,7 +51,7 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
 
             And("a wishlist from another user")
             createResponse.status shouldBe 303
-            findFlashCookie(createResponse).value shouldBe "messageSuccess=Wishlist+created"
+            findFlashCookie(createResponse, "messageSuccess").value shouldBe "Wishlist created"
 
             When("searching for that wishlist")
             searchResponse.status shouldBe 200
@@ -90,7 +90,7 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
 
             And("a wishlist from another user")
             createResponse.status shouldBe 303
-            findFlashCookie(createResponse).value shouldBe "messageSuccess=Wishlist+created"
+            findFlashCookie(createResponse, "messageSuccess").value shouldBe "Wishlist created"
 
             When("searching for that wishlist")
             searchResponse.status shouldBe 200
@@ -128,7 +128,7 @@ class SearchIntegrationSpec extends AsyncFeatureSpec
 
             And("a wishlist from another user")
             createResponse.status shouldBe 303
-            findFlashCookie(createResponse).value shouldBe "messageSuccess=Wishlist+created"
+            findFlashCookie(createResponse, "messageSuccess").value shouldBe "Wishlist created"
 
             When("searching for that wishlist")
             searchResponse.status shouldBe 200

@@ -4,21 +4,21 @@ import com.github.t3hnar.bcrypt._
 import org.mockito.ArgumentMatchers.{any,anyString,eq=>eqTo}
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import com.flurdy.wishlist.ScalaSoup
 import models._
 import repositories._
 import notifiers._
 
 
-class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
+class RecipientControllerSpec extends BaseControllerSpec {
 
-   trait Setup {
-      val configurationMock = mock[Configuration]
+   trait Setup extends WithMock {
       val appConfigMock = mock[ApplicationConfig]
       val recipientRepositoryMock = mock[RecipientRepository]
       val recipientLookupMock = mock[RecipientLookup]
@@ -31,8 +31,18 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
       val reservationRepositoryMock = mock[ReservationRepository]
       val featureTogglesMock = mock[FeatureToggles]
       val emailNotifierMock = mock[EmailNotifier]
-      val controller = new RecipientController(configurationMock, recipientLookupMock, emailNotifierMock, appConfigMock)(
+
+      val application = new GuiceApplicationBuilder()
+            .overrides(bind[RecipientLookup].toInstance(recipientLookupMock))
+            .build()
+
+      val controller = new RecipientController(
+            controllerComponents,  
+            emailNotifierMock, appConfigMock,
+            usernameAction, maybeCurrentRecipientAction)(
+            executionContext,
             recipientRepositoryMock,
+            recipientLookupMock,
             wishlistRepositoryMock,
             wishLinkRepositoryMock,
             wishLookupMock,
@@ -61,7 +71,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
             .thenReturn( Future.successful( Some( recipient ) ) )
       when( recipientRepositoryMock.findRecipientById(5555) )
             .thenReturn( Future.successful( Some( anotherRecipient ) ) )
-      when(appConfigMock.getString(anyString)).thenReturn(None)
+      when(appConfigMock.findString(anyString)).thenReturn(None)
    }
 
    trait ProfileSetup extends Setup {
@@ -103,9 +113,11 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                .thenReturn( Future.successful( List(organised) ))
          when( reservationRepositoryMock.findReservationsByReserver(recipient) )
                .thenReturn( Future.successful( reservations))
-         when( reservationRepositoryMock.inflateReservationsReserver(reservations)(recipientRepositoryMock) )
+         when( reservationRepositoryMock.inflateReservationsReserver(
+               eqTo(reservations))(any[ExecutionContext], eqTo(recipientRepositoryMock)) )
                .thenReturn( Future.successful( reservations ))
-         when( reservationRepositoryMock.inflateReservationsWishRecipient(reservations)(recipientRepositoryMock) )
+         when( reservationRepositoryMock.inflateReservationsWishRecipient(
+               eqTo(reservations))(any[ExecutionContext], eqTo(recipientRepositoryMock) ))
                .thenReturn( Future.successful( reservations ))
 
          val result = controller.showProfile("someuser").apply(
@@ -223,8 +235,10 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                      .headOption.value.text mustBe "someother"
 
                verify( reservationRepositoryMock ).findReservationsByReserver(recipient)
-               verify( reservationRepositoryMock ).inflateReservationsWishRecipient(reservations)(recipientRepositoryMock)
-               verify( reservationRepositoryMock ).inflateReservationsReserver(reservations)(recipientRepositoryMock)
+               verify( reservationRepositoryMock ).inflateReservationsWishRecipient(
+                     eqTo(reservations))(any[ExecutionContext], eqTo(recipientRepositoryMock) )
+               verify( reservationRepositoryMock ).inflateReservationsReserver(
+                     eqTo(reservations))(any[ExecutionContext], eqTo(recipientRepositoryMock) )
             }
             "create wishlist button" in new ProfileSetup {
                showRecipientProfile()
@@ -250,7 +264,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                statusAndBody._1 mustBe 200
                statusAndBody._2.select("#edit-profile-page").headOption mustBe defined
 
-               verify( recipientLookupMock, times(2) ).findRecipient("someuser")
+               verify( recipientLookupMock, times(4) ).findRecipient("someuser")
             }
          }
          "a valid other username" should {
@@ -324,7 +338,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
          "another username than current recipient" should {
             "not show change password" in new Setup {
 
-               val result = controller.showChangePassword("someotheruser").apply(
+               val result = controller.showChangePassword("someother").apply(
                      FakeRequest().withSession("username"  -> "someuser"))
 
                status(result) mustBe 401
@@ -339,13 +353,12 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                "matching valid new password and confirm" should {
                   "update password" in new Setup {
 
-                     when( recipientRepositoryMock.findCredentials(any[Recipient]))
+                     when( recipientRepositoryMock.findCredentials(any[Recipient])(any[ExecutionContext]))
                         .thenReturn( Future.successful( Some("some-password".bcrypt) ))
 
-                     when( recipientRepositoryMock.updatePassword(any[Recipient]))
+                     when( recipientRepositoryMock.updatePassword(any[Recipient])(any[ExecutionContext]))
                         .thenReturn( Future.successful(recipient) )
-
-                     when( emailNotifierMock.sendPasswordChangedNotification(recipient) )
+                     when( emailNotifierMock.sendPasswordChangedNotification(any[Recipient]) )
                            .thenReturn( Future.successful( () ))
 
                      val result = controller.updatePassword("someuser").apply(
@@ -371,7 +384,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
 
                      status(result) mustBe 400
 
-                     verify( recipientRepositoryMock, never ).findCredentials(any[Recipient])
+                     verify( recipientRepositoryMock, never ).findCredentials(any[Recipient])(any[ExecutionContext])
 
                   }
                }
@@ -379,7 +392,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
             "invalid existing password" should {
                "not update passwords" in new Setup {
 
-                  when( recipientRepositoryMock.findCredentials(any[Recipient]))
+                  when( recipientRepositoryMock.findCredentials(any[Recipient])(any[ExecutionContext]))
                      .thenReturn( Future.successful( Some("some-password".bcrypt) ))
 
                   val result = controller.updatePassword("someuser").apply(
@@ -397,7 +410,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
          "another username than ccurent recipient" should {
             "not update passwords" in new Setup {
 
-               val result = controller.updatePassword("someotheruser").apply(
+               val result = controller.updatePassword("someother").apply(
                      FakeRequest().withSession("username"  -> "someuser")
                      .withFormUrlEncodedBody(
                         "password" -> "some-password",
@@ -447,7 +460,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                   when( emailNotifierMock.sendPasswordResetEmail(eqTo(recipient), anyString) )
                         .thenReturn( Future.successful( () ))
 
-                  when( recipientRepositoryMock.updatePassword(any[Recipient]))
+                  when( recipientRepositoryMock.updatePassword(any[Recipient])(any[ExecutionContext]))
                      .thenReturn( Future.successful(recipient) )
 
                   val result = controller.resetPassword().apply(
@@ -469,7 +482,7 @@ class RecipientControllerSpec extends BaseUnitSpec with Results with GuiceOneApp
                   when( emailNotifierMock.sendPasswordResetEmail(eqTo(anotherRecipient), anyString) )
                      .thenReturn( Future.successful( () ))
 
-                  when( recipientRepositoryMock.updatePassword(any[Recipient]))
+                  when( recipientRepositoryMock.updatePassword(any[Recipient])(any[ExecutionContext]))
                      .thenReturn( Future.successful(recipient) )
 
                   val result = controller.resetPassword().apply(

@@ -74,7 +74,7 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
 
             When("creating a new wishlist")
             createWishlistResponse.status shouldBe 303
-            findFlashCookie(createWishlistResponse).value shouldBe "messageSuccess=Wishlist+created"
+            findFlashCookie(createWishlistResponse, "messageSuccess").value shouldBe "Wishlist created"
 
             Then("should create wishlist")
             wishlistLocation shouldBe s"/testerson/wishlist/$wishlistId/"
@@ -142,7 +142,7 @@ class WishlistIntegrationSpec extends AsyncFeatureSpec
 
             When("deleting wishlist")
             removeWishlistResponse.status shouldBe 303
-            findFlashCookie(removeWishlistResponse).value shouldBe "messageWarning=Wishlist+deleted"
+            findFlashCookie(removeWishlistResponse, "messageWarning").value shouldBe "Wishlist deleted"
 
             Then("wishlist should be removed")
             showWishlistResponse2.status shouldBe 404

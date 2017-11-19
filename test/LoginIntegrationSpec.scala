@@ -3,7 +3,10 @@ package com.flurdy.wishlist
 import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
-import play.api.libs.ws.WSResponse
+import play.api._
+import play.api.http.{JWTConfiguration, SecretConfiguration}
+import play.api.libs.ws.{WSCookie, WSResponse}
+import play.api.mvc.JWTCookieDataCodec
 import scala.concurrent.{ExecutionContext, Future}
 
 trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIntegrationHelper {
@@ -47,15 +50,27 @@ trait FrontPageIntegrationHelper extends IntegrationHelper  {
 
 trait CookieIntegrationHelper {
 
-  def findCookie(response: WSResponse, cookieName: String) =
-      response.cookies.find(_.name.exists(_ == cookieName)).flatMap(_.value)
+   val secretKey = Configuration.load(Environment.simple()).get[String]("play.http.secret.key")
+   val jwtCodec = new JWTCookieDataCodec {
+      override def jwtConfiguration = JWTConfiguration()
+      override def secretConfiguration = SecretConfiguration(secretKey)
+   }
+
+   private def findCookie(response: WSResponse, cookieName: String): Option[WSCookie] =
+       response.cookies.find( _.name == cookieName)
+   
+   private def findDecodedCookie(response: WSResponse, cookieName: String): Option[Map[String,String]] =
+      findCookie(response, cookieName).map { cookie =>
+            jwtCodec.decode(cookie.value)
+       }
 
    def printCookies(response: WSResponse) =
       response.cookies.foreach( c => println( s"cookie is $c" ))
 
-  def findSessionCookie(response: WSResponse) = findCookie(response, "PLAY_SESSION")
+   def findSessionCookie(response: WSResponse): Option[String] = 
+        findCookie(response, "PLAY_SESSION").map(_.value)
 
-  def findFlashCookie(response: WSResponse)   = findCookie(response, "PLAY_FLASH")
+   def findFlashCookie(response: WSResponse, key: String): Option[String] = findDecodedCookie(response, "PLAY_FLASH").map( _(key) )
 
 }
 
@@ -96,7 +111,7 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
             When("submitting the login form")
             loginResponse.status shouldBe 303
             loginResponse.header("Location").headOption.value shouldBe "/"
-            findFlashCookie(loginResponse).value shouldBe "message=You+have+logged+in"
+            findFlashCookie(loginResponse, "message").value shouldBe "You have logged in"
 
             Then("should be logged in")
             val loginFormAfter = ScalaSoup.parse(frontAfter.body).select("#login-box input").headOption
@@ -128,7 +143,7 @@ class LoginIntegrationSpec extends AsyncFeatureSpec
             When("logging out")
             logoutResponse.status shouldBe 303
             logoutResponse.header("Location").headOption.value shouldBe "/"
-            findFlashCookie(logoutResponse).value shouldBe "message=You+have+been+logged+out"
+            findFlashCookie(logoutResponse, "message").value shouldBe "You have been logged out"
 
             Then("should be logged out")
             val loggedOutLink = ScalaSoup.parse(frontLogout.body).select("#logout-box li a").headOption

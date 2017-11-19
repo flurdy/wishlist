@@ -48,7 +48,9 @@ trait RegisterForm {
   )
 }
 
-class RegisterController @Inject()(cc: ControllerComponents, val recipientFactory: RecipientFactory, val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, val usernameValidator: UsernameValidator, val appConfig: ApplicationConfig,
+class RegisterController @Inject()(cc: ControllerComponents, val recipientFactory: RecipientFactory, 
+   val recipientLookup: RecipientLookup, val emailNotifier: EmailNotifier, 
+   val usernameValidator: UsernameValidator, val appConfig: ApplicationConfig,
    usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext, val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm with EmailAddressChecks with WithLogging {
@@ -88,7 +90,7 @@ extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm
                                     }
                                  }
                               } else {
-                                 logger.info("Email verification not enabled/")
+                                 logger.info("Email verification not enabled")
                                  Future.successful(
                                     Redirect(routes.Application.index()).withSession(
                                        "username" -> registeredForm._1).flashing(

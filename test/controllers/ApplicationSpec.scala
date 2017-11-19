@@ -2,17 +2,19 @@ package controllers
 
 import akka.stream.Materializer
 import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers.{any,anyString}
+import org.mockito.ArgumentMatchers.{any, anyString, eq => eqTo}
 import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play._
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite 
+import play.api.{Application => PlayApplication, Configuration}
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import com.flurdy.wishlist.ScalaSoup
 import models._
 import repositories._
@@ -36,17 +38,50 @@ trait BaseUnitSpec extends PlaySpec with MockitoSugar with ScalaFutures {
      def show        = afterWord("show")
 }
 
+trait BaseControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
 
-class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
+   trait WithApp {   
+      val controllerComponents = app.injector.instanceOf[ControllerComponents]
+      val usernameAction = app.injector.instanceOf[UsernameAction]
+      val maybeCurrentRecipientAction = app.injector.instanceOf[MaybeCurrentRecipientAction]
+      implicit val executionContext = controllerComponents.executionContext
+   }
 
-   trait Setup {
-      val configurationMock = mock[Configuration]
+   trait WithMock {
+      def application: PlayApplication
+      lazy val controllerComponents = application.injector.instanceOf[ControllerComponents]
+      lazy val usernameAction = application.injector.instanceOf[UsernameAction]
+      lazy val maybeCurrentRecipientAction = application.injector.instanceOf[MaybeCurrentRecipientAction]
+      implicit lazy val executionContext = controllerComponents.executionContext
+
+   }
+
+}
+
+
+class ApplicationSpec extends BaseControllerSpec {
+
+   trait Setup extends WithMock {
       val appConfigMock = mock[ApplicationConfig]
-      val wishlistRepositoryMock = mock[WishlistRepository]
-      val recipientRepositoryMock = mock[RecipientRepository]
+      implicit val wishlistRepositoryMock = mock[WishlistRepository]
+      implicit val recipientRepositoryMock = mock[RecipientRepository]
       val recipientLookupMock = mock[RecipientLookup]
-      val controller = new Application(configurationMock, recipientLookupMock, appConfigMock)(wishlistRepositoryMock, recipientRepositoryMock)
-      when(appConfigMock.getString(anyString)).thenReturn(None)
+
+      val application = new GuiceApplicationBuilder()
+            .overrides(bind[RecipientLookup].toInstance(recipientLookupMock))
+            .build()
+
+      val controller = new Application(
+            controllerComponents,
+            recipientLookupMock,
+            appConfigMock,
+            usernameAction,
+            maybeCurrentRecipientAction)
+            (executionContext,
+            wishlistRepositoryMock,
+            recipientRepositoryMock)
+
+      when(appConfigMock.findString(anyString)).thenReturn(None)
    }
 
    "Application controller" when requesting {
@@ -73,9 +108,10 @@ class ApplicationSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite
                      .thenReturn(Future.successful(Some(recipientMock)))
                when(recipientRepositoryMock.findRecipient("some-username"))
                      .thenReturn(Future.successful(Some(recipientMock)))
-               when(recipientMock.findAndInflateWishlists(wishlistRepositoryMock, recipientRepositoryMock))
+               when(recipientMock.username).thenReturn("some-username")
+               when(recipientMock.findAndInflateWishlists(eqTo(wishlistRepositoryMock), eqTo(recipientRepositoryMock), any[ExecutionContext]))
                      .thenReturn(Future.successful(wishlists))
-               when(recipientMock.inflate(recipientRepositoryMock))
+               when(recipientMock.inflate(eqTo(recipientRepositoryMock), any[ExecutionContext]))
                      .thenReturn(Future.successful(recipientMock))
 
                val result = controller.index().apply(FakeRequest().withSession("username"  -> "some-username"))

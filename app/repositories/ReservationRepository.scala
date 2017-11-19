@@ -78,7 +78,8 @@ with ReservationMapper {
          }
       }
 
-   def inflateReservationsReserver(shallowReservations: List[Reservation])(implicit ec: ExecutionContext, recipientRepository: RecipientRepository): Future[List[Reservation]] = {
+   def inflateReservationsReserver(shallowReservations: List[Reservation])
+   (implicit ec: ExecutionContext, recipientRepository: RecipientRepository): Future[List[Reservation]] = {
       val thickerReservations =
          shallowReservations.flatMap { reservation =>
             reservation.reserver.recipientId map { recipientId =>
@@ -90,7 +91,8 @@ with ReservationMapper {
       Future.sequence(thickerReservations).map( _.flatten )
    }
 
-   def inflateReservationsWishRecipient(shallowReservations: List[Reservation])(implicit ec: ExecutionContext, recipientRepository: RecipientRepository): Future[List[Reservation]] = {
+   def inflateReservationsWishRecipient(shallowReservations: List[Reservation])
+   (implicit ec: ExecutionContext, recipientRepository: RecipientRepository): Future[List[Reservation]] = {
       val thickerReservations =
          shallowReservations.flatMap { reservation =>
             reservation.wish.recipient.recipientId map { recipientId =>

@@ -4,19 +4,22 @@ import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.{any, anyString, eq => eqTo}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import com.flurdy.wishlist.ScalaSoup
 import models._
 import repositories._
 
 
-class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSuite {
+class WishControllerSpec extends BaseControllerSpec {
 
-   trait Setup {
-      val configurationMock = mock[Configuration]
+   trait Setup extends WithMock { 
+
+
       val appConfigMock = mock[ApplicationConfig]
       val recipientRepositoryMock = mock[RecipientRepository]
       val recipientLookupMock = mock[RecipientLookup]
@@ -29,16 +32,30 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       val wishLinkRepositoryMock = mock[WishLinkRepository]
       val reservationRepositoryMock = mock[ReservationRepository]
       val featureTogglesMock = mock[FeatureToggles]
-      val wishController = new WishController(configurationMock, recipientLookupMock, appConfigMock)(
-         wishlistRepositoryMock, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock,
+
+      val application = new GuiceApplicationBuilder()
+            .overrides(bind[RecipientLookup].toInstance(recipientLookupMock))
+            .build()
+            
+      val wishController = new WishController(
+            controllerComponents, recipientLookupMock, appConfigMock,
+            usernameAction, maybeCurrentRecipientAction)(
+         executionContext, wishRepositoryMock, wishEntryRepositoryMock, wishlistLookupMock,
          wishLookupMock, wishLinkRepositoryMock, reservationRepositoryMock, recipientRepositoryMock, featureTogglesMock)
+         
       val wishlistController = new WishlistController(
-         configurationMock, recipientLookupMock, appConfigMock)(
-         wishlistRepositoryMock, wishRepositoryMock, wishlistOrganiserRepositoryMock,
-         wishlistLookupMock, wishLookupMock, wishLinkRepositoryMock,
-         wishEntryRepositoryMock, recipientRepositoryMock,
-         reservationRepositoryMock, featureTogglesMock)
-      when(appConfigMock.getString(anyString)).thenReturn(None)
+         controllerComponents, appConfigMock,
+         usernameAction, maybeCurrentRecipientAction)(
+         executionContext,
+         wishlistOrganiserRepositoryMock,
+         wishlistRepositoryMock, wishlistLookupMock,
+         wishLinkRepositoryMock, wishEntryRepositoryMock,
+         wishRepositoryMock, wishLookupMock,
+         recipientLookupMock,
+         recipientRepositoryMock,
+         reservationRepositoryMock, 
+         featureTogglesMock)
+      when(appConfigMock.findString(anyString)).thenReturn(None)
    }
 
    trait WishSetup extends Setup {
@@ -59,49 +76,33 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
       val updatedWish = unreservedWish.copy( title = "updated wishlist",
                                             description = Some("updated description") )
 
-      when( wishLookupMock.findWishById(444) )
-            .thenReturn(Future.successful(Some(unreservedWish)))
-      when( wishLookupMock.findWishById(544) )
-            .thenReturn(Future.successful(Some(anotherReservedWish)))
-      when( wishLookupMock.findWishById(644) )
-            .thenReturn(Future.successful(Some(otherReservedWish)))
+      when( wishLookupMock.findWishById(444) ).thenReturn(Future.successful(Some(unreservedWish)))
+      when( wishLookupMock.findWishById(544) ).thenReturn(Future.successful(Some(anotherReservedWish)))
+      when( wishLookupMock.findWishById(644) ).thenReturn(Future.successful(Some(otherReservedWish)))
+      when( wishLookupMock.findWishes(wishlist)(wishLinkRepositoryMock, executionContext) ).thenReturn( Future.successful(wishes) )
 
-      when( wishlistLookupMock.findWishlist(123) )
-            .thenReturn(Future.successful(Some(wishlist)))
-      when( wishLookupMock.findWishes(wishlist)(wishLinkRepositoryMock) )
-            .thenReturn( Future.successful(wishes) )
-      when( recipientLookupMock.findRecipient("someuser") )
-            .thenReturn( Future.successful( Some( recipient ) ))
-      when( recipientLookupMock.findRecipient("someotheruser") )
-            .thenReturn( Future.successful( Some( another ) ))
-      when( recipientLookupMock.findRecipient("somethirduser") )
-            .thenReturn( Future.successful( Some( otheruser ) ))
-      when( recipientRepositoryMock.findRecipientById(222) )
-            .thenReturn( Future.successful( Some( recipient ) ))
-      when( wishlistRepositoryMock.findRecipientWishlists( recipient ) )
-            .thenReturn( Future.successful( List(wishlist) ))
-      when( wishlistRepositoryMock.findOrganisedWishlists( recipient ) )
-            .thenReturn( Future.successful( List() ))
+      when( recipientLookupMock.findRecipient("someuser") ).thenReturn( Future.successful( Some( recipient ) ))
+      when( recipientLookupMock.findRecipient("someotheruser") ).thenReturn( Future.successful( Some( another ) ))
+      when( recipientLookupMock.findRecipient("somethirduser") ).thenReturn( Future.successful( Some( otheruser ) ))
+      
+      when( recipientRepositoryMock.findRecipientById(222) ).thenReturn( Future.successful( Some( recipient ) ))
 
-      when( wishlistLookupMock.isOrganiserOfWishlist(another, wishlist))
-            .thenReturn( Future.successful( true ))
-      when( wishlistLookupMock.isOrganiserOfWishlist(otheruser, wishlist))
-            .thenReturn( Future.successful( false ))
+      when( wishlistRepositoryMock.findRecipientWishlists( recipient ) ).thenReturn( Future.successful( List(wishlist) ))
+      when( wishlistRepositoryMock.findOrganisedWishlists( recipient ) ).thenReturn( Future.successful( List() ))
 
-      when( wishRepositoryMock.updateWish(updatedWish))
-            .thenReturn( Future.successful(updatedWish))
+      when( wishlistLookupMock.findWishlist(123) ).thenReturn(Future.successful(Some(wishlist)))      
+      when( wishlistLookupMock.isOrganiserOfWishlist(another, wishlist) ).thenReturn( Future.successful( true ))
+      when( wishlistLookupMock.isOrganiserOfWishlist(otheruser, wishlist) ).thenReturn( Future.successful( false ))
 
-      when( wishRepositoryMock.deleteWish(unreservedWish))
-            .thenReturn( Future.successful(true) )
+      when( wishRepositoryMock.updateWish(updatedWish) ).thenReturn( Future.successful(updatedWish))
+      when( wishRepositoryMock.deleteWish(unreservedWish) ).thenReturn( Future.successful(true) )
 
-      when( wishEntryRepositoryMock.removeWishFromWishlist(unreservedWish, wishlist))
-            .thenReturn( Future.successful(wishlist))
+      when( wishEntryRepositoryMock.removeWishFromWishlist(unreservedWish, wishlist) ).thenReturn( Future.successful(wishlist))
+      when( wishEntryRepositoryMock.removeWishFromAllWishlists(unreservedWish) ).thenReturn( Future.successful(true))
 
-      when( wishEntryRepositoryMock.removeWishFromAllWishlists(unreservedWish))
-            .thenReturn( Future.successful(true))
+      when( wishLinkRepositoryMock.findLinks(unreservedWish) ).thenReturn( Future.successful( List() ))
 
-      when( wishLinkRepositoryMock.findLinks(unreservedWish))
-            .thenReturn( Future.successful( List() ))
+      println(" Recipient mock lookup is " + recipientLookupMock)
 
       def showSessionWishlist(sessionUsername: String) = {
          val result = wishlistController.showWishlist("someuser", 123)
@@ -142,7 +143,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
             .thenReturn( Future.successful( List(wishlist) ))
 
       clearInvocations(reservationRepositoryMock)
-      when( reservationRepositoryMock.saveReservation( any[Reservation]))
+      when( reservationRepositoryMock.saveReservation( any[Reservation])(any[ExecutionContext]))
             .thenReturn( Future.successful( anotherReservation ))
 
       def showWishlist() = showSessionWishlist("someotheruser")
@@ -153,7 +154,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
 
    trait WishOtherSetup extends WishSetup {
       clearInvocations(reservationRepositoryMock)
-      when( reservationRepositoryMock.saveReservation( any[Reservation]))
+      when( reservationRepositoryMock.saveReservation( any[Reservation])(any[ExecutionContext]))
             .thenReturn( Future.successful( otherReservation ))
 
       def showWishlist() = showSessionWishlist("somethirduser")
@@ -322,7 +323,7 @@ class WishControllerSpec extends BaseUnitSpec with Results with GuiceOneAppPerSu
          }
          "reserveWish" should {
             "not be able to reserve wish" in new WishAnonSetup {
-               status(reserveWish()) mustBe 401
+               status(reserveWish()) mustBe 404
             }
          }
          "updateWish" should {

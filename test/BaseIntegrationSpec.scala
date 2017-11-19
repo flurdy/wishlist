@@ -6,6 +6,7 @@ import play.api.test.{Helpers, TestServer}
 import play.api.libs.ws.WSClient
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
+
 trait WithTestServer {
 
    var app: Application = _
@@ -20,7 +21,7 @@ trait WithTestServer {
       app = new  GuiceApplicationBuilder()
          .configure(applicationConfiguration)
          .build()
-      server = new TestServer(port, app)
+      server = TestServer(port, app)
       server.start()
    }
 
@@ -44,6 +45,6 @@ trait IntegrationHelper {
 
    def wsWithSession(url: String, session: Option[String]) =
       session.fold( getWsClient().url(url) ){ s =>
-         getWsClient().url(url).withHeaders("cookie" -> s"PLAY_SESSION=$s")
+         getWsClient().url(url).withHttpHeaders("cookie" -> s"PLAY_SESSION=$s")
       }
 }
