@@ -10,7 +10,7 @@ import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 import scala.concurrent.{ExecutionContext, Future}
-import com.flurdy.wishlist.ScalaSoup
+import com.flurdy.scalasoup.ScalaSoup
 import models._
 import repositories._
 
@@ -101,8 +101,6 @@ class WishControllerSpec extends BaseControllerSpec {
       when( wishEntryRepositoryMock.removeWishFromAllWishlists(unreservedWish) ).thenReturn( Future.successful(true))
 
       when( wishLinkRepositoryMock.findLinks(unreservedWish) ).thenReturn( Future.successful( List() ))
-
-      println(" Recipient mock lookup is " + recipientLookupMock)
 
       def showSessionWishlist(sessionUsername: String) = {
          val result = wishlistController.showWishlist("someuser", 123)

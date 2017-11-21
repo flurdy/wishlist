@@ -115,6 +115,35 @@ trait RecipientActions {
          }
       }
    }
+
+
+   // def CurrentRecipientEditorAction = new ActionRefiner[UsernameRequest, MaybeCurrentRecipientRequest] {
+   //    def refine[A](input: UsernameRequest[A]) =
+   //       input.username match {
+   //          case Some(username) =>
+   //             recipientLookup.findRecipient(username).map( recipient =>
+   //                Right( new MaybeCurrentRecipientRequest(recipient, input) ) )
+   //          case None =>
+   //             implicit val flash = input.flash
+   //             implicit val currentRecipient = None
+   //             Future.successful( Left(NotFound(views.html.error.notfound())) )
+   //       }
+   // }
+
+
+   // def CurrentRecipientAction = new ActionRefiner[UsernameRequest, MaybeCurrentRecipientRequest] {
+   //    def refine[A](input: UsernameRequest[A]) =
+   //       input.username match {
+   //          case Some(username) =>
+   //             recipientLookup.findRecipient(username).map( recipient =>
+   //                Right( new MaybeCurrentRecipientRequest(recipient, input) ) )
+   //          case None =>
+   //             implicit val flash = input.flash
+   //             implicit val currentRecipient = None
+   //             Future.successful( Left(NotFound(views.html.error.notfound())) )
+   //       }
+   // }
+
 }
 
 

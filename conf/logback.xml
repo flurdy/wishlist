@@ -47,6 +47,8 @@
   <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
   <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+  <logger name="com.gargoylesoftware.htmlunit.DefaultCssErrorHandler" level="OFF" />
+  <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
 
   <logger name="org.jdbcdslog" level="WARN" />
   <logger name="com.zaxxer.hikari" level="WARN" />

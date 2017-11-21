@@ -4,6 +4,8 @@ import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
 import play.api.libs.ws.WSResponse
+import com.flurdy.scalasoup.ScalaSoup
+
 
 trait SearchIntegrationHelper extends IntegrationHelper {
 

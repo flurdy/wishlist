@@ -8,6 +8,8 @@ import play.api.http.{JWTConfiguration, SecretConfiguration}
 import play.api.libs.ws.{WSCookie, WSResponse}
 import play.api.mvc.JWTCookieDataCodec
 import scala.concurrent.{ExecutionContext, Future}
+import com.flurdy.scalasoup.ScalaSoup
+
 
 trait LoginIntegrationHelper extends RegistrationIntegrationHelper with CookieIntegrationHelper {
 

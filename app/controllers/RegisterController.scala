@@ -117,9 +117,12 @@ extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm
          emailInForm => {
             emailInForm match {
                case None => Ok(views.html.register(registerForm))
-               case Some(email) =>
+               case Some(email) if email.contains("@") =>                  
                   Ok(views.html.register(
                      registerForm.fill( email, None, email, "", "") ) )
+               case Some(username)  =>                  
+                  Ok(views.html.register(
+                     registerForm.fill( username, None, "", "", "") ) )
             }
          }
       )

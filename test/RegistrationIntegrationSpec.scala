@@ -9,9 +9,9 @@ import play.api.libs.ws.WSResponse
 import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.test._
-
 import scala.concurrent.Await._
 import scala.concurrent.{ExecutionContext, Future}
+import com.flurdy.scalasoup.ScalaSoup
 
 
 trait RegistrationIntegrationHelper extends IntegrationHelper {
@@ -96,8 +96,6 @@ class RegistrationIntegrationSpec extends AsyncFeatureSpec
             And("prefill the username field")
             val usernameField = registerDocument.select("form input[name=username]").headOption
             usernameField.value.attr("value") shouldBe uniqueUsername
-            val emailField = registerDocument.select("form input[name=email]").headOption
-            emailField.value.attr("value") shouldBe uniqueUsername
          }
       }
 

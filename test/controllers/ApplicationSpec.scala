@@ -15,7 +15,7 @@ import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 import scala.concurrent.{ExecutionContext, Future}
-import com.flurdy.wishlist.ScalaSoup
+import com.flurdy.scalasoup.ScalaSoup
 import models._
 import repositories._
 

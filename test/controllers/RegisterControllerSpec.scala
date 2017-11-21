@@ -13,7 +13,7 @@ import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 import scala.concurrent.{ExecutionContext,Future}
-import com.flurdy.wishlist.ScalaSoup
+import com.flurdy.scalasoup.ScalaSoup
 import models._
 import notifiers._
 import repositories._
@@ -98,7 +98,7 @@ class RegisterControllerSpec extends BaseControllerSpec with TableDrivenProperty
    "Register controller" when requesting {
 
       "[GET] /register.html" should {
-         "prefill the register form" in new Setup {
+         "prefill the register form with email" in new Setup {
             val request = FakeRequest().withFormUrlEncodedBody("email" -> "some-username")
 
             val result = controller.redirectToRegisterForm().apply(request)
@@ -108,7 +108,19 @@ class RegisterControllerSpec extends BaseControllerSpec with TableDrivenProperty
             val bodyDom = ScalaSoup.parse(contentAsString(result))
             bodyDom.select(s"#register-page").headOption mustBe defined
             bodyDom.select(s"form #inputUsername").headOption.value.attr("value") mustBe "some-username"
-            bodyDom.select(s"form #inputEmail").headOption.value.attr("value") mustBe "some-username"
+            bodyDom.select(s"form #inputEmail").headOption.value.attr("value") mustBe ""
+         }
+         "prefill the register form with username" in new Setup {
+            val request = FakeRequest().withFormUrlEncodedBody("email" -> "some-username@example.com")
+
+            val result = controller.redirectToRegisterForm().apply(request)
+
+            status(result) mustBe 200
+
+            val bodyDom = ScalaSoup.parse(contentAsString(result))
+            bodyDom.select(s"#register-page").headOption mustBe defined
+            bodyDom.select(s"form #inputUsername").headOption.value.attr("value") mustBe "some-username@example.com"
+            bodyDom.select(s"form #inputEmail").headOption.value.attr("value") mustBe "some-username@example.com"
          }
       }
 

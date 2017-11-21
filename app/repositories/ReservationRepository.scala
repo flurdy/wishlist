@@ -9,6 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import models._
 import controllers.WithLogging
 
+
 trait ReservationMapper {
    val MapToShallowReservation = {
       get[Long]("reservationid") ~

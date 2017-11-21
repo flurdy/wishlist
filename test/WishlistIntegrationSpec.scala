@@ -5,6 +5,8 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.OptionValues._
 import play.api.libs.ws.WSResponse
 import scala.concurrent.{ExecutionContext, Future}
+import com.flurdy.scalasoup.ScalaSoup
+
 
 trait WishlistIntegrationHelper extends IntegrationHelper {
 

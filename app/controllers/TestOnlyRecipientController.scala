@@ -17,12 +17,13 @@ class TestOnlyRecipientController @Inject()(cc: ControllerComponents,
 extends AbstractController(cc) with Secured with WithAnalytics with WithLogging {
 
    def findVerification(username: String) = Action.async{ _ =>
-      // println("IN TEST ONLY")
       recipientLookup.findRecipient(username.toLowerCase().trim).flatMap {
          case Some(recipient) =>
             recipientRepository.findVerificationHash(recipient).map {
                case Some(hash) =>
-                  Ok.withHeaders(HeaderNames.LOCATION -> s"/recipient/${username.toLowerCase.trim}/verify/$hash/")
+                  logger.warn(s"TEST ONLY: Redirecting [$username] to hash value: $hash")
+                  // Ok.withHeaders(HeaderNames.LOCATION -> s"/recipient/${username.toLowerCase.trim}/verify/$hash/")
+                  Redirect(s"/recipient/${username.toLowerCase.trim}/verify/$hash/")
                case _ =>
                   logger.info(s"No verification has found for [$username]")
                   NotFound

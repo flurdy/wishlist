@@ -110,7 +110,7 @@
             <button class="wish-cancel-button wish-edit noshow btn btn-small input-small btn-inverse" data-dismiss="modal" aria-hidden="true" type="button">cancel</button>
             @form(action = routes.WishController.alsoRemoveWishFromWishlist(wishlist.recipient.username,wishlist.wishlistId.get,wish.wishId.get), 'class -> "form-inline"){
                 <input type="hidden" name="username" value="@recipient.username" />
-                <button type="submit" class="wish-edit noshow btn btn-danger input-small btn-small">delete wish</button>
+                <button type="submit" class="wish-edit wish-delete-button noshow btn btn-danger input-small btn-small">delete wish</button>
             }
         </div>
     }

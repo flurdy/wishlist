@@ -24,6 +24,12 @@ jobs:
           name: Compile
           command: cat /dev/null | activator test:compile
 
+      - run: 
+          name: Install Chrome Driver
+          command: |
+             apk update
+             apk add chromium-chromedriver
+
       - run:
           name: Test build
           command: cat /dev/null | activator test:test
@@ -42,31 +48,6 @@ jobs:
 
       - store_artifacts:
           path: target/universal/stage
-
-      # - run:
-      #     name: Install Docker client
-      #     command: |
-      #        apk update
-      #        apk add docker
-      #
-      # - setup_remote_docker:
-      #     docker_layer_caching: true
-      #
-      # - run:
-      #     name: Build Docker image
-      #     command: docker build -t $DOCKER_BUILD_TAG:latest .
-      #
-      # - run:
-      #     name: Tag Docker image
-      #     command: docker tag $DOCKER_BUILD_TAG:latest $DOCKER_TAG
-      #
-      # - run:
-      #     name: Login to Docker registry
-      #     command: docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY
-      #
-      # - run:
-      #     name: Push image to registry
-      #     command: docker push $DOCKER_TAG
 
       - run:
           name: Deploy to Heroku staging
