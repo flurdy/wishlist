@@ -1,4 +1,5 @@
-@(contactForm:Form[(String,String,Option[String],Option[String],String)])(implicit flash: Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[AnalyticsDetails])
+@(contactForm:Form[(String,String,Option[String],Option[String],String)])(implicit flash: Flash,
+currentRecipient: Option[Recipient], analyticsDetails: Option[AnalyticsDetails], adsenseDetails: Option[AdsenseDetails])
 
 @import helper._
 
@@ -137,6 +138,8 @@
          </div>
 		</div>
    }
+
+@adsense(adsenseDetails)
 
    </div>
 }

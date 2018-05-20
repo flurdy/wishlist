@@ -28,7 +28,7 @@ trait LoginForm {
 
 class LoginController @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig, usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext, recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
-extends AbstractController(cc) with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging {
+extends AbstractController(cc) with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging with WithAdsense {
 
    def redirectToLoginForm = Action { implicit request =>
       Redirect(routes.LoginController.showLoginForm())

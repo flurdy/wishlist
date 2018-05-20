@@ -1,4 +1,5 @@
-@(registerForm:Form[(String,Option[String],String,String,String)], errorMessage: Option[String] = None)(implicit flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[AnalyticsDetails])
+@(registerForm:Form[(String,Option[String],String,String,String)], errorMessage: Option[String] = None)(implicit
+flash:Flash, currentRecipient:Option[Recipient], analyticsDetails: Option[AnalyticsDetails], adsenseDetails: Option[AdsenseDetails])
 
 @import helper._
 
@@ -63,5 +64,8 @@
 				</div>
 			}
 		</div>
+
+@* adsenseDetails: Option[AdsenseDetails] *@
+
 	</div>
 }

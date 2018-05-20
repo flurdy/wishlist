@@ -53,7 +53,8 @@ class RegisterController @Inject()(cc: ControllerComponents, val recipientFactor
    val usernameValidator: UsernameValidator, val appConfig: ApplicationConfig,
    usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext, val recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
-extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm with EmailAddressChecks with WithLogging {
+extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm
+with EmailAddressChecks with WithLogging with WithAdsense {
 
   	def register = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
 

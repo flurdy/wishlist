@@ -174,8 +174,7 @@ class RecipientController @Inject()(
             val reservationRepository: ReservationRepository,
             val featureToggles: FeatureToggles)
 extends AbstractController(cc) with Secured with RecipientActions with WithAnalytics with WishlistForm
-         with RecipientForm with EmailAddressChecks with WithLogging with WithGravatarUrl {
-
+         with RecipientForm with EmailAddressChecks with WithLogging with WithGravatarUrl with WithAdsense {
 
    def showProfile(username: String) = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) flatMap {

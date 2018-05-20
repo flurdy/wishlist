@@ -49,7 +49,8 @@ class ContactController @Inject()(cc: ControllerComponents, val recipientLookup:
   val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig, 
   usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext)
-extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm with ContactForm with WithLogging with EmailAddressChecks {
+extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm
+with ContactForm with WithLogging with EmailAddressChecks with WithAdsense {
 
    def contact = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.contact(contactForm))
