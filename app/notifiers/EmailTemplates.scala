@@ -65,7 +65,14 @@ trait EmailTemplates {
             | http://${emailConfig.hostname}$verificationUrl
             |
             |
-            | If you didn't register with Wish, please let us know at http://${emailConfig.hostname}
+            | Alternatively copy the link into an internet browser.
+            | If on a phone and still unsuccesful please try on a computer.
+            |
+            |
+            | Please do not reply to this message. It will not verify your email address.
+            |
+            |
+            | If you did not register with Wish, please let us know at http://${emailConfig.hostname}
          """.stripMargin)
 
    def contactMessageText(name: String, email: String, username: Option[String],

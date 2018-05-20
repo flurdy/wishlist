@@ -1,4 +1,5 @@
-@()(implicit flash:Flash, currentRecipient: Option[Recipient], analyticsDetails: Option[AnalyticsDetails])
+@()(implicit flash:Flash, currentRecipient: Option[Recipient],
+analyticsDetails: Option[AnalyticsDetails], adsenseDetails: Option[AdsenseDetails])
 
 @import helper._
 
@@ -56,6 +57,18 @@
 			}
 		</div>
 
+@adsenseDetails.map { adsenseDetail =>
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- wish front bottom -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="@adsenseDetail.client"
+     data-ad-slot="@adsenseDetail.slot"
+     data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+}
 	</div>
 
 }

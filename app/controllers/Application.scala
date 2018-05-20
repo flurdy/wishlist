@@ -17,7 +17,7 @@ trait WithLogging {
 
 class Application @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, val appConfig: ApplicationConfig, usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext, val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)
-extends AbstractController(cc) with Secured with WithAnalytics with WishlistForm with WithLogging {
+extends AbstractController(cc) with Secured with WithAnalytics with WishlistForm with WithLogging with WithAdsense {
 
    def index() = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
       request.currentRecipient match {
