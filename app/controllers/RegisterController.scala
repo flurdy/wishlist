@@ -56,6 +56,8 @@ class RegisterController @Inject()(cc: ControllerComponents, val recipientFactor
 extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm
 with EmailAddressChecks with WithLogging with WithAdsense {
 
+   val adsenseSlot = None
+
   	def register = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
 
       def badRequest(form: Form[(String, Option[String], String, String, String)], message: Option[String]) =
