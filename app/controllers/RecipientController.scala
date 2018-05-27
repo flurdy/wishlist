@@ -176,6 +176,8 @@ class RecipientController @Inject()(
 extends AbstractController(cc) with Secured with RecipientActions with WithAnalytics with WishlistForm
          with RecipientForm with EmailAddressChecks with WithLogging with WithGravatarUrl with WithAdsense {
 
+   val adsenseSlot = None
+
    def showProfile(username: String) = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
       recipientLookup.findRecipient(username) flatMap {
          case Some(recipient) if request.currentRecipient.exists( r => recipient.isSameUsername(r)) =>

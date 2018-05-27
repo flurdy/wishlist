@@ -19,6 +19,8 @@ class Application @Inject()(cc: ControllerComponents, val recipientLookup: Recip
 (implicit val executionContext: ExecutionContext, val wishlistRepository: WishlistRepository, val recipientRepository: RecipientRepository)
 extends AbstractController(cc) with Secured with WithAnalytics with WishlistForm with WithLogging with WithAdsense {
 
+   val adsenseSlot = Some("front")
+
    def index() = (usernameAction andThen maybeCurrentRecipientAction).async { implicit request =>
       request.currentRecipient match {
          case Some(currentRecipient) =>

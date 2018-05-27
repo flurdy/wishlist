@@ -6,10 +6,13 @@ trait WithAdsense {
 
    def appConfig: ApplicationConfig
 
+   def adsenseSlot: Option[String]
+
    implicit def adsenseDetails: Option[AdsenseDetails] =
       for {
-         client <- appConfig.findString("adsense.client")
-         slot <- appConfig.findString("adsense.slot")
+         slotName <- adsenseSlot
+         client   <- appConfig.findString("adsense.client")
+         slot     <- appConfig.findString(s"adsense.slot.${slotName}")
       } yield AdsenseDetails(client,slot)
 
 }

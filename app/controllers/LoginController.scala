@@ -30,6 +30,8 @@ class LoginController @Inject()(cc: ControllerComponents, val recipientLookup: R
 (implicit val executionContext: ExecutionContext, recipientRepository: RecipientRepository, val featureToggles: FeatureToggles)
 extends AbstractController(cc) with Secured with WithAnalytics with LoginForm with RegisterForm with EmailAddressChecks with WithLogging with WithAdsense {
 
+   val adsenseSlot = Some("login")
+
    def redirectToLoginForm = Action { implicit request =>
       Redirect(routes.LoginController.showLoginForm())
    }

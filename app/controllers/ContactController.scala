@@ -52,6 +52,8 @@ class ContactController @Inject()(cc: ControllerComponents, val recipientLookup:
 extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm
 with ContactForm with WithLogging with EmailAddressChecks with WithAdsense {
 
+   val adsenseSlot = Some("contact")
+
    def contact = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
       Ok(views.html.contact(contactForm))
    }
