@@ -16,3 +16,5 @@
 /.ensime_lucene
 /.ensime_cache
 *.log
+/.metals
+/.vscode
