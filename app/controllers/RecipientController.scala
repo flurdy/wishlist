@@ -6,12 +6,11 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.Results.{NotFound, Unauthorized}
 import scala.concurrent.{ExecutionContext, Future}
-import com.flurdy.sander.primitives._
+// import com.flurdy.sander.primitives._
 import models._
 import repositories._
 import notifiers._
 import scravatar._
-
 
 trait RecipientForm extends RegisterForm {
 
@@ -150,7 +149,7 @@ trait RecipientActions {
 trait WithGravatarUrl {
 
    def generateGravatarUrl(recipient: Recipient)(implicit featureToggles: FeatureToggles) =
-      FeatureToggle.Gravatar.isEnabled().some.map { _ =>
+      Some(FeatureToggle.Gravatar.isEnabled()).map { _ =>
          Gravatar(recipient.email).default(Monster).maxRatedAs(PG).size(100).avatarUrl
       }
 }
