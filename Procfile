@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/wishlist -Dconfig.resource=heroku.conf -Dhttp.port=${PORT}
+web: target/universal/stage/bin/wishlist -Dconfig.resource=production.conf -Dhttp.port=${PORT}
