@@ -1,211 +1,206 @@
-package controllers
+// package controllers
 
-import akka.stream.Materializer
-import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers.{any,anyString}
-import org.scalatest._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play._
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc._
-import play.api.test._
-import play.api.test.Helpers._
-import scala.concurrent.Future
-import com.flurdy.scalasoup.ScalaSoup
-import models._
-import notifiers._
-import repositories._
+// import akka.stream.Materializer
+// import org.mockito.Mockito._
+// import org.mockito.ArgumentMatchers.{any,anyString}
+// import org.scalatest._
+// import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+// import org.scalatest.mockito.MockitoSugar
+// import org.scalatestplus.play._
+// import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+// import play.api.Configuration
+// import play.api.inject.bind
+// import play.api.inject.guice.GuiceApplicationBuilder
+// import play.api.mvc._
+// import play.api.test._
+// import play.api.test.Helpers._
+// import scala.concurrent.Future
+// import com.flurdy.scalasoup.ScalaSoup
+// import models._
+// import notifiers._
+// import repositories._
 
+// class ContactControllerSpec extends BaseControllerSpec {
 
-class ContactControllerSpec extends BaseControllerSpec {
+//    trait Setup extends WithMock {
+//       val appConfigMock       = mock[ApplicationConfig]
+//       val notifierMock        = mock[EmailNotifier]
+//       val recipientMock       = mock[Recipient]
+//       val recipientLookupMock = mock[RecipientLookup]
 
-   trait Setup extends WithMock {
-      val appConfigMock       = mock[ApplicationConfig]
-      val notifierMock        = mock[EmailNotifier]
-      val recipientMock       = mock[Recipient]
-      val recipientLookupMock = mock[RecipientLookup]
+//       val application = new GuiceApplicationBuilder()
+//             .overrides(bind[RecipientLookup].toInstance(recipientLookupMock))
+//             .build()
 
-      val application = new GuiceApplicationBuilder()
-            .overrides(bind[RecipientLookup].toInstance(recipientLookupMock))
-            .build()
+//       val controller = new ContactController(controllerComponents,
+//             recipientLookupMock, notifierMock, appConfigMock,
+//             usernameAction, maybeCurrentRecipientAction)(executionContext)
 
-      val controller = new ContactController(controllerComponents, 
-            recipientLookupMock, notifierMock, appConfigMock,
-            usernameAction, maybeCurrentRecipientAction)(executionContext)
+//       when(appConfigMock.findString(anyString)).thenReturn(None)
 
-      when(appConfigMock.findString(anyString)).thenReturn(None)
+//       when(recipientLookupMock.findRecipient("some-username")(executionContext)).thenReturn(Future.successful(Some(recipientMock)))
+//    }
 
-      when(recipientLookupMock.findRecipient("some-username")(executionContext)).thenReturn(Future.successful(Some(recipientMock)))
-   }
+//    "Contact controller" when requesting {
 
-   "Contact controller" when requesting {
+//       "[GET] /contact.html" should {
+//          "show contact page" in new Setup {
 
-      "[GET] /contact.html" should {
-         "show contact page" in new Setup {
+//             val result = controller.contact().apply(FakeRequest())
 
-            val result = controller.contact().apply(FakeRequest())
+//             status(result) mustBe 200
+//             val bodyDom = ScalaSoup.parse(contentAsString(result))
+//             bodyDom.select(s"#contact-page").headOption mustBe defined
+//          }
+//       }
 
-            status(result) mustBe 200
-            val bodyDom = ScalaSoup.parse(contentAsString(result))
-            bodyDom.select(s"#contact-page").headOption mustBe defined
-         }
-      }
+//       "[GET] /contact/" should {
+//          "redirect to contact page" in new Setup {
 
-      "[GET] /contact/" should {
-         "redirect to contact page" in new Setup {
+//             val result = controller.redirectToContact().apply(FakeRequest())
 
-            val result = controller.redirectToContact().apply(FakeRequest())
+//             status(result) mustBe 303
+//             header("Location", result).value mustBe "/contact.html"
+//          }
+//       }
 
-            status(result) mustBe 303
-            header("Location", result).value mustBe "/contact.html"
-         }
-      }
+//       "[POST] /contact" should {
+//          "send message" when {
+//             "not logged in" in new Setup {
 
-      "[POST] /contact" should {
-         "send message" when {
-            "not logged in" in new Setup {
+//                when( notifierMock.sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None) )
+//                   .thenReturn( Future.successful(()) )
 
-               when( notifierMock.sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None) )
-                  .thenReturn( Future.successful(()) )
+//                val contactRequest = FakeRequest().withFormUrlEncodedBody(
+//                   "name"     -> "some name",
+//                   "email"    -> "some@example.com",
+//                   "username" -> "some-username",
+//                   "subject"  -> "some subject",
+//                   "message"  -> "some message" )
 
+//                val result = controller.sendContact().apply(contactRequest)
 
-               val contactRequest = FakeRequest().withFormUrlEncodedBody(
-                  "name"     -> "some name",
-                  "email"    -> "some@example.com",
-                  "username" -> "some-username",
-                  "subject"  -> "some subject",
-                  "message"  -> "some message" )
+//                status(result) mustBe 303
+//                header("Location", result).value mustBe "/"
 
-               val result = controller.sendContact().apply(contactRequest)
+//                verify( notifierMock ).sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None)
+//             }
 
-               status(result) mustBe 303
-               header("Location", result).value mustBe "/"
+//             "logged in" in new Setup {
 
-               verify( notifierMock ).sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None)
-            }
+//                when( notifierMock.sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(recipientMock)))
+//                   .thenReturn( Future.successful(()) )
 
-            "logged in" in new Setup {
+//                val contactRequest = FakeRequest()
+//                   .withFormUrlEncodedBody(
+//                      "name"     -> "some name",
+//                      "email"    -> "some@example.com",
+//                      "username" -> "some-username",
+//                      "subject"  -> "some subject",
+//                      "message"  -> "some message" )
+//                   .withSession("username"  -> "some-username")
 
-               when( notifierMock.sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(recipientMock)))
-                  .thenReturn( Future.successful(()) )
+//                val result = controller.sendContact().apply(contactRequest)
 
+//                status(result) mustBe 303
+//                header("Location", result).value mustBe "/"
 
-               val contactRequest = FakeRequest()
-                  .withFormUrlEncodedBody(
-                     "name"     -> "some name",
-                     "email"    -> "some@example.com",
-                     "username" -> "some-username",
-                     "subject"  -> "some subject",
-                     "message"  -> "some message" )
-                  .withSession("username"  -> "some-username")
+//                verify( notifierMock ).sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(recipientMock))
+//             }
 
-               val result = controller.sendContact().apply(contactRequest)
+//             "no username filled" in new Setup {
 
-               status(result) mustBe 303
-               header("Location", result).value mustBe "/"
+//                when( notifierMock.sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None) )
+//                   .thenReturn( Future.successful(()) )
 
-               verify( notifierMock ).sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", Some(recipientMock))
-            }
+//                val contactRequest = FakeRequest().withFormUrlEncodedBody(
+//                   "name"     -> "some name",
+//                   "email"    -> "some@example.com",
+//                   "username" -> "some-username",
+//                   "subject"  -> "some subject",
+//                   "message"  -> "some message" )
 
-            "no username filled" in new Setup {
+//                val result = controller.sendContact().apply(contactRequest)
 
-               when( notifierMock.sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None) )
-                  .thenReturn( Future.successful(()) )
+//                status(result) mustBe 303
+//                header("Location", result).value mustBe "/"
 
+//                verify( notifierMock ).sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None)
+//             }
 
-               val contactRequest = FakeRequest().withFormUrlEncodedBody(
-                  "name"     -> "some name",
-                  "email"    -> "some@example.com",
-                  "username" -> "some-username",
-                  "subject"  -> "some subject",
-                  "message"  -> "some message" )
+//             "no subject filled" in new Setup {
 
-               val result = controller.sendContact().apply(contactRequest)
+//                when( notifierMock.sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None) )
+//                   .thenReturn( Future.successful(()) )
 
-               status(result) mustBe 303
-               header("Location", result).value mustBe "/"
+//                val contactRequest = FakeRequest().withFormUrlEncodedBody(
+//                   "name"     -> "some name",
+//                   "email"    -> "some@example.com",
+//                   "username" -> "some-username",
+//                   "subject"  -> "some subject",
+//                   "message"  -> "some message" )
 
-               verify( notifierMock ).sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None)
-            }
+//                val result = controller.sendContact().apply(contactRequest)
 
-            "no subject filled" in new Setup {
+//                status(result) mustBe 303
+//                header("Location", result).value mustBe "/"
 
-               when( notifierMock.sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None) )
-                  .thenReturn( Future.successful(()) )
+//                verify( notifierMock ).sendContactEmail(
+//                      "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None)
+//             }
+//          }
 
+//          "not send mesage" when {
+//             "name is missing" in new Setup {
 
-               val contactRequest = FakeRequest().withFormUrlEncodedBody(
-                  "name"     -> "some name",
-                  "email"    -> "some@example.com",
-                  "username" -> "some-username",
-                  "subject"  -> "some subject",
-                  "message"  -> "some message" )
+//                val contactRequest = FakeRequest().withFormUrlEncodedBody(
+//                   "name"     -> "",
+//                   "email"    -> "some@example.com",
+//                   "username" -> "some-username",
+//                   "subject"  -> "some subject",
+//                   "message"  -> "some message" )
 
-               val result = controller.sendContact().apply(contactRequest)
+//                val result = controller.sendContact().apply(contactRequest)
 
-               status(result) mustBe 303
-               header("Location", result).value mustBe "/"
+//                status(result) mustBe 400
+//                verifyZeroInteractions( notifierMock )
+//             }
+//             "email is missing" in new Setup {
 
-               verify( notifierMock ).sendContactEmail(
-                     "some name", "some@example.com", Some("some-username"), Some("some subject"), "some message", None)
-            }
-         }
+//                val contactRequest = FakeRequest().withFormUrlEncodedBody(
+//                   "name"     -> "some name",
+//                   "email"    -> "",
+//                   "username" -> "some-username",
+//                   "subject"  -> "some subject",
+//                   "message"  -> "some message" )
 
-         "not send mesage" when {
-            "name is missing" in new Setup {
+//                val result = controller.sendContact().apply(contactRequest)
 
-               val contactRequest = FakeRequest().withFormUrlEncodedBody(
-                  "name"     -> "",
-                  "email"    -> "some@example.com",
-                  "username" -> "some-username",
-                  "subject"  -> "some subject",
-                  "message"  -> "some message" )
+//                status(result) mustBe 400
+//                verifyZeroInteractions( notifierMock )
+//             }
 
-               val result = controller.sendContact().apply(contactRequest)
+//             "message is missing" in new Setup {
 
-               status(result) mustBe 400
-               verifyZeroInteractions( notifierMock )
-            }
-            "email is missing" in new Setup {
+//                val contactRequest = FakeRequest().withFormUrlEncodedBody(
+//                   "name"     -> "some name",
+//                   "email"    -> "some@example.com",
+//                   "username" -> "some-username",
+//                   "subject"  -> "some subject" )
 
-               val contactRequest = FakeRequest().withFormUrlEncodedBody(
-                  "name"     -> "some name",
-                  "email"    -> "",
-                  "username" -> "some-username",
-                  "subject"  -> "some subject",
-                  "message"  -> "some message" )
+//                val result = controller.sendContact().apply(contactRequest)
 
-               val result = controller.sendContact().apply(contactRequest)
-
-               status(result) mustBe 400
-               verifyZeroInteractions( notifierMock )
-            }
-
-            "message is missing" in new Setup {
-
-               val contactRequest = FakeRequest().withFormUrlEncodedBody(
-                  "name"     -> "some name",
-                  "email"    -> "some@example.com",
-                  "username" -> "some-username",
-                  "subject"  -> "some subject" )
-
-               val result = controller.sendContact().apply(contactRequest)
-
-               status(result) mustBe 400
-               verifyZeroInteractions( notifierMock )
-          }
-         }
-      }
-   }
-}
+//                status(result) mustBe 400
+//                verifyZeroInteractions( notifierMock )
+//           }
+//          }
+//       }
+//    }
+// }

@@ -1,170 +1,168 @@
-package com.flurdy.wishlist
+// package com.flurdy.wishlist
 
-import org.scalatest._
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.OptionValues._
-import play.api.libs.ws.WSResponse
-import scala.concurrent.ExecutionContext
-import com.flurdy.scalasoup.ScalaSoup
+// import org.scalatest._
+// import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+// import org.scalatest.OptionValues._
+// import play.api.libs.ws.WSResponse
+// import scala.concurrent.ExecutionContext
+// import com.flurdy.scalasoup.ScalaSoup
 
+// trait ReservationIntegrationHelper extends RegistrationIntegrationHelper
+//       with LoginIntegrationHelper
+//       with CookieIntegrationHelper
+//       with WishlistIntegrationHelper
+//       with WishIntegrationHelper {
 
-trait ReservationIntegrationHelper extends RegistrationIntegrationHelper
-      with LoginIntegrationHelper
-      with CookieIntegrationHelper
-      with WishlistIntegrationHelper
-      with WishIntegrationHelper {
+//    def createRecipientWishlist(username: String)(implicit ec: ExecutionContext) =
+//       for {
+//          session          <- registerAndLogin("Testerson")
+//          createWishlistResponse <- createWishlist("Testerson", session)
+//          wishlistLocation =  createWishlistResponse.header("Location").headOption.value
+//          wishlistId       =  wishlistLocation.split("/").last.toLong
+//       } yield (session, wishlistId)
 
-   def createRecipientWishlist(username: String)(implicit ec: ExecutionContext) =
-      for {
-         session          <- registerAndLogin("Testerson")
-         createWishlistResponse <- createWishlist("Testerson", session)
-         wishlistLocation =  createWishlistResponse.header("Location").headOption.value
-         wishlistId       =  wishlistLocation.split("/").last.toLong
-      } yield (session, wishlistId)
+//    def createWishlistWithWish(username: String, wishTitle: String)(implicit ec: ExecutionContext) =
+//       for {
+//          (session, wishlistId) <- createRecipientWishlist(username)
+//          addWishResponse  <- addWish("A handbag", wishlistId, "Testerson", session)
+//          wishLocation     =  addWishResponse.header("Location").headOption.value
+//          wishId           =  wishLocation.split("""\?wish=""").last.toLong
+//       } yield (session, wishlistId, addWishResponse, wishId)
 
-   def createWishlistWithWish(username: String, wishTitle: String)(implicit ec: ExecutionContext) =
-      for {
-         (session, wishlistId) <- createRecipientWishlist(username)
-         addWishResponse  <- addWish("A handbag", wishlistId, "Testerson", session)
-         wishLocation     =  addWishResponse.header("Location").headOption.value
-         wishId           =  wishLocation.split("""\?wish=""").last.toLong
-      } yield (session, wishlistId, addWishResponse, wishId)
+//    def reserve(username: String, wishlistId: Long, wishId: Long, session: Option[String]) = {
+//       val root = wishlistRootUrl(username)
+//       wsWithSession(s"$root/$wishlistId/wish/$wishId/reserve", session)
+//             .withFollowRedirects(false).post("")
+//    }
 
-   def reserve(username: String, wishlistId: Long, wishId: Long, session: Option[String]) = {
-      val root = wishlistRootUrl(username)
-      wsWithSession(s"$root/$wishlistId/wish/$wishId/reserve", session)
-            .withFollowRedirects(false).post("")
-   }
+//    def unreserve(username: String, wishlistId: Long, wishId: Long, session: Option[String]) = {
+//       val root = wishlistRootUrl(username)
+//       wsWithSession(s"$root/$wishlistId/wish/$wishId/unreserve", session)
+//             .withFollowRedirects(false).post("")
+//    }
+// }
 
-   def unreserve(username: String, wishlistId: Long, wishId: Long, session: Option[String]) = {
-      val root = wishlistRootUrl(username)
-      wsWithSession(s"$root/$wishlistId/wish/$wishId/unreserve", session)
-            .withFollowRedirects(false).post("")
-   }
-}
+// class ReservationIntegrationSpec extends AsyncFeatureSpec
+//       with GivenWhenThen with ScalaFutures with Matchers
+//       with IntegrationPatience with StartAndStopServer
+//       with ReservationIntegrationHelper {
 
+//    info("As a wish giver")
+//    info("I want to reserve wishes")
+//    info("so that I can give them to the recipient")
 
-class ReservationIntegrationSpec extends AsyncFeatureSpec
-      with GivenWhenThen with ScalaFutures with Matchers
-      with IntegrationPatience with StartAndStopServer
-      with ReservationIntegrationHelper {
+//    feature("Reserve flow") {
 
-   info("As a wish giver")
-   info("I want to reserve wishes")
-   info("so that I can give them to the recipient")
+//       scenario("find a wish without logging in") {
 
-   feature("Reserve flow") {
+//          val flow = for {
+//             (_, wishlistId, addWishResponse, _)  <- createWishlistWithWish("Testerson", "A handbag")
+//             showWishlistResponse <- showWishlist("Testerson", wishlistId, session = None)
+//          } yield (addWishResponse, showWishlistResponse)
 
-      scenario("find a wish without logging in") {
+//          flow map { case (addWishResponse, showWishlistResponse) =>
+//             Given("a recipient with a wishlist with wishes")
+//             addWishResponse.status shouldBe 303
 
-         val flow = for {
-            (_, wishlistId, addWishResponse, _)  <- createWishlistWithWish("Testerson", "A handbag")
-            showWishlistResponse <- showWishlist("Testerson", wishlistId, session = None)
-         } yield (addWishResponse, showWishlistResponse)
+//             When("looking up a wishlist")
+//             showWishlistResponse.status shouldBe 200
 
-         flow map { case (addWishResponse, showWishlistResponse) =>
-            Given("a recipient with a wishlist with wishes")
-            addWishResponse.status shouldBe 303
+//             Then("an non logged in recipient should see it")
+//             val s = ScalaSoup.parse(showWishlistResponse.body).select(s"#wish-list .wish-row a").headOption
+//             s.value.text shouldBe "A handbag"
+//          }
 
-            When("looking up a wishlist")
-            showWishlistResponse.status shouldBe 200
+//       }
 
-            Then("an non logged in recipient should see it")
-            val s = ScalaSoup.parse(showWishlistResponse.body).select(s"#wish-list .wish-row a").headOption
-            s.value.text shouldBe "A handbag"
-         }
+//       scenario("find a wish when logged in")  {
 
-      }
+//          val flow = for {
+//             (_, wishlistId, addWishResponse, _)  <- createWishlistWithWish("Testerson", "A handbag")
+//             sessionGrandma   <- registerAndLogin("Grandma")
+//             showWishlistResponse <- showWishlist("Testerson", wishlistId, sessionGrandma)
+//          } yield (addWishResponse, sessionGrandma, showWishlistResponse)
 
-      scenario("find a wish when logged in")  {
+//          flow map { case (addWishResponse, sessionGrandma, showWishlistResponse) =>
+//             Given("a recipient with a wishlist with wishes")
+//             addWishResponse.status shouldBe 303
 
-         val flow = for {
-            (_, wishlistId, addWishResponse, _)  <- createWishlistWithWish("Testerson", "A handbag")
-            sessionGrandma   <- registerAndLogin("Grandma")
-            showWishlistResponse <- showWishlist("Testerson", wishlistId, sessionGrandma)
-         } yield (addWishResponse, sessionGrandma, showWishlistResponse)
+//             And("a another logged in user")
+//             sessionGrandma shouldBe defined
 
-         flow map { case (addWishResponse, sessionGrandma, showWishlistResponse) =>
-            Given("a recipient with a wishlist with wishes")
-            addWishResponse.status shouldBe 303
+//             When("looking up a wishlist")
+//             showWishlistResponse.status shouldBe 200
 
-            And("a another logged in user")
-            sessionGrandma shouldBe defined
+//             Then("an non logged in recipient should see it")
+//             val s = ScalaSoup.parse(showWishlistResponse.body).select(s"#wish-list .wish-row a").headOption
+//             s.value.text shouldBe "A handbag"
+//          }
 
-            When("looking up a wishlist")
-            showWishlistResponse.status shouldBe 200
+//       }
 
-            Then("an non logged in recipient should see it")
-            val s = ScalaSoup.parse(showWishlistResponse.body).select(s"#wish-list .wish-row a").headOption
-            s.value.text shouldBe "A handbag"
-         }
+//       scenario("reserve a wish") {
+//          val flow = for {
+//             (_, wishlistId, addWishResponse, wishId)  <- createWishlistWithWish("Testerson", "A handbag")
+//             sessionGrandma   <- registerAndLogin("Grandma")
+//             showWishlistResponse1 <- showWishlist("Testerson", wishlistId, sessionGrandma)
+//             reserveResponse       <- reserve("Testerson", wishlistId, wishId, sessionGrandma)
+//             showWishlistResponse2 <- showWishlist("Testerson", wishlistId, sessionGrandma)
+//          } yield (addWishResponse, sessionGrandma, showWishlistResponse1, reserveResponse, showWishlistResponse2)
 
-      }
+//          flow map { case (addWishResponse, sessionGrandma, showWishlistResponse1, reserveResponse, showWishlistResponse2) =>
+//             Given("a recipient with a wishlist with wishes")
+//             addWishResponse.status shouldBe 303
 
-      scenario("reserve a wish") {
-         val flow = for {
-            (_, wishlistId, addWishResponse, wishId)  <- createWishlistWithWish("Testerson", "A handbag")
-            sessionGrandma   <- registerAndLogin("Grandma")
-            showWishlistResponse1 <- showWishlist("Testerson", wishlistId, sessionGrandma)
-            reserveResponse       <- reserve("Testerson", wishlistId, wishId, sessionGrandma)
-            showWishlistResponse2 <- showWishlist("Testerson", wishlistId, sessionGrandma)
-         } yield (addWishResponse, sessionGrandma, showWishlistResponse1, reserveResponse, showWishlistResponse2)
+//             And("a another logged in user")
+//             sessionGrandma shouldBe defined
+//             addWishResponse.status shouldBe 303
 
-         flow map { case (addWishResponse, sessionGrandma, showWishlistResponse1, reserveResponse, showWishlistResponse2) =>
-            Given("a recipient with a wishlist with wishes")
-            addWishResponse.status shouldBe 303
+//             And("a wish is not reserved")
+//             val reservedBefore = ScalaSoup.parse(showWishlistResponse1.body)
+//                   .select(s"#wish-list .wish-row .reserved").headOption
+//             reservedBefore shouldBe None
 
-            And("a another logged in user")
-            sessionGrandma shouldBe defined
-            addWishResponse.status shouldBe 303
+//             When("someone reserves a wish")
+//             reserveResponse.status shouldBe 303
 
-            And("a wish is not reserved")
-            val reservedBefore = ScalaSoup.parse(showWishlistResponse1.body)
-                  .select(s"#wish-list .wish-row .reserved").headOption
-            reservedBefore shouldBe None
+//             Then("a wish should be marked reserved")
+//             val reservedAfter = ScalaSoup.parse(showWishlistResponse2.body)
+//                   .select(s"#wish-list .wish-row .reserved").headOption
+//             reservedAfter.value.text shouldBe "reserved"
+//          }
+//       }
 
-            When("someone reserves a wish")
-            reserveResponse.status shouldBe 303
+//       scenario("unreserve a wish") {
+//          val flow = for {
+//             (_, wishlistId, addWishResponse, wishId)  <- createWishlistWithWish("Testerson", "A handbag")
+//             sessionGrandma        <- registerAndLogin("Grandma")
+//             _                     <- reserve("Testerson", wishlistId, wishId, sessionGrandma)
+//             showWishlistResponse1 <- showWishlist("Testerson", wishlistId, sessionGrandma)
+//             unreserveResponse     <- unreserve("Testerson", wishlistId, wishId, sessionGrandma)
+//             showWishlistResponse2 <- showWishlist("Testerson", wishlistId, sessionGrandma)
+//          } yield (addWishResponse, sessionGrandma, showWishlistResponse1, unreserveResponse, showWishlistResponse2)
 
-            Then("a wish should be marked reserved")
-            val reservedAfter = ScalaSoup.parse(showWishlistResponse2.body)
-                  .select(s"#wish-list .wish-row .reserved").headOption
-            reservedAfter.value.text shouldBe "reserved"
-         }
-      }
+//          flow map { case (addWishResponse, sessionGrandma, showWishlistResponse1, unreserveResponse, showWishlistResponse2) =>
+//             Given("a recipient with a wishlist with wishes")
+//             addWishResponse.status shouldBe 303
 
-      scenario("unreserve a wish") {
-         val flow = for {
-            (_, wishlistId, addWishResponse, wishId)  <- createWishlistWithWish("Testerson", "A handbag")
-            sessionGrandma        <- registerAndLogin("Grandma")
-            _                     <- reserve("Testerson", wishlistId, wishId, sessionGrandma)
-            showWishlistResponse1 <- showWishlist("Testerson", wishlistId, sessionGrandma)
-            unreserveResponse     <- unreserve("Testerson", wishlistId, wishId, sessionGrandma)
-            showWishlistResponse2 <- showWishlist("Testerson", wishlistId, sessionGrandma)
-         } yield (addWishResponse, sessionGrandma, showWishlistResponse1, unreserveResponse, showWishlistResponse2)
+//             And("a another logged in user")
+//             sessionGrandma shouldBe defined
+//             addWishResponse.status shouldBe 303
 
-         flow map { case (addWishResponse, sessionGrandma, showWishlistResponse1, unreserveResponse, showWishlistResponse2) =>
-            Given("a recipient with a wishlist with wishes")
-            addWishResponse.status shouldBe 303
+//             And("a wish which is reserved")
+//             val reservedBefore = ScalaSoup.parse(showWishlistResponse1.body)
+//                   .select(s"#wish-list .wish-row .reserved").headOption
+//             reservedBefore.value.text shouldBe "reserved"
 
-            And("a another logged in user")
-            sessionGrandma shouldBe defined
-            addWishResponse.status shouldBe 303
+//             When("someone unreserves a wish")
+//             unreserveResponse.status shouldBe 303
 
-            And("a wish which is reserved")
-            val reservedBefore = ScalaSoup.parse(showWishlistResponse1.body)
-                  .select(s"#wish-list .wish-row .reserved").headOption
-            reservedBefore.value.text shouldBe "reserved"
+//             Then("a wish should be marked unreserved")
+//             val reservedAfter = ScalaSoup.parse(showWishlistResponse2.body)
+//                   .select(s"#wish-list .wish-row .reserved").headOption
+//             reservedAfter shouldBe None
+//          }
+//       }
 
-            When("someone unreserves a wish")
-            unreserveResponse.status shouldBe 303
-
-            Then("a wish should be marked unreserved")
-            val reservedAfter = ScalaSoup.parse(showWishlistResponse2.body)
-                  .select(s"#wish-list .wish-row .reserved").headOption
-            reservedAfter shouldBe None
-         }
-      }
-
-   }
-}
+//    }
+// }

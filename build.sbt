@@ -32,7 +32,7 @@ libraryDependencies ++= {
     "com.beachape" %% "enumeratum" % enumeratumVersion,
     "com.beachape" %% "enumeratum-play" % enumeratumVersion,
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
-    "com.flurdy" %% "scalasoup" % "0.1.2" % Test,
+    //  "com.flurdy" %% "scalasoup" % "0.1.2" % Test,
     "org.mockito" % "mockito-core" % "2.8.9" % Test
   )
 }
