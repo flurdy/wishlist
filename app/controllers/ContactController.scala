@@ -25,13 +25,13 @@ trait EmailAddressChecks {
 
 trait ContactForm {
 
-   def ValidEmailAddresses: List[Regex]
-   def InvalidEmailAddress: Regex
+  def ValidEmailAddresses: List[Regex]
+  def InvalidEmailAddress: Regex 
 
-   val contactForm = Form(
-      tuple(
-         "name" -> nonEmptyText(maxLength = 99),
-         "email" -> nonEmptyText(maxLength = 99),
+  val contactForm = Form(
+    tuple(
+      "name" -> nonEmptyText(maxLength = 99),
+      "email" -> nonEmptyText(maxLength = 99),
          "username" -> optional(text(maxLength = 99)),
          "subject" -> optional(text(maxLength = 200)),
          "message" -> nonEmptyText(maxLength = 2000)
@@ -45,8 +45,8 @@ trait ContactForm {
 }
 
 
-class ContactController @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup, 
-  val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig, 
+class ContactController @Inject()(cc: ControllerComponents, val recipientLookup: RecipientLookup,
+  val emailNotifier: EmailNotifier, val appConfig: ApplicationConfig,
   usernameAction: UsernameAction, maybeCurrentRecipientAction: MaybeCurrentRecipientAction)
 (implicit val executionContext: ExecutionContext)
 extends AbstractController(cc) with Secured with WithAnalytics with RegisterForm
@@ -71,11 +71,11 @@ with ContactForm with WithLogging with EmailAddressChecks with WithAdsense {
       },
       contactFields => {
 
-         emailNotifier.sendContactEmail( contactFields._1, contactFields._2,
-                                         contactFields._3, contactFields._4,
-                                         contactFields._5, request.currentRecipient )
+         // emailNotifier.sendContactEmail( contactFields._1, contactFields._2,
+         //                                 contactFields._3, contactFields._4,
+         //                                 contactFields._5, request.currentRecipient )
 
-        Redirect(routes.Application.index()).flashing("message"->"Your message was sent")
+        Redirect(routes.Application.index()).flashing("message"->"Your message was not sent")
 
       }
     )
