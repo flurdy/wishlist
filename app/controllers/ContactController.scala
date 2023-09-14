@@ -55,7 +55,8 @@ with ContactForm with WithLogging with EmailAddressChecks with WithAdsense {
    val adsenseSlot = Some("contact")
 
    def contact = (usernameAction andThen maybeCurrentRecipientAction) { implicit request =>
-      Ok(views.html.contact(contactForm))
+      // Ok(views.html.contact(contactForm))
+      Redirect("https://ltrbx.io/wish.flurdy.io")
    }
 
    def redirectToContact = Action { implicit request =>
