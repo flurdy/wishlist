@@ -1,4 +1,4 @@
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.7")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.15")
 
-addSbtPlugin("com.heroku" % "sbt-heroku" % "2.0.0")
+addSbtPlugin("com.heroku" % "sbt-heroku" % "2.1.1")
