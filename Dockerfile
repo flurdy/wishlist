@@ -1,4 +1,4 @@
-FROM flurdy/activator-mini:1.3.12-alpine
+FROM eclipse-temurin:8-jre-alpine
 
 MAINTAINER Ivar Abrahamsen <@flurdy>
 
@@ -12,8 +12,9 @@ ADD target/universal/stage/ /opt/app/
 
 ADD bin/entrypoint.sh /opt/app/bin/
 
-RUN rm -f /opt/app/bin/*.bat && \
-    mv -f /opt/app/bin/* /opt/app/bin/app && \
+RUN apk add --no-cache bash && \
+    rm -f /opt/app/bin/*.bat && \
+    mv -f /opt/app/bin/wishlist /opt/app/bin/app && \
     adduser -D appuser && \
     chown -R appuser /opt/app
 

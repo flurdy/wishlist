@@ -1,2 +1,2 @@
 # Play 2.6 / Scala 2.12.3 / sbt 1.1.6 need JDK 8
-java=8.0.504+1-tem
+java=8.0.472-amzn
