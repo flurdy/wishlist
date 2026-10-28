@@ -6,6 +6,9 @@ WORKDIR /opt/app
 
 ENV PORT 9000
 
+COPY bin/distrust-emudhra-roots.sh /tmp/
+RUN sh /tmp/distrust-emudhra-roots.sh && rm /tmp/distrust-emudhra-roots.sh
+
 # Locally or your CI will have to have run `sbt stage` beforehand
 
 ADD target/universal/stage/ /opt/app/
