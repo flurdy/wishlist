@@ -42,6 +42,14 @@ to clean the folder, compile all classes and start the web application.
 The `~` will automatically detect and recompile any changes.
 
 
+Test
+-----
+
+`sbt test` on JDK 8. The browser tests run headless Chrome and need a
+[ChromeDriver](https://googlechromelabs.github.io/chrome-for-testing/)
+matching your Chrome version on the `PATH`; without it they are canceled.
+
+
 Configuration
 -------------
 

@@ -1,5 +1,7 @@
 package com.flurdy.wishlist
 
+import org.openqa.selenium.WebDriver
+import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
 import org.scalatest._
 import org.scalatest.time._
 import org.scalatestplus.play._
@@ -14,6 +16,12 @@ with ChromeFactory {
 
    var applicationConfiguration = Map("play.http.router" -> "testonly.Routes",
                                       "com.flurdy.wishlist.feature.email.verification.enabled" -> true)
+
+   override def createWebDriver(): WebDriver = {
+      val options = new ChromeOptions()
+      options.addArguments("--headless=new")
+      new ChromeDriver(options)
+   }
 
    override def fakeApplication() =
       new GuiceApplicationBuilder()
