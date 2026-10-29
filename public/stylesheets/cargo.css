@@ -77,6 +77,7 @@ ul.vertical li a { }
 
 
 #cargo .modal { width: 30em; margin: -15em 0 0 -15em; }
+#cargo .modal.fade.in { top: 50%; }
 #cargo .modal-wide { width: 33em; }
 #cargo .modal .well { margin-bottom: 0;}
 #cargo .noshow { display: none; }
