@@ -29,6 +29,8 @@ libraryDependencies ++= {
   )
 }
 
+pipelineStages := Seq(digest)
+
 javaOptions in Universal ++= Seq(
   "-Dpidfile.path=/dev/null"
 )
