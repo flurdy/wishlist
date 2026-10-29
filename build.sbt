@@ -12,7 +12,7 @@ libraryDependencies ++= {
   Seq(
     guice,
     jdbc,
-    "com.typesafe.play" %% "anorm" % "2.5.3",
+    "org.playframework.anorm" %% "anorm" % "2.6.10",
     evolutions,
     filters,
     "com.github.t3hnar" %% "scala-bcrypt" % "3.1",
