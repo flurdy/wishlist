@@ -74,7 +74,7 @@ with ReservationMapper {
                      WHERE res.recipientid = $reserverId
                      ORDER BY res.wishid desc
 				      """
-                  .as(MapToShallowReservation *)
+                  .as(MapToShallowReservation.*)
             }
          }
       }

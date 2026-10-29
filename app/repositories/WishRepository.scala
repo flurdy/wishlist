@@ -50,7 +50,7 @@ trait WishLookup extends Repository with WishMapper with WithLogging {
                      where we.wishlistid = $wishlistId
                      ORDER BY we.ordinal,wi.title DESC
                   """
-               .as(MapToWish *)
+               .as(MapToWish.*)
             }
          }
       }

@@ -72,7 +72,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
                      where recipientid = $recipientId
                      ORDER BY title DESC
                   """
-               .as(MapToShallowWishlist *)
+               .as(MapToShallowWishlist.*)
             }
          }
       }
@@ -89,7 +89,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
                      WHERE wo.recipientid = $organiserId
                      ORDER BY wi.recipientid,wi.title DESC
                   """
-               .as(MapToShallowWishlist *)
+               .as(MapToShallowWishlist.*)
             }
          }
       }
@@ -190,7 +190,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
                SELECT * FROM wishlist
                ORDER BY recipientid DESC,title
              """
-             .as(MapToShallowWishlist *)
+             .as(MapToShallowWishlist.*)
          }
       }
 
@@ -203,7 +203,7 @@ trait WishlistRepository extends Repository with WishlistMapper with WithLogging
                where lower(title) like $searchLikeTerm
                ORDER BY recipientid DESC, title
              """
-            .as(MapToShallowWishlist *)
+            .as(MapToShallowWishlist.*)
          }
       }
 }

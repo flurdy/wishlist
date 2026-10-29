@@ -200,7 +200,7 @@ trait RecipientRepository extends Repository with WithLogging {
                      where wo.wishlistid = $wishlistId
                      ORDER BY rec.username
                   """
-                  .as(MapToRecipient *)
+                  .as(MapToRecipient.*)
             }
          }
       }

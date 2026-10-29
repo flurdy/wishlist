@@ -74,7 +74,7 @@ trait WishLinkRepository extends Repository with WishLinkMapper with WithLogging
                      select * from wishlink
                      where wishid = $wishId
                   """
-                  .as(mapToWishLink(wish) *)
+                  .as(mapToWishLink(wish).*)
             }
          }
       }
