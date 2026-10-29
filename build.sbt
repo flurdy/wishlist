@@ -24,7 +24,7 @@ libraryDependencies ++= {
     "com.github.t3hnar" %% "scala-bcrypt" % "3.1",
     "com.typesafe.play" %% "play-mailer" % playMailerVersion,
     "com.typesafe.play" %% "play-mailer-guice" % playMailerVersion,
-    "org.postgresql" % "postgresql" % "42.2.1",
+    "org.postgresql" % "postgresql" % "42.7.14",
     "com.h2database" % "h2" % "1.4.196",
     "com.heroku.sdk" % "heroku-jdbc" % "0.1.1",
     "com.andersen-gott" %% "scravatar" % "1.0.3",
